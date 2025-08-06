@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Run tests
+        run: npm test
+        env:
+          HIVE_API_KEY: ${{ secrets.HIVE_API_KEY }}
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          npx semantic-release
+      
+      - name: Update documentation
+        if: success()
+        run: |
+          npm run docs:generate || true
+      
+      - name: Notify Discord
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🚀 New Release Published!"
+          description: |
+            Version ${{ steps.release.outputs.version }} has been released!
+            Check out the [release notes](https://github.com/${{ github.repository }}/releases/latest)
+          color: 0x00ff00
+      
+      - name: Tweet Release
+        if: success()
+        uses: ethomson/send-tweet-action@v1
+        with:
+          consumer-key: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          consumer-secret: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          message: |
+            🚀 OnChainAgents v${{ steps.release.outputs.version }} is out!
+            
+            ✨ What's new:
+            ${{ steps.release.outputs.notes }}
+            
+            Get it now: npm install @onchainagents/core
+            
+            #crypto #blockchain #ai #defi

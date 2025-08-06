@@ -1,0 +1,147 @@
+{
+  "name": "OnChainAgents",
+  "version": "1.0.0",
+  "description": "Free, open-source crypto intelligence platform powered by 10 specialized AI agents",
+  "commands": [
+    {
+      "command": "/oca:analyze",
+      "description": "Comprehensive multi-agent analysis of a token or protocol",
+      "parameters": {
+        "network": "Target blockchain network (ethereum, bsc, polygon, etc.)",
+        "target": "Token address or symbol to analyze",
+        "options": "Optional analysis parameters"
+      },
+      "example": "/oca:analyze ethereum 0x1234... --depth deep"
+    },
+    {
+      "command": "/oca:research",
+      "description": "Deep fundamental research on a token",
+      "parameters": {
+        "token": "Token symbol or address to research",
+        "deep": "Enable comprehensive analysis (optional)"
+      },
+      "example": "/oca:research BTC --deep"
+    },
+    {
+      "command": "/oca:security",
+      "description": "Security-focused analysis including rug detection and risk assessment",
+      "parameters": {
+        "address": "Token contract address",
+        "network": "Blockchain network (optional, defaults to ethereum)"
+      },
+      "example": "/oca:security 0x1234... --network bsc"
+    },
+    {
+      "command": "/oca:hunt",
+      "description": "Hunt for alpha opportunities across markets",
+      "parameters": {
+        "category": "Filter by category (defi, gaming, ai, etc.)",
+        "risk": "Risk level (low, medium, high)"
+      },
+      "example": "/oca:hunt --category defi --risk medium"
+    },
+    {
+      "command": "/oca:track",
+      "description": "Track whale wallets and portfolio activity",
+      "parameters": {
+        "wallet": "Wallet address to track",
+        "alerts": "Enable real-time alerts (optional)"
+      },
+      "example": "/oca:track 0xabcd... --alerts"
+    },
+    {
+      "command": "/oca:sentiment",
+      "description": "Analyze social sentiment for a token",
+      "parameters": {
+        "token": "Token symbol or name",
+        "sources": "Comma-separated list of sources (twitter,telegram,discord,reddit)"
+      },
+      "example": "/oca:sentiment ETH --sources twitter,reddit"
+    }
+  ],
+  "agents": [
+    {
+      "name": "RugDetector",
+      "category": "Security",
+      "description": "Advanced rug pull detection using 50+ security indicators"
+    },
+    {
+      "name": "RiskAnalyzer",
+      "category": "Security",
+      "description": "Comprehensive protocol risk assessment"
+    },
+    {
+      "name": "AlphaHunter",
+      "category": "Market Intelligence",
+      "description": "Discovers emerging opportunities before the crowd"
+    },
+    {
+      "name": "WhaleTracker",
+      "category": "Market Intelligence",
+      "description": "Real-time whale movement monitoring"
+    },
+    {
+      "name": "SentimentAnalyzer",
+      "category": "Market Intelligence",
+      "description": "Multi-source social sentiment analysis"
+    },
+    {
+      "name": "TokenResearcher",
+      "category": "Research",
+      "description": "Automated fundamental analysis"
+    },
+    {
+      "name": "DeFiAnalyzer",
+      "category": "Research",
+      "description": "DeFi protocol analysis and yield optimization"
+    },
+    {
+      "name": "PortfolioTracker",
+      "category": "Research",
+      "description": "AI portfolio manager that never sleeps"
+    },
+    {
+      "name": "CrossChainNavigator",
+      "category": "Specialized",
+      "description": "Multi-chain routing and bridge optimization"
+    },
+    {
+      "name": "MarketStructureAnalyst",
+      "category": "Specialized",
+      "description": "Advanced market microstructure analysis"
+    }
+  ],
+  "configuration": {
+    "environment": {
+      "HIVE_API_KEY": "Your Hive Intelligence API key",
+      "HIVE_API_URL": "https://api.hiveintelligence.xyz",
+      "LOG_LEVEL": "info"
+    },
+    "defaults": {
+      "network": "ethereum",
+      "cacheTTL": 3600,
+      "maxRetries": 3,
+      "timeout": 30000
+    }
+  },
+  "installation": {
+    "auto": true,
+    "script": "./scripts/install.sh",
+    "requirements": [
+      "Node.js >= 18.0.0",
+      "npm >= 9.0.0",
+      "Hive Intelligence API access"
+    ]
+  },
+  "mcp": {
+    "server": "hive-intelligence",
+    "integration": "native",
+    "features": [
+      "Real-time blockchain data",
+      "250TB daily data processing",
+      "60+ blockchain networks",
+      "Historical data access",
+      "Advanced analytics"
+    ]
+  }
+}
