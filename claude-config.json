@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "onchainagents": {
+      "command": "npx",
+      "args": ["@onchainagents/core", "oca-mcp"],
+      "env": {
+        "HIVE_FALLBACK_MODE": "true"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "hive-intelligence": {
+      "command": "node",
+      "args": ["./dist/mcp/mcp-server.js"],
+      "env": {
+        "HIVE_MCP_URL": "https://hiveintelligence.xyz/mcp",
+        "LOG_LEVEL": "info"
+      }
+    },
+    "hive-remote": {
+      "url": "https://hiveintelligence.xyz/mcp",
+      "transport": "http"
+    }
+  },
+  "tools": [
+    {
+      "name": "oca_analyze",
+      "description": "Comprehensive multi-agent analysis of a token or protocol",
+      "server": "hive-intelligence"
+    },
+    {
+      "name": "oca_security",
+      "description": "Security-focused analysis including rug detection",
+      "server": "hive-intelligence"
+    },
+    {
+      "name": "oca_hunt",
+      "description": "Hunt for alpha opportunities across markets",
+      "server": "hive-intelligence"
+    },
+    {
+      "name": "oca_track",
+      "description": "Track whale wallets and portfolio activity",
+      "server": "hive-intelligence"
+    },
+    {
+      "name": "oca_sentiment",
+      "description": "Analyze social sentiment for a token",
+      "server": "hive-intelligence"
+    },
+    {
+      "name": "oca_research",
+      "description": "Deep fundamental research on a token",
+      "server": "hive-intelligence"
+    }
+  ]
+}

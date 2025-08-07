@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import { HiveClient, HiveConfig } from './mcp/HiveClient';
+import { HiveMCPClient, HiveMCPConfig } from './mcp/HiveMCPClient';
 import { BaseAgent, AgentConfig, AgentContext, AnalysisResult } from './agents/base/BaseAgent';
 
 // Import all agents
@@ -19,8 +19,7 @@ import { CrossChainNavigator } from './agents/specialized/CrossChainNavigator';
 import { MarketStructureAnalyst } from './agents/specialized/MarketStructureAnalyst';
 
 export interface OnChainAgentsConfig {
-  hiveApiKey?: string;
-  hiveApiUrl?: string;
+  mcpServerUrl?: string;
   cacheTTL?: number;
   maxRetries?: number;
   timeout?: number;
@@ -40,14 +39,13 @@ export interface CommandResult {
  * Main OnChainAgents class - Entry point for all crypto intelligence operations
  */
 export class OnChainAgents {
-  private readonly hiveClient: HiveClient;
+  private readonly hiveMCP: HiveMCPClient;
   private readonly agents: Map<string, BaseAgent>;
   private readonly config: OnChainAgentsConfig;
   
   constructor(config?: OnChainAgentsConfig) {
     this.config = {
-      hiveApiKey: config?.hiveApiKey || process.env.HIVE_API_KEY,
-      hiveApiUrl: config?.hiveApiUrl || process.env.HIVE_API_URL,
+      mcpServerUrl: config?.mcpServerUrl || process.env.HIVE_MCP_URL || 'https://hiveintelligence.xyz/mcp',
       cacheTTL: config?.cacheTTL || 3600,
       maxRetries: config?.maxRetries || 3,
       timeout: config?.timeout || 30000,
@@ -55,12 +53,12 @@ export class OnChainAgents {
       ...config,
     };
     
-    // Initialize Hive Client
-    this.hiveClient = new HiveClient({
-      apiKey: this.config.hiveApiKey,
-      apiUrl: this.config.hiveApiUrl,
+    // Initialize Hive MCP Client
+    this.hiveMCP = new HiveMCPClient({
+      mcpServerUrl: this.config.mcpServerUrl,
       cacheTTL: this.config.cacheTTL,
       timeout: this.config.timeout,
+      logLevel: this.config.logLevel,
     });
     
     // Initialize agents
@@ -73,22 +71,22 @@ export class OnChainAgents {
    */
   private initializeAgents(): void {
     // Security agents
-    this.agents.set('rugDetector', new RugDetector(this.hiveClient));
-    this.agents.set('riskAnalyzer', new RiskAnalyzer(this.hiveClient));
+    this.agents.set('rugDetector', new RugDetector(this.hiveMCP));
+    this.agents.set('riskAnalyzer', new RiskAnalyzer(this.hiveMCP));
     
     // Market intelligence agents
-    this.agents.set('alphaHunter', new AlphaHunter(this.hiveClient));
-    this.agents.set('whaleTracker', new WhaleTracker(this.hiveClient));
-    this.agents.set('sentimentAnalyzer', new SentimentAnalyzer(this.hiveClient));
+    this.agents.set('alphaHunter', new AlphaHunter(this.hiveMCP));
+    this.agents.set('whaleTracker', new WhaleTracker(this.hiveMCP));
+    this.agents.set('sentimentAnalyzer', new SentimentAnalyzer(this.hiveMCP));
     
     // Research agents
-    this.agents.set('tokenResearcher', new TokenResearcher(this.hiveClient));
-    this.agents.set('defiAnalyzer', new DeFiAnalyzer(this.hiveClient));
-    this.agents.set('portfolioTracker', new PortfolioTracker(this.hiveClient));
+    this.agents.set('tokenResearcher', new TokenResearcher(this.hiveMCP));
+    this.agents.set('defiAnalyzer', new DeFiAnalyzer(this.hiveMCP));
+    this.agents.set('portfolioTracker', new PortfolioTracker(this.hiveMCP));
     
     // Specialized agents
-    this.agents.set('crossChainNavigator', new CrossChainNavigator(this.hiveClient));
-    this.agents.set('marketStructureAnalyst', new MarketStructureAnalyst(this.hiveClient));
+    this.agents.set('crossChainNavigator', new CrossChainNavigator(this.hiveMCP));
+    this.agents.set('marketStructureAnalyst', new MarketStructureAnalyst(this.hiveMCP));
   }
   
   /**
@@ -403,7 +401,7 @@ export class OnChainAgents {
    * Health check
    */
   public async healthCheck(): Promise<boolean> {
-    return this.hiveClient.healthCheck();
+    return this.hiveMCP.healthCheck();
   }
   
   // Helper methods
@@ -544,8 +542,8 @@ export class OnChainAgents {
 
 // Export types and interfaces
 export {
-  HiveClient,
-  HiveConfig,
+  HiveMCPClient,
+  HiveMCPConfig,
   BaseAgent,
   AgentConfig,
   AgentContext,

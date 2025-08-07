@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { HiveBridge } from '../../bridges/hive-bridge';
 
 interface AlphaHunterResult {
   opportunities: Opportunity[];
@@ -50,7 +50,7 @@ interface RiskAssessment {
 }
 
 export class AlphaHunter extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveBridge: HiveBridge) {
     const config: AgentConfig = {
       name: 'AlphaHunter',
       description: 'Discovers early opportunities before they become mainstream',
@@ -60,7 +60,7 @@ export class AlphaHunter extends BaseAgent {
       timeout: 45000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveBridge);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -85,32 +85,23 @@ export class AlphaHunter extends BaseAgent {
       options: context.options,
     });
     
-    // Scan for opportunities
-    const [
-      newTokens,
-      trendingTokens,
-      whaleActivity,
-      socialSignals,
-      technicalBreakouts,
-    ] = await Promise.all([
-      this.scanNewTokens(context),
-      this.scanTrendingTokens(context),
-      this.detectWhaleAccumulation(context),
-      this.analyzeSocialMomentum(context),
-      this.findTechnicalBreakouts(context),
-    ]);
+    // Use the centralized MCP call for alpha opportunities
+    const response = await this.hiveBridge.callTool('hive_alpha_signals', {
+      networks: context.options?.networks || ['ethereum', 'bsc', 'polygon'],
+      market_cap_min: context.options?.marketCapMin,
+      market_cap_max: context.options?.marketCapMax,
+      risk_level: context.options?.riskTolerance || 'medium',
+    });
     
-    // Combine and score opportunities
-    const allOpportunities = this.combineOpportunities(
-      newTokens,
-      trendingTokens,
-      whaleActivity,
-      socialSignals,
-      technicalBreakouts
-    );
+    if (!response.success || !response.data) {
+      throw new Error(`Alpha hunting failed: ${response.error}`);
+    }
+    
+    const data = response.data as any;
+    const rawOpportunities = data.opportunities || [];
     
     // Score and rank opportunities
-    const scoredOpportunities = await this.scoreOpportunities(allOpportunities, context);
+    const scoredOpportunities = await this.scoreOpportunities(rawOpportunities, context);
     
     // Filter based on risk tolerance
     const filteredOpportunities = this.filterByRisk(scoredOpportunities, context);
@@ -129,77 +120,6 @@ export class AlphaHunter extends BaseAgent {
     };
   }
   
-  private async scanNewTokens(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/tokens/new', {
-      networks: context.options?.networks || ['ethereum', 'bsc', 'arbitrum'],
-      minLiquidity: context.options?.minLiquidity || 50000,
-      timeframe: context.options?.timeframe || '24h',
-    });
-    
-    return response.data as any[];
-  }
-  
-  private async scanTrendingTokens(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/tokens/trending', {
-      category: context.category,
-      marketCapMax: context.options?.marketCapMax,
-      timeframe: context.options?.timeframe || '24h',
-    });
-    
-    return response.data as any[];
-  }
-  
-  private async detectWhaleAccumulation(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/whales/accumulation', {
-      minTransaction: 100000,
-      timeframe: context.options?.timeframe || '24h',
-      networks: context.options?.networks,
-    });
-    
-    return response.data as any[];
-  }
-  
-  private async analyzeSocialMomentum(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/social/momentum', {
-      growth: context.options?.socialGrowth || 'increasing',
-      timeframe: context.options?.timeframe || '24h',
-    });
-    
-    return response.data as any[];
-  }
-  
-  private async findTechnicalBreakouts(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/technical/breakouts', {
-      marketCapMax: context.options?.marketCapMax,
-      minVolume: 100000,
-      timeframe: context.options?.timeframe || '24h',
-    });
-    
-    return response.data as any[];
-  }
-  
-  private combineOpportunities(...sources: any[][]): any[] {
-    const opportunityMap = new Map();
-    
-    for (const source of sources) {
-      for (const item of source) {
-        const key = item.address || item.symbol;
-        if (!opportunityMap.has(key)) {
-          opportunityMap.set(key, {
-            ...item,
-            signals: [],
-            catalysts: [],
-          });
-        } else {
-          const existing = opportunityMap.get(key);
-          existing.signals.push(...(item.signals || []));
-          existing.catalysts.push(...(item.catalysts || []));
-        }
-      }
-    }
-    
-    return Array.from(opportunityMap.values());
-  }
   
   private async scoreOpportunities(opportunities: any[], context: AgentContext): Promise<Opportunity[]> {
     const scoredOpps: Opportunity[] = [];

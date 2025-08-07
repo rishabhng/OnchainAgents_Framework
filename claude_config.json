@@ -113,8 +113,7 @@
   ],
   "configuration": {
     "environment": {
-      "HIVE_API_KEY": "Your Hive Intelligence API key",
-      "HIVE_API_URL": "https://api.hiveintelligence.xyz",
+      "HIVE_MCP_URL": "https://hiveintelligence.xyz/mcp",
       "LOG_LEVEL": "info"
     },
     "defaults": {
@@ -129,19 +128,20 @@
     "script": "./scripts/install.sh",
     "requirements": [
       "Node.js >= 18.0.0",
-      "npm >= 9.0.0",
-      "Hive Intelligence API access"
+      "npm >= 9.0.0"
     ]
   },
   "mcp": {
-    "server": "hive-intelligence",
-    "integration": "native",
+    "server": "hiveintelligence.xyz/mcp",
+    "integration": "remote",
+    "protocol": "Model Context Protocol",
     "features": [
       "Real-time blockchain data",
-      "250TB daily data processing",
+      "250TB daily data processing", 
       "60+ blockchain networks",
       "Historical data access",
-      "Advanced analytics"
+      "Advanced analytics",
+      "No API key required"
     ]
   }
 }

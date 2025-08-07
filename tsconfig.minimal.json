@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitThis": false
+  },
+  "include": [
+    "src/index-minimal.ts",
+    "src/cli-minimal.ts",
+    "src/orchestrator/*.ts",
+    "src/bridges/*.ts",
+    "src/agents/base/BaseAgent.ts",
+    "src/agents/security/RugDetector.ts",
+    "src/agents/market/AlphaHunter.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "src/index.ts",
+    "src/cli.ts",
+    "src/agents/market/SentimentAnalyzer.ts",
+    "src/agents/market/WhaleTracker.ts",
+    "src/agents/research/*.ts",
+    "src/agents/security/RiskAssessor.ts"
+  ]
+}

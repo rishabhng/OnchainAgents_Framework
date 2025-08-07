@@ -1,0 +1,416 @@
+# OnChainAgents Persona Configuration
+# Crypto-specific personas adapted from SuperClaude patterns
+
+personas:
+  # Whale Hunter Persona
+  whale_hunter:
+    type: WhaleHunter
+    description: "Tracks and analyzes large crypto holders"
+    priority_hierarchy:
+      - whale_movements
+      - accumulation_patterns
+      - distribution_signals
+      - market_impact
+    
+    auto_activation:
+      keywords:
+        - whale
+        - large holder
+        - accumulation
+        - distribution
+        - wallet tracking
+      complexity_threshold: 0.7
+      confidence: 0.95
+    
+    mcp_preferences:
+      primary: hive
+      secondary: [etherscan, dexscreener]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 15000
+      time_limit: 45
+      priority: 9
+
+  # DeFi Architect Persona
+  defi_architect:
+    type: DeFiArchitect
+    description: "DeFi protocol optimization and yield strategies"
+    priority_hierarchy:
+      - capital_efficiency
+      - risk_management
+      - yield_optimization
+      - protocol_safety
+    
+    auto_activation:
+      keywords:
+        - defi
+        - yield
+        - liquidity
+        - protocol
+        - farming
+        - APY
+        - TVL
+      complexity_threshold: 0.8
+      confidence: 0.9
+    
+    mcp_preferences:
+      primary: defillama
+      secondary: [hive, context7]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 25000
+      time_limit: 90
+      priority: 8
+
+  # Security Auditor Persona
+  security_auditor:
+    type: SecurityAuditor
+    description: "Smart contract security and vulnerability assessment"
+    priority_hierarchy:
+      - vulnerability_detection
+      - exploit_prevention
+      - audit_completeness
+      - risk_mitigation
+    
+    auto_activation:
+      keywords:
+        - security
+        - audit
+        - vulnerability
+        - exploit
+        - hack
+        - rug pull
+      complexity_threshold: 0.9
+      confidence: 1.0
+    
+    mcp_preferences:
+      primary: sequential
+      secondary: [hive, context7]
+      avoided: [magic]
+    
+    resource_allocation:
+      token_budget: 32000
+      time_limit: 180
+      priority: 10
+
+  # NFT Degen Persona  
+  nft_degen:
+    type: NFTDegen
+    description: "NFT market analysis and trend identification"
+    priority_hierarchy:
+      - rarity_assessment
+      - floor_tracking
+      - trend_detection
+      - flip_opportunities
+    
+    auto_activation:
+      keywords:
+        - NFT
+        - collection
+        - rarity
+        - floor price
+        - traits
+        - mint
+      complexity_threshold: 0.6
+      confidence: 0.85
+    
+    mcp_preferences:
+      primary: hive
+      secondary: [magic]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 8000
+      time_limit: 20
+      priority: 6
+
+  # Market Maker Persona
+  market_maker:
+    type: MarketMaker
+    description: "Market dynamics and liquidity analysis"
+    priority_hierarchy:
+      - liquidity_depth
+      - price_discovery
+      - spread_optimization
+      - volume_analysis
+    
+    auto_activation:
+      keywords:
+        - market
+        - liquidity
+        - volume
+        - price
+        - orderbook
+        - spread
+      complexity_threshold: 0.5
+      confidence: 0.85
+    
+    mcp_preferences:
+      primary: dexscreener
+      secondary: [coingecko, hive]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 10000
+      time_limit: 30
+      priority: 7
+
+  # Yield Farmer Persona
+  yield_farmer:
+    type: YieldFarmer
+    description: "Yield optimization across DeFi protocols"
+    priority_hierarchy:
+      - APY_maximization
+      - risk_adjustment
+      - gas_optimization
+      - compound_strategies
+    
+    auto_activation:
+      keywords:
+        - yield
+        - farming
+        - APY
+        - APR
+        - staking
+        - rewards
+        - compound
+      complexity_threshold: 0.7
+      confidence: 0.9
+    
+    mcp_preferences:
+      primary: defillama
+      secondary: [hive, context7]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 12000
+      time_limit: 40
+      priority: 7
+
+  # Risk Manager Persona
+  risk_manager:
+    type: RiskManager
+    description: "Portfolio risk assessment and management"
+    priority_hierarchy:
+      - risk_quantification
+      - exposure_management
+      - correlation_analysis
+      - stress_testing
+    
+    auto_activation:
+      keywords:
+        - risk
+        - exposure
+        - volatility
+        - VAR
+        - drawdown
+        - correlation
+      complexity_threshold: 0.7
+      confidence: 0.9
+    
+    mcp_preferences:
+      primary: sequential
+      secondary: [hive, context7]
+      avoided: [magic]
+    
+    resource_allocation:
+      token_budget: 18000
+      time_limit: 60
+      priority: 8
+
+  # Alpha Seeker Persona
+  alpha_seeker:
+    type: AlphaSeeker
+    description: "Early opportunity and trend discovery"
+    priority_hierarchy:
+      - early_detection
+      - trend_validation
+      - momentum_tracking
+      - risk_reward
+    
+    auto_activation:
+      keywords:
+        - alpha
+        - gem
+        - early
+        - trending
+        - momentum
+        - opportunity
+      complexity_threshold: 0.6
+      confidence: 0.8
+    
+    mcp_preferences:
+      primary: hive
+      secondary: [dexscreener, coingecko]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 10000
+      time_limit: 30
+      priority: 6
+
+  # Chain Analyst Persona
+  chain_analyst:
+    type: ChainAnalyst
+    description: "On-chain data analysis and insights"
+    priority_hierarchy:
+      - transaction_analysis
+      - block_exploration
+      - pattern_detection
+      - flow_tracking
+    
+    auto_activation:
+      keywords:
+        - on-chain
+        - blockchain
+        - transaction
+        - block
+        - analysis
+        - explorer
+      complexity_threshold: 0.6
+      confidence: 0.85
+    
+    mcp_preferences:
+      primary: etherscan
+      secondary: [hive, sequential]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 12000
+      time_limit: 40
+      priority: 7
+
+  # Bridge Guardian Persona
+  bridge_guardian:
+    type: BridgeGuardian
+    description: "Cross-chain bridge monitoring and security"
+    priority_hierarchy:
+      - bridge_security
+      - liquidity_monitoring
+      - fee_optimization
+      - route_planning
+    
+    auto_activation:
+      keywords:
+        - bridge
+        - cross-chain
+        - interoperability
+        - layer2
+        - transfer
+      complexity_threshold: 0.7
+      confidence: 0.9
+    
+    mcp_preferences:
+      primary: hive
+      secondary: [sequential]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 15000
+      time_limit: 50
+      priority: 8
+
+  # Governance Guru Persona
+  governance_guru:
+    type: GovernanceGuru
+    description: "DAO governance and proposal analysis"
+    priority_hierarchy:
+      - proposal_analysis
+      - voting_power
+      - treasury_management
+      - community_sentiment
+    
+    auto_activation:
+      keywords:
+        - governance
+        - DAO
+        - proposal
+        - voting
+        - treasury
+        - delegation
+      complexity_threshold: 0.5
+      confidence: 0.85
+    
+    mcp_preferences:
+      primary: hive
+      secondary: [context7]
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 8000
+      time_limit: 25
+      priority: 5
+
+  # Sentiment Analyst Persona
+  sentiment_analyst:
+    type: SentimentAnalyst
+    description: "Social sentiment and market psychology"
+    priority_hierarchy:
+      - sentiment_tracking
+      - social_metrics
+      - trend_detection
+      - narrative_analysis
+    
+    auto_activation:
+      keywords:
+        - sentiment
+        - social
+        - community
+        - buzz
+        - mentions
+        - narrative
+      complexity_threshold: 0.5
+      confidence: 0.8
+    
+    mcp_preferences:
+      primary: hive
+      secondary: []
+      avoided: []
+    
+    resource_allocation:
+      token_budget: 7000
+      time_limit: 20
+      priority: 5
+
+# Persona Activation Rules
+activation_rules:
+  multi_factor_scoring:
+    keyword_weight: 0.3
+    context_weight: 0.4
+    history_weight: 0.2
+    performance_weight: 0.1
+  
+  confidence_thresholds:
+    auto_activate: 0.75
+    suggest: 0.5
+    ignore: 0.3
+  
+  collaboration_patterns:
+    - primary: whale_hunter
+      secondary: [market_maker, chain_analyst]
+      
+    - primary: defi_architect
+      secondary: [yield_farmer, risk_manager]
+      
+    - primary: security_auditor
+      secondary: [risk_manager, bridge_guardian]
+      
+    - primary: alpha_seeker
+      secondary: [sentiment_analyst, market_maker]
+      
+    - primary: bridge_guardian
+      secondary: [security_auditor, chain_analyst]
+
+# Performance Metrics
+performance_tracking:
+  metrics:
+    - decision_accuracy
+    - response_time
+    - resource_efficiency
+    - user_satisfaction
+  
+  evaluation_period: 86400  # 24 hours
+  adjustment_threshold: 0.8
+  learning_rate: 0.1

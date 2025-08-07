@@ -1,0 +1,305 @@
+# OnChainAgents Orchestrator Configuration
+# Inspired by SuperClaude's configuration patterns
+
+orchestrator_config:
+  # Performance Settings
+  enable_caching: true
+  cache_ttl: 3600
+  parallel_operations: true
+  max_parallel: 7
+  
+  # Intelligence Settings
+  learning_enabled: true
+  confidence_threshold: 0.7
+  pattern_detection: aggressive
+  auto_routing: true
+  
+  # Resource Management
+  token_reserve: 10%
+  emergency_threshold: 90%
+  compression_threshold: 75%
+  max_tokens_per_operation: 50000
+  
+  # Wave Mode Settings
+  wave_mode:
+    enable_auto_detection: true
+    wave_score_threshold: 0.7
+    max_waves_per_operation: 5
+    adaptive_wave_sizing: true
+    wave_validation_required: true
+    
+  # Delegation Settings
+  delegation:
+    auto_activation_threshold:
+      file_count: 50
+      directory_count: 7
+      complexity: 0.6
+    max_concurrency: 15
+    retry_attempts: 3
+    timeout_multiplier: 1.5
+
+# Detection Engine Configuration
+detection_config:
+  complexity_weights:
+    file_count: 0.15
+    operation_count: 0.25
+    domain_count: 0.20
+    cross_chain: 0.15
+    security_sensitive: 0.25
+    
+  domain_detection:
+    keyword_matching: true
+    pattern_analysis: true
+    context_inference: true
+    confidence_required: 0.7
+
+# Resource Zones Configuration
+resource_zones:
+  green:
+    range: [0, 60]
+    monitoring_interval: 30000
+    features: all
+    compression: false
+    
+  yellow:
+    range: [60, 75]
+    monitoring_interval: 15000
+    features: standard
+    compression: soft
+    
+  orange:
+    range: [75, 85]
+    monitoring_interval: 5000
+    features: limited
+    compression: medium
+    warnings: true
+    
+  red:
+    range: [85, 95]
+    monitoring_interval: 2000
+    features: essential
+    compression: hard
+    alerts: true
+    defer_non_critical: true
+    
+  critical:
+    range: [95, 100]
+    monitoring_interval: 1000
+    features: minimal
+    compression: ultra
+    emergency_mode: true
+    essential_only: true
+
+# Quality Gates Configuration
+quality_gates:
+  enabled: true
+  enforce_all: false
+  parallel_validation: true
+  
+  gates:
+    - name: syntax_validation
+      priority: 1
+      required: true
+      timeout: 5000
+      
+    - name: type_checking
+      priority: 2
+      required: true
+      timeout: 10000
+      
+    - name: security_scanning
+      priority: 3
+      required: true
+      timeout: 30000
+      
+    - name: test_execution
+      priority: 4
+      required: false
+      timeout: 60000
+      
+    - name: performance_validation
+      priority: 5
+      required: false
+      timeout: 45000
+      
+    - name: documentation_check
+      priority: 6
+      required: false
+      timeout: 15000
+      
+    - name: integration_testing
+      priority: 7
+      required: false
+      timeout: 90000
+      
+    - name: deployment_validation
+      priority: 8
+      required: true
+      timeout: 30000
+
+# Routing Configuration
+routing:
+  auto_routing: true
+  fallback_enabled: true
+  cache_routes: true
+  cache_duration: 1800
+  
+  confidence_thresholds:
+    high: 0.9
+    medium: 0.7
+    low: 0.5
+    minimum: 0.3
+  
+  complexity_ranges:
+    simple: [0, 0.3]
+    moderate: [0.3, 0.7]
+    complex: [0.7, 0.9]
+    extreme: [0.9, 1.0]
+
+# Emergency Protocols
+emergency:
+  auto_activation: true
+  manual_override: true
+  
+  thresholds:
+    price_drop_1m: 10
+    price_drop_1h: 20
+    volume_spike: 500
+    liquidations: 100000000
+    gas_price: 500
+    correlation: 0.9
+  
+  response_times:
+    detection: 1000
+    response: 5000
+    escalation: 60000
+  
+  severity_levels:
+    - name: low
+      degradation: normal
+      resource_limit: 80
+      
+    - name: medium
+      degradation: level1
+      resource_limit: 60
+      
+    - name: high
+      degradation: level2
+      resource_limit: 30
+      
+    - name: critical
+      degradation: level3
+      resource_limit: 10
+
+# Multi-Source Coordination
+multi_source:
+  primary_source: hive
+  aggregation_strategy: weighted
+  fallback_enabled: true
+  cache_responses: true
+  cache_ttl: 60000
+  
+  sources:
+    - name: hive
+      priority: 1
+      weight: 0.4
+      timeout: 5000
+      retry: 3
+      
+    - name: coingecko
+      priority: 2
+      weight: 0.2
+      timeout: 3000
+      retry: 2
+      
+    - name: etherscan
+      priority: 3
+      weight: 0.15
+      timeout: 3000
+      retry: 2
+      
+    - name: dexscreener
+      priority: 4
+      weight: 0.15
+      timeout: 4000
+      retry: 2
+      
+    - name: defillama
+      priority: 5
+      weight: 0.1
+      timeout: 3000
+      retry: 2
+
+# Circuit Breaker Configuration
+circuit_breakers:
+  global_config:
+    failure_threshold: 5
+    success_threshold: 3
+    timeout: 30000
+    volume_threshold: 10
+    error_threshold: 50
+    slow_call_duration: 5000
+    slow_call_threshold: 50
+    half_open_requests: 3
+    monitoring_period: 60000
+  
+  breakers:
+    - name: hive
+      failure_threshold: 3
+      timeout: 60000
+      
+    - name: rpc
+      failure_threshold: 5
+      timeout: 10000
+      
+    - name: dex
+      failure_threshold: 4
+      timeout: 20000
+      
+    - name: oracle
+      failure_threshold: 2
+      timeout: 5000
+      
+    - name: ipfs
+      failure_threshold: 10
+      timeout: 120000
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  interval: 5000
+  detailed_metrics: true
+  
+  metrics:
+    - name: token_usage
+      track: true
+      alert_threshold: 40000
+      
+    - name: latency
+      track: true
+      alert_threshold: 10000
+      
+    - name: error_rate
+      track: true
+      alert_threshold: 10
+      
+    - name: success_rate
+      track: true
+      alert_threshold: 80
+      
+    - name: resource_usage
+      track: true
+      alert_threshold: 85
+
+# Feature Flags
+feature_flags:
+  introspection_mode: true
+  token_optimization: true
+  evidence_generation: true
+  graceful_degradation: true
+  emergency_protocols: true
+  wave_orchestration: true
+  sub_agent_delegation: true
+  multi_source_coordination: true
+  circuit_breakers: true
+  performance_monitoring: true

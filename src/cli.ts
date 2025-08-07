@@ -29,12 +29,12 @@ let oca: OnChainAgents;
 
 try {
   oca = new OnChainAgents({
-    hiveApiKey: process.env.HIVE_API_KEY,
-    hiveApiUrl: process.env.HIVE_API_URL,
+    mcpServerUrl: process.env.HIVE_MCP_URL,
+    logLevel: process.env.LOG_LEVEL,
   });
 } catch (error) {
   console.error(chalk.red('❌ Failed to initialize OnChainAgents'));
-  console.error(chalk.yellow('Please ensure HIVE_API_KEY is set in your .env file'));
+  console.error(chalk.yellow('Please ensure Hive Intelligence MCP server is accessible'));
   process.exit(1);
 }
 
@@ -490,7 +490,7 @@ function getVerdictColor(verdict: string): string {
       return chalk.yellow.bold(verdict);
     case 'RISKY':
     case 'SELL':
-      return chalk.orange.bold(verdict);
+      return chalk.red.bold(verdict);
     case 'HIGH_RISK':
     case 'STRONG_SELL':
       return chalk.red.bold(verdict);

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '@mcp/HiveClient';
+import { HiveBridge } from '../../bridges/hive-bridge';
 
 interface RugDetectorResult {
   score: number; // 0-100 safety score
@@ -59,7 +59,7 @@ interface OwnershipAnalysis {
 }
 
 export class RugDetector extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveBridge: HiveBridge) {
     const config: AgentConfig = {
       name: 'RugDetector',
       description: 'Identifies potential scams, rugpulls, and honeypots in crypto tokens',
@@ -69,7 +69,7 @@ export class RugDetector extends BaseAgent {
       timeout: 30000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveBridge);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -125,15 +125,20 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeContract(context: AgentContext): Promise<ContractAnalysis> {
-    const response = await this.hiveClient.request('/security/contract-analysis', {
+    const response = await this.hiveBridge.callTool('hive_security_scan', {
       network: context.network,
       address: context.address,
+      depth: 'comprehensive',
     });
+    
+    if (!response.success || !response.data) {
+      throw new Error(`Contract analysis failed: ${response.error}`);
+    }
     
     const data = response.data as any;
     
     return {
-      isVerified: data?.verified || false,
+      isVerified: data?.contractVerified || false,
       hasHoneypotFunction: data?.honeypot || false,
       hasMintFunction: data?.mintable || false,
       hasBlacklist: data?.blacklist || false,
@@ -147,10 +152,14 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeLiquidity(context: AgentContext): Promise<LiquidityAnalysis> {
-    const response = await this.hiveClient.request('/dex/liquidity-analysis', {
+    const response = await this.hiveBridge.callTool('hive_token_data', {
       network: context.network,
-      token: context.address,
+      address: context.address,
     });
+    
+    if (!response.success || !response.data) {
+      throw new Error(`Liquidity analysis failed: ${response.error}`);
+    }
     
     const data = response.data as any;
     
@@ -166,10 +175,14 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeOwnership(context: AgentContext): Promise<OwnershipAnalysis> {
-    const response = await this.hiveClient.request('/token/ownership', {
+    const response = await this.hiveBridge.callTool('hive_token_data', {
       network: context.network,
       address: context.address,
     });
+    
+    if (!response.success || !response.data) {
+      throw new Error(`Ownership analysis failed: ${response.error}`);
+    }
     
     const data = response.data as any;
     const contractAge = data?.deploymentDate 
@@ -188,18 +201,22 @@ export class RugDetector extends BaseAgent {
   }
   
   private async getSecurityAnalysis(context: AgentContext): Promise<any> {
-    return this.hiveClient.getSecurityAnalysis({
+    const response = await this.hiveBridge.callTool('hive_security_scan', {
       network: context.network!,
       address: context.address!,
+      depth: 'comprehensive',
     });
+    
+    return response.success ? response.data : null;
   }
   
   private async analyzeHolders(context: AgentContext): Promise<any> {
-    return this.hiveClient.request('/token/holders', {
+    const response = await this.hiveBridge.callTool('hive_token_data', {
       network: context.network,
       address: context.address,
-      limit: 100,
     });
+    
+    return response.success ? response.data : null;
   }
   
   private identifyRisks(
