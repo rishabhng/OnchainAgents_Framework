@@ -56,7 +56,25 @@ Thumbs.db
 .tmp/
 .temp/
 
-# Package manager
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# Package manager lock files (keep these for reproducible builds)
+# Uncomment if you want to ignore lock files:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Backup files
+*.bak
+*.orig
+*~
+
+# Test artifacts
+*.test.md
+test-*.js
+test-*.ts
+
+# MCP/Claude specific
+.claude/
+claude-config.json
+
+# Errors
+errors.log

@@ -2,7 +2,7 @@
 
 import chalk from 'chalk';
 import { execSync } from 'child_process';
-import { RetroLoader, createModemLoader } from '../retro-loader';
+import { RetroLoader } from '../retro-loader';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';

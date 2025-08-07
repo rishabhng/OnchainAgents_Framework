@@ -4,7 +4,6 @@
  */
 
 import { performance } from 'perf_hooks';
-import { Worker } from 'worker_threads';
 import * as os from 'os';
 import { EventEmitter } from 'events';
 import { Orchestrator } from '../../orchestrator';
