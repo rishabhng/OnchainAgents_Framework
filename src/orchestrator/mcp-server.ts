@@ -36,7 +36,7 @@ const server = new Server(
       tools: {},
       resources: {},
     },
-  }
+  },
 );
 
 /**
@@ -46,7 +46,8 @@ const tools: Tool[] = [
   // Core Analysis Tools
   {
     name: 'oca_analyze',
-    description: 'Comprehensive multi-agent token analysis with security, market, and research insights',
+    description:
+      'Comprehensive multi-agent token analysis with security, market, and research insights',
     inputSchema: {
       type: 'object',
       properties: {
@@ -69,7 +70,7 @@ const tools: Tool[] = [
       required: ['target'],
     },
   },
-  
+
   // Security Tools
   {
     name: 'oca_security',
@@ -95,7 +96,7 @@ const tools: Tool[] = [
       required: ['address'],
     },
   },
-  
+
   // Market Intelligence Tools
   {
     name: 'oca_hunt',
@@ -130,7 +131,7 @@ const tools: Tool[] = [
       },
     },
   },
-  
+
   // Whale Tracking
   {
     name: 'oca_track',
@@ -160,7 +161,7 @@ const tools: Tool[] = [
       required: ['wallet'],
     },
   },
-  
+
   // Sentiment Analysis
   {
     name: 'oca_sentiment',
@@ -189,7 +190,7 @@ const tools: Tool[] = [
       required: ['token'],
     },
   },
-  
+
   // Research Tools
   {
     name: 'oca_research',
@@ -218,7 +219,7 @@ const tools: Tool[] = [
       required: ['token'],
     },
   },
-  
+
   // DeFi Analysis
   {
     name: 'oca_defi',
@@ -244,7 +245,7 @@ const tools: Tool[] = [
       required: ['protocol'],
     },
   },
-  
+
   // Cross-Chain Tools
   {
     name: 'oca_bridge',
@@ -272,7 +273,7 @@ const tools: Tool[] = [
       required: ['from', 'to', 'token'],
     },
   },
-  
+
   // Portfolio Analysis
   {
     name: 'oca_portfolio',
@@ -302,7 +303,7 @@ const tools: Tool[] = [
       required: ['wallet'],
     },
   },
-  
+
   // Market Structure
   {
     name: 'oca_market',
@@ -337,16 +338,16 @@ server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResu
 // Handle tool execution
 server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToolResult> => {
   const { name, arguments: args } = request.params;
-  
+
   try {
     console.error(`[MCP] Executing tool: ${name}`, args);
-    
+
     // Route to orchestrator for intelligent processing
     const result = await orchestrator.execute(name, args || {});
-    
+
     // Format response
     const content: Array<TextContent | ImageContent | EmbeddedResource> = [];
-    
+
     if (typeof result === 'string') {
       content.push({
         type: 'text',
@@ -358,19 +359,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
         text: result.text,
       });
     }
-    
+
     if (result.data) {
       content.push({
         type: 'text',
         text: `\n\n📊 **Data:**\n\`\`\`json\n${JSON.stringify(result.data, null, 2)}\n\`\`\``,
       });
     }
-    
+
     return { content };
-    
   } catch (error) {
     console.error(`[MCP] Tool execution failed:`, error);
-    
+
     return {
       content: [
         {
@@ -386,16 +386,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 // Start the MCP server
 async function main() {
   console.error('[OnChainAgents] Starting MCP server v2.0...');
-  
+
   // Initialize Hive bridge connection
   await hiveBridge.initialize();
-  
+
   // Start MCP server on stdio
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   console.error('[OnChainAgents] MCP server running. Ready for Claude connection.');
-  console.error('[OnChainAgents] Available tools:', tools.map(t => t.name).join(', '));
+  console.error('[OnChainAgents] Available tools:', tools.map((t) => t.name).join(', '));
 }
 
 // Error handling

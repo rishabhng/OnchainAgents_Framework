@@ -1,11 +1,11 @@
 /**
  * @fileoverview SentimentAnalyzer - Social Sentiment and Market Psychology Expert
  * @module agents/market/SentimentAnalyzer
- * 
+ *
  * Specialized agent for analyzing crypto market sentiment across social platforms,
  * news sources, and on-chain activity. Provides comprehensive sentiment scoring
  * and trend prediction based on crowd psychology and market dynamics.
- * 
+ *
  * @since 1.1.0
  */
 
@@ -82,14 +82,14 @@ interface TradingImplication {
 
 /**
  * SentimentAnalyzer - Market sentiment and social signal analysis expert
- * 
+ *
  * Analyzes sentiment across multiple data sources including:
  * - Social media platforms (Twitter, Reddit, Discord)
  * - News sentiment and media coverage
  * - On-chain activity patterns
  * - Community engagement metrics
  * - Fear & Greed indicators
- * 
+ *
  * @class SentimentAnalyzer
  * @extends {BaseAgent}
  */
@@ -103,31 +103,33 @@ export class SentimentAnalyzer extends BaseAgent {
       maxRetries: 3,
       timeout: 40000,
     };
-    
+
     super(config, hiveService);
   }
-  
-  protected validateInput(context: AgentContext): z.ZodSchema {
+
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       token: z.string().optional(),
       category: z.string().optional(),
-      options: z.object({
-        timeframe: z.enum(['1h', '4h', '24h', '7d', '30d']).optional(),
-        includeContrarian: z.boolean().optional(),
-        platforms: z.array(z.string()).optional(),
-        trackInfluencers: z.boolean().optional(),
-        historicalComparison: z.boolean().optional(),
-      }).optional(),
+      options: z
+        .object({
+          timeframe: z.enum(['1h', '4h', '24h', '7d', '30d']).optional(),
+          includeContrarian: z.boolean().optional(),
+          platforms: z.array(z.string()).optional(),
+          trackInfluencers: z.boolean().optional(),
+          historicalComparison: z.boolean().optional(),
+        })
+        .optional(),
     });
   }
-  
+
   protected async performAnalysis(context: AgentContext): Promise<SentimentAnalyzerResult> {
     this.logger.info('Starting sentiment analysis', {
       token: context.token,
       category: context.category,
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     // Parallel data collection
     const [
       socialData,
@@ -144,55 +146,52 @@ export class SentimentAnalyzer extends BaseAgent {
       this.getHistoricalSentiment(context),
       this.getMarketData(context),
     ]);
-    
+
     // Calculate overall sentiment score
     const sentimentScore = this.calculateOverallSentiment(
       socialData,
       newsData,
       influencerData,
-      onChainSentiment
+      onChainSentiment,
     );
-    
+
     // Calculate Fear & Greed Index
     const fearGreedIndex = this.calculateFearGreedIndex(
       sentimentScore,
       marketData,
-      onChainSentiment
+      onChainSentiment,
     );
-    
+
     // Aggregate social metrics
-    const socialMetrics = this.aggregateSocialMetrics(
-      socialData,
-      newsData,
-      influencerData
-    );
-    
+    const socialMetrics = this.aggregateSocialMetrics(socialData, newsData, influencerData);
+
     // Detect contrarian signals
-    const contrarianSignals = context.options?.includeContrarian !== false
-      ? this.detectContrarianSignals(
-          sentimentScore,
-          fearGreedIndex,
-          historicalSentiment,
-          marketData
-        )
-      : [];
-    
+    const contrarianSignals =
+      context.options?.includeContrarian !== false
+        ? this.detectContrarianSignals(
+            sentimentScore,
+            fearGreedIndex,
+            historicalSentiment,
+            marketData,
+          )
+        : [];
+
     // Find divergences
     const divergences = this.findDivergences(
       sentimentScore,
       marketData,
       socialData,
-      onChainSentiment
+      onChainSentiment,
     );
-    
+
     // Generate trading implications
     const tradingImplications = this.generateTradingImplications(
       sentimentScore,
       fearGreedIndex,
       contrarianSignals,
-      divergences
+      divergences,
     );
-    
+
     return {
       sentimentScore,
       fearGreedIndex,
@@ -203,83 +202,78 @@ export class SentimentAnalyzer extends BaseAgent {
       analysisTime: new Date(),
     };
   }
-  
+
   private async getSocialSentiment(context: AgentContext): Promise<any> {
     const platforms = context.options?.platforms || ['twitter', 'reddit', 'discord'];
-    
+
     const response = await this.hiveService.request('/social/sentiment', {
       token: context.token,
       platforms,
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     return response.data;
   }
-  
+
   private async getNewsSentiment(context: AgentContext): Promise<any> {
     const response = await this.hiveService.request('/news/sentiment', {
       token: context.token,
       timeframe: context.options?.timeframe || '24h',
       sources: 'all',
     });
-    
+
     return response.data;
   }
-  
+
   private async getInfluencerSentiment(context: AgentContext): Promise<any> {
     if (!context.options?.trackInfluencers) {
       return { influencers: [], averageSentiment: 0 };
     }
-    
+
     const response = await this.hiveService.request('/influencers/sentiment', {
       token: context.token,
       minFollowers: 10000,
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     return response.data;
   }
-  
+
   private async getOnChainSentiment(context: AgentContext): Promise<any> {
     const response = await this.hiveService.request('/onchain/sentiment', {
       token: context.token,
       metrics: ['holder_behavior', 'transaction_patterns', 'dex_activity'],
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     return response.data;
   }
-  
+
   private async getHistoricalSentiment(context: AgentContext): Promise<any> {
     if (!context.options?.historicalComparison) {
       return { history: [], patterns: [] };
     }
-    
+
     const response = await this.hiveService.request('/sentiment/historical', {
       token: context.token,
       periods: 30, // 30 periods back
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     return response.data;
   }
-  
+
   private async getMarketData(context: AgentContext): Promise<any> {
     const response = await this.hiveService.request('/market/data', {
       token: context.token,
       metrics: ['price', 'volume', 'volatility', 'momentum'],
       timeframe: context.options?.timeframe || '24h',
     });
-    
+
     return response.data;
   }
-  
-  private calculateOverallSentiment(
-    social: any,
-    news: any,
-    influencer: any,
-    onChain: any
-  ): number {
+
+  private calculateOverallSentiment(social: any, news: any, influencer: any, onChain: any): number {
     // Weight different sources
     const weights = {
       social: 0.3,
@@ -287,33 +281,29 @@ export class SentimentAnalyzer extends BaseAgent {
       influencer: 0.25,
       onChain: 0.25,
     };
-    
+
     // Normalize scores to -100 to +100
     const socialScore = this.normalizeSentiment(social.averageSentiment || 0);
     const newsScore = this.normalizeSentiment(news.sentiment || 0);
     const influencerScore = this.normalizeSentiment(influencer.averageSentiment || 0);
     const onChainScore = this.normalizeSentiment(onChain.sentiment || 0);
-    
+
     // Calculate weighted average
-    const overallSentiment = 
+    const overallSentiment =
       socialScore * weights.social +
       newsScore * weights.news +
       influencerScore * weights.influencer +
       onChainScore * weights.onChain;
-    
+
     return Math.round(overallSentiment);
   }
-  
+
   private normalizeSentiment(value: number): number {
     // Ensure value is between -100 and +100
     return Math.max(-100, Math.min(100, value));
   }
-  
-  private calculateFearGreedIndex(
-    sentiment: number,
-    market: any,
-    onChain: any
-  ): number {
+
+  private calculateFearGreedIndex(sentiment: number, market: any, onChain: any): number {
     // Components of Fear & Greed Index
     const components = {
       sentiment: (sentiment + 100) / 2, // Convert -100/+100 to 0-100
@@ -323,26 +313,26 @@ export class SentimentAnalyzer extends BaseAgent {
       dominance: this.calculateDominanceScore(market),
       trends: this.calculateTrendScore(onChain),
     };
-    
+
     // Weights for each component
     const weights = {
       sentiment: 0.25,
       volatility: 0.15,
-      momentum: 0.20,
+      momentum: 0.2,
       volume: 0.15,
-      dominance: 0.10,
+      dominance: 0.1,
       trends: 0.15,
     };
-    
+
     // Calculate weighted average
     let fearGreedIndex = 0;
     for (const [key, value] of Object.entries(components)) {
       fearGreedIndex += value * weights[key as keyof typeof weights];
     }
-    
+
     return Math.round(fearGreedIndex);
   }
-  
+
   private calculateVolatilityScore(market: any): number {
     const volatility = market.volatility || 0;
     // Lower volatility = higher greed
@@ -352,7 +342,7 @@ export class SentimentAnalyzer extends BaseAgent {
     if (volatility < 80) return 20;
     return 10;
   }
-  
+
   private calculateMomentumScore(market: any): number {
     const momentum = market.momentum || 0;
     // Positive momentum = greed
@@ -363,7 +353,7 @@ export class SentimentAnalyzer extends BaseAgent {
     if (momentum > -20) return 30;
     return 10;
   }
-  
+
   private calculateVolumeScore(market: any): number {
     const volumeChange = market.volumeChange || 0;
     // Higher volume = more greed
@@ -373,26 +363,22 @@ export class SentimentAnalyzer extends BaseAgent {
     if (volumeChange > -25) return 40;
     return 20;
   }
-  
-  private calculateDominanceScore(market: any): number {
+
+  private calculateDominanceScore(_market: any): number {
     // Placeholder for market dominance calculation
     return 50;
   }
-  
+
   private calculateTrendScore(onChain: any): number {
     const trend = onChain.trend || 0;
     // Positive trend = greed
     return Math.max(0, Math.min(100, 50 + trend));
   }
-  
-  private aggregateSocialMetrics(
-    social: any,
-    news: any,
-    influencer: any
-  ): SocialMetrics {
+
+  private aggregateSocialMetrics(social: any, news: any, influencer: any): SocialMetrics {
     const platforms = ['twitter', 'reddit', 'discord'];
     const metrics: any = {};
-    
+
     // Process each platform
     for (const platform of platforms) {
       const data = social.platforms?.[platform] || {};
@@ -405,7 +391,7 @@ export class SentimentAnalyzer extends BaseAgent {
         trend: this.determineTrend(data),
       };
     }
-    
+
     // Add news as a platform
     metrics.news = {
       sentiment: news.sentiment || 0,
@@ -415,7 +401,7 @@ export class SentimentAnalyzer extends BaseAgent {
       topKeywords: news.keywords || [],
       trend: news.trend || 'stable',
     };
-    
+
     // Process influencer metrics
     const influencerMetrics: InfluencerMetrics = {
       sentiment: influencer.averageSentiment || 0,
@@ -423,11 +409,11 @@ export class SentimentAnalyzer extends BaseAgent {
       bearishCount: influencer.bearishCount || 0,
       topInfluencers: this.processInfluencers(influencer.influencers || []),
     };
-    
+
     // Determine overall trend
     const trends = Object.values(metrics).map((m: any) => m.trend);
     const overallTrend = this.determineOverallTrend(trends);
-    
+
     return {
       twitter: metrics.twitter,
       reddit: metrics.reddit,
@@ -437,7 +423,7 @@ export class SentimentAnalyzer extends BaseAgent {
       overallTrend,
     };
   }
-  
+
   private determineTrend(data: any): string {
     const change = data.change24h || 0;
     if (change > 20) return 'strongly increasing';
@@ -446,20 +432,20 @@ export class SentimentAnalyzer extends BaseAgent {
     if (change < -5) return 'decreasing';
     return 'stable';
   }
-  
+
   private determineOverallTrend(trends: string[]): 'INCREASING' | 'DECREASING' | 'STABLE' {
-    const increasing = trends.filter(t => t.includes('increasing')).length;
-    const decreasing = trends.filter(t => t.includes('decreasing')).length;
-    
+    const increasing = trends.filter((t) => t.includes('increasing')).length;
+    const decreasing = trends.filter((t) => t.includes('decreasing')).length;
+
     if (increasing > decreasing * 2) return 'INCREASING';
     if (decreasing > increasing * 2) return 'DECREASING';
     return 'STABLE';
   }
-  
+
   private processInfluencers(influencers: any[]): InfluencerSentiment[] {
     return influencers
       .slice(0, 10) // Top 10 influencers
-      .map(inf => ({
+      .map((inf) => ({
         name: inf.name || 'Unknown',
         followers: inf.followers || 0,
         sentiment: this.classifySentiment(inf.sentiment),
@@ -467,21 +453,21 @@ export class SentimentAnalyzer extends BaseAgent {
         influence: inf.influenceScore || 0,
       }));
   }
-  
+
   private classifySentiment(score: number): 'BULLISH' | 'BEARISH' | 'NEUTRAL' {
     if (score > 30) return 'BULLISH';
     if (score < -30) return 'BEARISH';
     return 'NEUTRAL';
   }
-  
+
   private detectContrarianSignals(
     sentiment: number,
     fearGreed: number,
-    historical: any,
-    market: any
+    _historical: any,
+    market: any,
   ): ContrarianSignal[] {
     const signals: ContrarianSignal[] = [];
-    
+
     // Check for extreme greed
     if (fearGreed > 80) {
       signals.push({
@@ -492,7 +478,7 @@ export class SentimentAnalyzer extends BaseAgent {
         recommendedAction: 'Consider taking profits or reducing exposure',
       });
     }
-    
+
     // Check for extreme fear
     if (fearGreed < 20) {
       signals.push({
@@ -503,7 +489,7 @@ export class SentimentAnalyzer extends BaseAgent {
         recommendedAction: 'Consider accumulating quality assets',
       });
     }
-    
+
     // Check for sentiment peaks
     if (Math.abs(sentiment) > 85) {
       signals.push({
@@ -511,12 +497,13 @@ export class SentimentAnalyzer extends BaseAgent {
         strength: (Math.abs(sentiment) - 85) / 1.5,
         description: `Sentiment at extreme ${sentiment > 0 ? 'bullish' : 'bearish'} levels`,
         historicalAccuracy: 0.65,
-        recommendedAction: sentiment > 0 
-          ? 'Wait for sentiment normalization before buying'
-          : 'Wait for capitulation before selling',
+        recommendedAction:
+          sentiment > 0
+            ? 'Wait for sentiment normalization before buying'
+            : 'Wait for capitulation before selling',
       });
     }
-    
+
     // Check for divergences
     if (market.priceChange && sentiment) {
       const priceSentimentDivergence = Math.abs(market.priceChange - sentiment / 10);
@@ -530,7 +517,7 @@ export class SentimentAnalyzer extends BaseAgent {
         });
       }
     }
-    
+
     // Check for capitulation
     if (fearGreed < 10 && market.volumeSpike > 200) {
       signals.push({
@@ -541,76 +528,74 @@ export class SentimentAnalyzer extends BaseAgent {
         recommendedAction: 'Strong buy signal for contrarian traders',
       });
     }
-    
+
     return signals;
   }
-  
-  private findDivergences(
-    sentiment: number,
-    market: any,
-    social: any,
-    onChain: any
-  ): Divergence[] {
+
+  private findDivergences(sentiment: number, market: any, social: any, onChain: any): Divergence[] {
     const divergences: Divergence[] = [];
-    
+
     // Price-Sentiment Divergence
     const priceChange = market.priceChange || 0;
     const sentimentNormalized = sentiment / 10; // Scale to similar range
     const priceSentimentDiff = priceChange - sentimentNormalized;
-    
+
     if (Math.abs(priceSentimentDiff) > 10) {
       divergences.push({
         type: 'PRICE_SENTIMENT',
         direction: priceSentimentDiff > 0 ? 'BULLISH' : 'BEARISH',
         magnitude: Math.abs(priceSentimentDiff),
-        description: priceSentimentDiff > 0
-          ? 'Price rising faster than sentiment - potential overextension'
-          : 'Sentiment more negative than price action - potential opportunity',
+        description:
+          priceSentimentDiff > 0
+            ? 'Price rising faster than sentiment - potential overextension'
+            : 'Sentiment more negative than price action - potential opportunity',
         significance: Math.abs(priceSentimentDiff) > 20 ? 'HIGH' : 'MEDIUM',
       });
     }
-    
+
     // Volume-Sentiment Divergence
     const volumeChange = market.volumeChange || 0;
     const volumeSentimentDiff = volumeChange - sentiment;
-    
+
     if (Math.abs(volumeSentimentDiff) > 30) {
       divergences.push({
         type: 'VOLUME_SENTIMENT',
         direction: volumeSentimentDiff > 0 ? 'BULLISH' : 'BEARISH',
         magnitude: Math.abs(volumeSentimentDiff),
-        description: volumeSentimentDiff > 0
-          ? 'Volume increasing despite negative sentiment'
-          : 'Volume decreasing despite positive sentiment',
+        description:
+          volumeSentimentDiff > 0
+            ? 'Volume increasing despite negative sentiment'
+            : 'Volume decreasing despite positive sentiment',
         significance: Math.abs(volumeSentimentDiff) > 50 ? 'HIGH' : 'LOW',
       });
     }
-    
+
     // Social-OnChain Divergence
     const socialSentiment = social.averageSentiment || 0;
     const onChainSentiment = onChain.sentiment || 0;
     const socialOnChainDiff = socialSentiment - onChainSentiment;
-    
+
     if (Math.abs(socialOnChainDiff) > 25) {
       divergences.push({
         type: 'SOCIAL_ONCHAIN',
         direction: socialOnChainDiff > 0 ? 'BULLISH' : 'BEARISH',
         magnitude: Math.abs(socialOnChainDiff),
-        description: socialOnChainDiff > 0
-          ? 'Social sentiment more positive than on-chain activity'
-          : 'On-chain activity more positive than social sentiment',
+        description:
+          socialOnChainDiff > 0
+            ? 'Social sentiment more positive than on-chain activity'
+            : 'On-chain activity more positive than social sentiment',
         significance: Math.abs(socialOnChainDiff) > 40 ? 'MEDIUM' : 'LOW',
       });
     }
-    
+
     return divergences;
   }
-  
+
   private generateTradingImplications(
     sentiment: number,
     fearGreed: number,
     contrarian: ContrarianSignal[],
-    divergences: Divergence[]
+    divergences: Divergence[],
   ): TradingImplication {
     // Determine market cycle
     let marketCycle: TradingImplication['marketCycle'];
@@ -623,7 +608,7 @@ export class SentimentAnalyzer extends BaseAgent {
     } else {
       marketCycle = 'MARKDOWN';
     }
-    
+
     // Determine risk level
     let riskLevel: TradingImplication['riskLevel'];
     if (fearGreed > 80 || fearGreed < 20) {
@@ -635,14 +620,14 @@ export class SentimentAnalyzer extends BaseAgent {
     } else {
       riskLevel = 'LOW';
     }
-    
+
     // Generate recommendation
-    const hasStrongContrarian = contrarian.some(s => s.strength > 7);
-    const hasHighDivergence = divergences.some(d => d.significance === 'HIGH');
-    
+    const hasStrongContrarian = contrarian.some((s) => s.strength > 7);
+    const hasHighDivergence = divergences.some((d) => d.significance === 'HIGH');
+
     let recommendation: string;
     let confidenceLevel: number;
-    
+
     if (marketCycle === 'ACCUMULATION') {
       recommendation = 'Consider gradual accumulation of quality assets';
       confidenceLevel = hasStrongContrarian ? 85 : 70;
@@ -656,10 +641,10 @@ export class SentimentAnalyzer extends BaseAgent {
       recommendation = 'Wait for clear accumulation signals';
       confidenceLevel = 60;
     }
-    
+
     // Determine timeframe
     const timeframe = this.determineTimeframe(fearGreed, contrarian);
-    
+
     return {
       marketCycle,
       riskLevel,
@@ -668,9 +653,9 @@ export class SentimentAnalyzer extends BaseAgent {
       timeframe,
     };
   }
-  
+
   private determineTimeframe(fearGreed: number, contrarian: ContrarianSignal[]): string {
-    if (contrarian.some(s => s.type === 'CAPITULATION')) {
+    if (contrarian.some((s) => s.type === 'CAPITULATION')) {
       return 'Immediate opportunity (24-48 hours)';
     }
     if (fearGreed > 80 || fearGreed < 20) {

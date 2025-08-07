@@ -36,7 +36,7 @@ export class HiveClient {
   private readonly logger: winston.Logger;
   private readonly queue: PQueue;
   private readonly config: Required<HiveConfig>;
-  
+
   constructor(config?: HiveConfig) {
     this.config = {
       apiKey: config?.apiKey || process.env.HIVE_API_KEY || '',
@@ -46,33 +46,35 @@ export class HiveClient {
       cacheTTL: config?.cacheTTL || 3600,
       timeout: config?.timeout || 30000,
     };
-    
+
     if (!this.config.apiKey) {
-      throw new Error('Hive API key is required. Set HIVE_API_KEY environment variable or pass in config.');
+      throw new Error(
+        'Hive API key is required. Set HIVE_API_KEY environment variable or pass in config.',
+      );
     }
-    
+
     this.axiosClient = axios.create({
       baseURL: this.config.apiUrl,
       timeout: this.config.timeout,
       headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
         'Content-Type': 'application/json',
         'User-Agent': 'OnChainAgents/1.0',
       },
     });
-    
+
     this.cache = new NodeCache({
       stdTTL: this.config.cacheTTL,
       checkperiod: 120,
       useClones: false,
     });
-    
+
     this.queue = new PQueue({
       concurrency: this.config.maxConcurrent,
       interval: 60000,
       intervalCap: this.config.rateLimitPerMinute,
     });
-    
+
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || 'info',
       format: winston.format.combine(
@@ -83,18 +85,15 @@ export class HiveClient {
       defaultMeta: { service: 'HiveClient' },
       transports: [
         new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple(),
-          ),
+          format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
         }),
       ],
     });
-    
+
     this.setupInterceptors();
     this.logger.info('HiveClient initialized');
   }
-  
+
   /**
    * Setup axios interceptors for logging and error handling
    */
@@ -114,7 +113,7 @@ export class HiveClient {
         return Promise.reject(error);
       },
     );
-    
+
     // Response interceptor
     this.axiosClient.interceptors.response.use(
       (response) => {
@@ -134,7 +133,7 @@ export class HiveClient {
       },
     );
   }
-  
+
   /**
    * Make API request with caching and rate limiting
    */
@@ -144,7 +143,7 @@ export class HiveClient {
   ): Promise<HiveResponse<T>> {
     const startTime = Date.now();
     const cacheKey = this.getCacheKey(endpoint, params);
-    
+
     // Check cache
     const cachedData = this.cache.get<T>(cacheKey);
     if (cachedData) {
@@ -159,15 +158,15 @@ export class HiveClient {
         },
       };
     }
-    
+
     // Queue the request
     return this.queue.add(async () => {
       try {
         const response = await this.axiosClient.get<T>(endpoint, { params });
-        
+
         // Cache successful response
         this.cache.set(cacheKey, response.data);
-        
+
         return {
           success: true,
           data: response.data,
@@ -179,7 +178,7 @@ export class HiveClient {
         };
       } catch (error) {
         const axiosError = error as AxiosError;
-        
+
         return {
           success: false,
           error: axiosError.message,
@@ -192,7 +191,7 @@ export class HiveClient {
       }
     }) as Promise<HiveResponse<T>>;
   }
-  
+
   /**
    * Get available endpoints by category
    */
@@ -200,7 +199,7 @@ export class HiveClient {
     const response = await this.request<HiveEndpoint[]>(`/endpoints/${category}`);
     return response.data || [];
   }
-  
+
   /**
    * Market and Price endpoints
    */
@@ -210,17 +209,14 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/market/prices', params);
   }
-  
+
   /**
    * Token and Contract endpoints
    */
-  public async getTokenInfo(params: {
-    network: string;
-    address: string;
-  }): Promise<HiveResponse> {
+  public async getTokenInfo(params: { network: string; address: string }): Promise<HiveResponse> {
     return this.request('/token/info', params);
   }
-  
+
   /**
    * Security and Risk endpoints
    */
@@ -230,7 +226,7 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/security/analysis', params);
   }
-  
+
   /**
    * DeFi Protocol endpoints
    */
@@ -240,7 +236,7 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/defi/protocols', params);
   }
-  
+
   /**
    * On-chain DEX and Pool endpoints
    */
@@ -251,7 +247,7 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/dex/pools', params);
   }
-  
+
   /**
    * Portfolio and Wallet endpoints
    */
@@ -261,17 +257,14 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/wallet/balance', params);
   }
-  
+
   /**
    * Social Media and Sentiment endpoints
    */
-  public async getSentiment(params: {
-    symbol: string;
-    timeframe?: string;
-  }): Promise<HiveResponse> {
+  public async getSentiment(params: { symbol: string; timeframe?: string }): Promise<HiveResponse> {
     return this.request('/sentiment/analysis', params);
   }
-  
+
   /**
    * NFT Analytics endpoints
    */
@@ -281,18 +274,15 @@ export class HiveClient {
   }): Promise<HiveResponse> {
     return this.request('/nft/collection', params);
   }
-  
+
   /**
    * Generate cache key from endpoint and params
    */
-  private getCacheKey(
-    endpoint: string,
-    params?: Record<string, unknown>,
-  ): string {
+  private getCacheKey(endpoint: string, params?: Record<string, unknown>): string {
     const paramString = params ? JSON.stringify(params) : '';
     return `${endpoint}:${paramString}`;
   }
-  
+
   /**
    * Clear cache
    */
@@ -300,14 +290,14 @@ export class HiveClient {
     this.cache.flushAll();
     this.logger.info('Cache cleared');
   }
-  
+
   /**
    * Get cache statistics
    */
   public getCacheStats(): NodeCache.Stats {
     return this.cache.getStats();
   }
-  
+
   /**
    * Health check
    */

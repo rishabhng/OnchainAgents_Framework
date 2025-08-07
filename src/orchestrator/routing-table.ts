@@ -82,12 +82,12 @@ export class MasterRoutingTable extends EventEmitter {
     confidence: number;
     result: 'success' | 'failure' | 'fallback';
   }> = [];
-  
+
   constructor() {
     super();
     this.initializeRoutes();
   }
-  
+
   /**
    * Initialize master routing table
    * Based on SuperClaude's patterns adapted for crypto
@@ -126,7 +126,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['simple_whale_check'],
         },
       },
-      
+
       // DeFi optimization patterns
       {
         pattern: {
@@ -156,7 +156,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['simple_yield_check'],
         },
       },
-      
+
       // Security audit patterns
       {
         pattern: {
@@ -186,7 +186,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: [],
         },
       },
-      
+
       // Alpha discovery patterns
       {
         pattern: {
@@ -216,7 +216,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['trending_tokens'],
         },
       },
-      
+
       // Market analysis patterns
       {
         pattern: {
@@ -245,7 +245,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['price_check'],
         },
       },
-      
+
       // NFT valuation patterns
       {
         pattern: {
@@ -274,7 +274,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['floor_price_check'],
         },
       },
-      
+
       // Bridge monitoring patterns
       {
         pattern: {
@@ -304,7 +304,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['bridge_status'],
         },
       },
-      
+
       // Governance tracking patterns
       {
         pattern: {
@@ -333,7 +333,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['proposal_list'],
         },
       },
-      
+
       // Risk assessment patterns
       {
         pattern: {
@@ -363,7 +363,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['simple_risk_score'],
         },
       },
-      
+
       // Sentiment analysis patterns
       {
         pattern: {
@@ -392,7 +392,7 @@ export class MasterRoutingTable extends EventEmitter {
           fallbackRoutes: ['social_metrics'],
         },
       },
-      
+
       // Complex multi-domain patterns
       {
         pattern: {
@@ -405,11 +405,7 @@ export class MasterRoutingTable extends EventEmitter {
             CryptoDomain.SECURITY,
             CryptoDomain.MARKET,
           ],
-          operations: [
-            OperationType.ANALYSIS,
-            OperationType.DISCOVERY,
-            OperationType.OPTIMIZATION,
-          ],
+          operations: [OperationType.ANALYSIS, OperationType.DISCOVERY, OperationType.OPTIMIZATION],
           complexity: { min: 0.9, max: 1.0 },
         },
         decision: {
@@ -441,20 +437,20 @@ export class MasterRoutingTable extends EventEmitter {
         },
       },
     ];
-    
+
     // Register all routes
     for (const { pattern, decision } of routes) {
       const routeId = pattern.id;
-      
+
       this.patterns.set(routeId, pattern);
-      
+
       this.routes.set(routeId, {
         routeId,
         pattern,
         confidence: 0.9, // Default confidence
         ...decision,
       });
-      
+
       // Initialize metrics
       this.metrics.set(routeId, {
         routeId,
@@ -466,18 +462,18 @@ export class MasterRoutingTable extends EventEmitter {
       });
     }
   }
-  
+
   /**
    * Find best route for input
    */
   public findRoute(input: string, context?: DetectionResult): RouteDecision | undefined {
     const normalizedInput = input.toLowerCase();
     let bestMatch: { route: RouteDecision; score: number } | undefined;
-    
+
     for (const [routeId, route] of this.routes) {
       const pattern = route.pattern;
       const score = this.calculateMatchScore(normalizedInput, pattern, context);
-      
+
       if (score > 0 && (!bestMatch || score > bestMatch.score)) {
         bestMatch = {
           route: { ...route, confidence: score },
@@ -485,43 +481,43 @@ export class MasterRoutingTable extends EventEmitter {
         };
       }
     }
-    
+
     if (bestMatch) {
       // Record usage
       this.recordRouteUsage(bestMatch.route.routeId);
-      
+
       // Emit event
       this.emit('route-matched', {
         input,
         routeId: bestMatch.route.routeId,
         confidence: bestMatch.score,
       });
-      
+
       return bestMatch.route;
     }
-    
+
     // No match found
     this.emit('route-not-found', { input });
     return undefined;
   }
-  
+
   /**
    * Calculate match score
    */
   private calculateMatchScore(
     input: string,
     pattern: RoutePattern,
-    context?: DetectionResult
+    context?: DetectionResult,
   ): number {
     let score = 0;
     let factors = 0;
-    
+
     // Keyword matching (40%)
-    const keywordMatches = pattern.keywords.filter(k => input.includes(k)).length;
+    const keywordMatches = pattern.keywords.filter((k) => input.includes(k)).length;
     const keywordScore = keywordMatches / Math.max(1, pattern.keywords.length);
     score += keywordScore * 0.4;
     factors++;
-    
+
     // Pattern matching (30%)
     if (pattern.regex && pattern.regex.test(input)) {
       score += 0.3;
@@ -529,47 +525,45 @@ export class MasterRoutingTable extends EventEmitter {
       score += 0.3;
     }
     factors++;
-    
+
     // Context matching (30%)
     if (context) {
       // Domain matching
-      const domainOverlap = context.domains.filter(d => 
-        pattern.domains.includes(d)
-      ).length;
+      const domainOverlap = context.domains.filter((d) => pattern.domains.includes(d)).length;
       const domainScore = domainOverlap / Math.max(1, pattern.domains.length);
-      
+
       // Operation matching
-      const operationOverlap = context.operations.filter(o =>
-        pattern.operations.includes(o)
+      const operationOverlap = context.operations.filter((o) =>
+        pattern.operations.includes(o),
       ).length;
       const operationScore = operationOverlap / Math.max(1, pattern.operations.length);
-      
+
       // Complexity matching
-      const complexityMatch = 
+      const complexityMatch =
         context.complexity >= pattern.complexity.min &&
         context.complexity <= pattern.complexity.max;
       const complexityScore = complexityMatch ? 1 : 0;
-      
+
       const contextScore = (domainScore + operationScore + complexityScore) / 3;
       score += contextScore * 0.3;
     }
     factors++;
-    
+
     return factors > 0 ? score : 0;
   }
-  
+
   /**
    * Get fallback route
    */
   public getFallbackRoute(
     routeId: string,
-    degradationLevel?: DegradationLevel
+    degradationLevel?: DegradationLevel,
   ): RouteDecision | undefined {
     const route = this.routes.get(routeId);
     if (!route || route.fallbackRoutes.length === 0) {
       return undefined;
     }
-    
+
     // Select fallback based on degradation level
     let fallbackIndex = 0;
     if (degradationLevel) {
@@ -585,11 +579,11 @@ export class MasterRoutingTable extends EventEmitter {
           break;
       }
     }
-    
+
     const fallbackId = route.fallbackRoutes[fallbackIndex];
     return this.routes.get(fallbackId);
   }
-  
+
   /**
    * Record route usage
    */
@@ -599,7 +593,7 @@ export class MasterRoutingTable extends EventEmitter {
       metrics.usageCount++;
       metrics.lastUsed = Date.now();
     }
-    
+
     this.routeHistory.push({
       timestamp: Date.now(),
       input: '',
@@ -608,7 +602,7 @@ export class MasterRoutingTable extends EventEmitter {
       result: 'success', // Will be updated later
     });
   }
-  
+
   /**
    * Update route metrics
    */
@@ -616,70 +610,70 @@ export class MasterRoutingTable extends EventEmitter {
     routeId: string,
     result: 'success' | 'failure' | 'fallback',
     latency: number,
-    tokensUsed: number
+    tokensUsed: number,
   ): void {
     const metrics = this.metrics.get(routeId);
     if (!metrics) return;
-    
+
     // Update success rate
     const successCount = metrics.usageCount * metrics.successRate;
     const newSuccessCount = result === 'success' ? successCount + 1 : successCount;
     metrics.successRate = newSuccessCount / metrics.usageCount;
-    
+
     // Update average latency
     const totalLatency = metrics.averageLatency * (metrics.usageCount - 1);
     metrics.averageLatency = (totalLatency + latency) / metrics.usageCount;
-    
+
     // Update average tokens
     const totalTokens = metrics.averageTokens * (metrics.usageCount - 1);
     metrics.averageTokens = (totalTokens + tokensUsed) / metrics.usageCount;
-    
+
     // Update history
     const lastEntry = this.routeHistory[this.routeHistory.length - 1];
     if (lastEntry && lastEntry.routeId === routeId) {
       lastEntry.result = result;
     }
-    
+
     this.emit('metrics-updated', {
       routeId,
       metrics,
     });
   }
-  
+
   /**
    * Get route suggestions
    */
   public getSuggestions(partialInput: string): RoutePattern[] {
     const normalized = partialInput.toLowerCase();
     const suggestions: RoutePattern[] = [];
-    
+
     for (const pattern of this.patterns.values()) {
-      const matches = 
-        pattern.keywords.some(k => k.includes(normalized)) ||
+      const matches =
+        pattern.keywords.some((k) => k.includes(normalized)) ||
         pattern.pattern.includes(normalized);
-      
+
       if (matches) {
         suggestions.push(pattern);
       }
     }
-    
+
     return suggestions.slice(0, 5); // Return top 5 suggestions
   }
-  
+
   /**
    * Get route by ID
    */
   public getRoute(routeId: string): RouteDecision | undefined {
     return this.routes.get(routeId);
   }
-  
+
   /**
    * Get all routes
    */
   public getAllRoutes(): RouteDecision[] {
     return Array.from(this.routes.values());
   }
-  
+
   /**
    * Get route metrics
    */
@@ -689,13 +683,13 @@ export class MasterRoutingTable extends EventEmitter {
     }
     return new Map(this.metrics);
   }
-  
+
   /**
    * Get statistics
    */
   public getStatistics(): any {
     const allMetrics = Array.from(this.metrics.values());
-    
+
     return {
       totalRoutes: this.routes.size,
       totalPatterns: this.patterns.size,
@@ -707,41 +701,41 @@ export class MasterRoutingTable extends EventEmitter {
       recentHistory: this.routeHistory.slice(-10),
     };
   }
-  
+
   private getMostUsedRoute(): string | undefined {
     let maxUsage = 0;
     let mostUsed: string | undefined;
-    
+
     for (const [routeId, metrics] of this.metrics) {
       if (metrics.usageCount > maxUsage) {
         maxUsage = metrics.usageCount;
         mostUsed = routeId;
       }
     }
-    
+
     return mostUsed;
   }
-  
+
   private getLeastUsedRoute(): string | undefined {
     let minUsage = Infinity;
     let leastUsed: string | undefined;
-    
+
     for (const [routeId, metrics] of this.metrics) {
       if (metrics.usageCount < minUsage) {
         minUsage = metrics.usageCount;
         leastUsed = routeId;
       }
     }
-    
+
     return leastUsed;
   }
-  
+
   /**
    * Export routing table configuration
    */
   public exportConfiguration(): RouteConfig[] {
     const config: RouteConfig[] = [];
-    
+
     for (const route of this.routes.values()) {
       config.push({
         pattern: route.pattern.pattern,
@@ -751,7 +745,7 @@ export class MasterRoutingTable extends EventEmitter {
         autoActivates: route.autoActivates.flags.join(','),
       });
     }
-    
+
     return config;
   }
 }

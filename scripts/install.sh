@@ -132,33 +132,24 @@ DEFAULT_NETWORK=ethereum
 MAX_RETRIES=3
 TIMEOUT=30000
 
-# Claude Code Integration
-CLAUDE_CODE_ENABLED=true
+# MCP Integration
+MCP_ENABLED=true
 EOL
     
     print_success ".env file created"
     print_info "Configuration complete! Using Hive Intelligence MCP server (no API key required)"
 }
 
-# Setup Claude Code integration
-setup_claude_code() {
-    print_info "Setting up Claude Code integration..."
+# Setup MCP integration
+setup_mcp() {
+    print_info "Setting up MCP integration..."
     
-    # Check if Claude Code is installed
-    if command -v claude &> /dev/null; then
-        print_success "Claude Code detected"
-        
-        # Create symlink for commands
-        if [ ! -L "$HOME/.claude/commands/oca" ]; then
-            mkdir -p "$HOME/.claude/commands"
-            ln -s "$(pwd)/dist/cli.js" "$HOME/.claude/commands/oca"
-            print_success "OnChainAgents commands linked to Claude Code"
-        else
-            print_info "Commands already linked"
-        fi
+    # Check if MCP server can be started
+    if [ -f "dist/orchestrator/mcp-server.js" ]; then
+        print_success "MCP server ready"
+        print_info "Start MCP server with: npm run mcp"
     else
-        print_info "Claude Code not detected - skipping integration"
-        echo "Install Claude Code from https://claude.ai/code for full integration"
+        print_info "MCP server not built yet"
     fi
 }
 
@@ -215,7 +206,7 @@ show_completion() {
     echo ""
     echo "Next steps:"
     echo "1. Run 'npm start' to launch OnChainAgents"
-    echo "2. Use '/oca:help' in Claude Code to see available commands"
+    echo "2. Use '/oca:help' to see available commands"
     echo "3. Connect to Hive Intelligence MCP: https://hiveintelligence.xyz/mcp"
     echo ""
     echo "Available commands:"
@@ -240,7 +231,7 @@ main() {
     install_dependencies
     build_project
     setup_environment
-    setup_claude_code
+    setup_mcp
     run_tests
     
     # Verify everything worked

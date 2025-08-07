@@ -12,14 +12,14 @@ import { QualityGatesFramework } from './quality-gates';
 
 // Delegation strategies
 export enum DelegationStrategy {
-  FILES = 'files',           // Delegate individual file analysis
-  FOLDERS = 'folders',       // Delegate directory-level analysis
-  TASKS = 'tasks',           // Delegate by task type
-  DOMAINS = 'domains',       // Delegate by crypto domain
-  AUTO = 'auto',             // Auto-detect optimal strategy
-  PARALLEL_DIRS = 'parallel_dirs',     // Parallel directory processing
-  PARALLEL_FOCUS = 'parallel_focus',   // Parallel focus areas
-  ADAPTIVE = 'adaptive',     // Adaptive based on workload
+  FILES = 'files', // Delegate individual file analysis
+  FOLDERS = 'folders', // Delegate directory-level analysis
+  TASKS = 'tasks', // Delegate by task type
+  DOMAINS = 'domains', // Delegate by crypto domain
+  AUTO = 'auto', // Auto-detect optimal strategy
+  PARALLEL_DIRS = 'parallel_dirs', // Parallel directory processing
+  PARALLEL_FOCUS = 'parallel_focus', // Parallel focus areas
+  ADAPTIVE = 'adaptive', // Adaptive based on workload
 }
 
 // Sub-agent types for crypto operations
@@ -118,15 +118,15 @@ export interface SubAgent {
  * Manages parallel task execution across specialized agents
  */
 export class DelegationEngine extends EventEmitter {
-  private detectionEngine: DetectionEngine;
+  private _detectionEngine: DetectionEngine;
   private resourceManager: ResourceZoneManager;
-  private qualityGates: QualityGatesFramework;
-  
+  private _qualityGates: QualityGatesFramework;
+
   private subAgents: Map<string, SubAgent> = new Map();
   private activeTasks: Map<string, DelegationTask> = new Map();
   private taskQueue: DelegationTask[] = [];
   private delegationPlans: Map<string, DelegationPlan> = new Map();
-  
+
   private maxConcurrency: number = 7; // Default from SuperClaude
   private autoActivationThreshold = {
     fileCount: 50,
@@ -134,19 +134,19 @@ export class DelegationEngine extends EventEmitter {
     complexity: 0.6,
     operations: 5,
   };
-  
+
   constructor(
     detectionEngine: DetectionEngine,
     resourceManager: ResourceZoneManager,
-    qualityGates: QualityGatesFramework
+    qualityGates: QualityGatesFramework,
   ) {
     super();
-    this.detectionEngine = detectionEngine;
+    this._detectionEngine = detectionEngine;
     this.resourceManager = resourceManager;
-    this.qualityGates = qualityGates;
+    this._qualityGates = qualityGates;
     this.initializeSubAgents();
   }
-  
+
   /**
    * Initialize sub-agents with crypto-specific capabilities
    */
@@ -219,7 +219,7 @@ export class DelegationEngine extends EventEmitter {
         capabilities: ['block_analysis', 'transaction_exploration', 'cross_chain_tracking'],
       },
     ];
-    
+
     // Create sub-agent instances
     for (const config of agentConfigs) {
       const agent: SubAgent = {
@@ -235,11 +235,11 @@ export class DelegationEngine extends EventEmitter {
           totalTokensUsed: 0,
         },
       };
-      
+
       this.subAgents.set(agent.id, agent);
     }
   }
-  
+
   /**
    * Determine if delegation should be used
    * Based on SuperClaude's auto-activation criteria
@@ -254,10 +254,11 @@ export class DelegationEngine extends EventEmitter {
     const fileCheck = (context.fileCount || 0) > this.autoActivationThreshold.fileCount;
     const dirCheck = (context.directoryCount || 0) > this.autoActivationThreshold.directoryCount;
     const complexityCheck = (context.complexity || 0) > this.autoActivationThreshold.complexity;
-    const operationCheck = (context.operations?.length || 0) > this.autoActivationThreshold.operations;
-    
+    const operationCheck =
+      (context.operations?.length || 0) > this.autoActivationThreshold.operations;
+
     const shouldDelegate = fileCheck || dirCheck || (complexityCheck && operationCheck);
-    
+
     if (shouldDelegate) {
       this.emit('delegation-recommended', {
         reason: {
@@ -269,33 +270,33 @@ export class DelegationEngine extends EventEmitter {
         context,
       });
     }
-    
+
     return shouldDelegate;
   }
-  
+
   /**
    * Create delegation plan
    */
   public async createDelegationPlan(
     tasks: any[],
     strategy?: DelegationStrategy,
-    context?: any
+    context?: any,
   ): Promise<DelegationPlan> {
     // Auto-detect strategy if not provided
     if (!strategy || strategy === DelegationStrategy.AUTO) {
       strategy = this.selectOptimalStrategy(tasks, context);
     }
-    
+
     // Create delegation tasks based on strategy
     const delegationTasks = this.createDelegationTasks(tasks, strategy, context);
-    
+
     // Allocate resources
     const resourceAllocation = this.allocateResources(delegationTasks);
-    
+
     // Calculate estimates
     const estimatedDuration = this.estimateDuration(delegationTasks);
     const estimatedTokens = this.estimateTokens(delegationTasks);
-    
+
     const plan: DelegationPlan = {
       id: `delegation_${Date.now()}`,
       strategy,
@@ -305,53 +306,53 @@ export class DelegationEngine extends EventEmitter {
       maxConcurrency: this.calculateMaxConcurrency(delegationTasks),
       resourceAllocation,
     };
-    
+
     this.delegationPlans.set(plan.id, plan);
-    
+
     this.emit('delegation-plan-created', {
       plan,
       taskCount: delegationTasks.length,
       strategy,
     });
-    
+
     return plan;
   }
-  
+
   /**
    * Execute delegation plan
    */
   public async executeDelegationPlan(plan: DelegationPlan): Promise<Map<string, DelegationResult>> {
     const results = new Map<string, DelegationResult>();
-    
+
     this.emit('delegation-started', {
       planId: plan.id,
       taskCount: plan.tasks.length,
       strategy: plan.strategy,
     });
-    
+
     // Add tasks to queue
     this.taskQueue.push(...plan.tasks);
-    
+
     // Start processing
     const processingPromises: Promise<void>[] = [];
     const concurrency = Math.min(plan.maxConcurrency, this.maxConcurrency);
-    
+
     for (let i = 0; i < concurrency; i++) {
       processingPromises.push(this.processTaskQueue(results));
     }
-    
+
     // Wait for all tasks to complete
     await Promise.all(processingPromises);
-    
+
     this.emit('delegation-completed', {
       planId: plan.id,
       results: Array.from(results.values()),
-      success: Array.from(results.values()).every(r => r.success),
+      success: Array.from(results.values()).every((r) => r.success),
     });
-    
+
     return results;
   }
-  
+
   /**
    * Process task queue
    */
@@ -366,11 +367,11 @@ export class DelegationEngine extends EventEmitter {
         });
         await this.waitForResources();
       }
-      
+
       // Get next task
       const task = this.getNextTask();
       if (!task) break;
-      
+
       // Find available agent
       const agent = this.findAvailableAgent(task);
       if (!agent) {
@@ -379,16 +380,16 @@ export class DelegationEngine extends EventEmitter {
         await this.waitForAgent();
         continue;
       }
-      
+
       // Execute task
       const result = await this.executeTask(task, agent);
       results.set(task.id, result);
-      
+
       // Update metrics
       this.updateAgentMetrics(agent, result);
     }
   }
-  
+
   /**
    * Get next task from queue
    */
@@ -398,40 +399,36 @@ export class DelegationEngine extends EventEmitter {
       // Check dependencies first
       if (a.dependencies.length === 0 && b.dependencies.length > 0) return -1;
       if (a.dependencies.length > 0 && b.dependencies.length === 0) return 1;
-      
+
       // Then by priority
       return b.priority - a.priority;
     });
-    
+
     // Find first task with met dependencies
-    const index = this.taskQueue.findIndex(task => 
-      this.areDependenciesMet(task)
-    );
-    
+    const index = this.taskQueue.findIndex((task) => this.areDependenciesMet(task));
+
     if (index >= 0) {
       return this.taskQueue.splice(index, 1)[0];
     }
-    
+
     return undefined;
   }
-  
+
   /**
    * Find available agent for task
    */
   private findAvailableAgent(task: DelegationTask): SubAgent | undefined {
     const agents = Array.from(this.subAgents.values())
-      .filter(agent => 
-        agent.type === task.agent && 
-        agent.status === 'idle'
-      )
-      .sort((a, b) => 
-        // Prefer agents with higher success rate
-        b.metrics.successRate - a.metrics.successRate
+      .filter((agent) => agent.type === task.agent && agent.status === 'idle')
+      .sort(
+        (a, b) =>
+          // Prefer agents with higher success rate
+          b.metrics.successRate - a.metrics.successRate,
       );
-    
+
     return agents[0];
   }
-  
+
   /**
    * Execute task with agent
    */
@@ -440,45 +437,44 @@ export class DelegationEngine extends EventEmitter {
     task.assignedAt = Date.now();
     agent.status = 'busy';
     agent.currentTask = task;
-    
+
     this.activeTasks.set(task.id, task);
-    
+
     this.emit('task-assigned', {
       taskId: task.id,
       agentId: agent.id,
       agentType: agent.type,
     });
-    
+
     try {
       task.status = 'running';
       task.startedAt = Date.now();
-      
+
       // Simulate task execution
       // In production, this would call actual agent implementation
       const result = await this.simulateTaskExecution(task, agent);
-      
+
       task.status = 'completed';
       task.completedAt = Date.now();
       task.result = result;
-      
+
       this.emit('task-completed', {
         taskId: task.id,
         agentId: agent.id,
-        duration: task.completedAt - task.startedAt!,
+        duration: task.completedAt - task.startedAt,
       });
-      
+
       return result;
-      
     } catch (error) {
       task.status = 'failed';
       task.completedAt = Date.now();
-      
+
       // Retry logic
       if (task.retryCount < agent.config.retryAttempts) {
         task.retryCount++;
         task.status = 'retrying';
         this.taskQueue.unshift(task); // Put back in queue
-        
+
         this.emit('task-retrying', {
           taskId: task.id,
           attempt: task.retryCount,
@@ -490,7 +486,7 @@ export class DelegationEngine extends EventEmitter {
           error,
         });
       }
-      
+
       return {
         taskId: task.id,
         agentType: agent.type,
@@ -501,9 +497,8 @@ export class DelegationEngine extends EventEmitter {
           tokensUsed: 0,
           resourceUsage: 0,
         },
-        errors: [error.toString()],
+        errors: [(error as Error).toString()],
       };
-      
     } finally {
       agent.status = 'idle';
       agent.currentTask = undefined;
@@ -511,20 +506,20 @@ export class DelegationEngine extends EventEmitter {
       this.activeTasks.delete(task.id);
     }
   }
-  
+
   /**
    * Simulate task execution (placeholder for actual implementation)
    */
   private async simulateTaskExecution(
     task: DelegationTask,
-    agent: SubAgent
+    agent: SubAgent,
   ): Promise<DelegationResult> {
     // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 5000 + 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 5000 + 1000));
+
     // Generate mock result based on agent type
     const outputs = this.generateMockOutputs(task, agent);
-    
+
     return {
       taskId: task.id,
       agentType: agent.type,
@@ -543,11 +538,11 @@ export class DelegationEngine extends EventEmitter {
       },
     };
   }
-  
+
   /**
    * Generate mock outputs based on agent type
    */
-  private generateMockOutputs(task: DelegationTask, agent: SubAgent): any {
+  private generateMockOutputs(_task: DelegationTask, agent: SubAgent): any {
     switch (agent.type) {
       case SubAgentType.WHALE_TRACKER:
         return {
@@ -558,7 +553,7 @@ export class DelegationEngine extends EventEmitter {
           total_tracked: 2,
           accumulation_detected: true,
         };
-        
+
       case SubAgentType.DEFI_ANALYZER:
         return {
           protocols: ['Aave', 'Compound', 'Curve'],
@@ -566,7 +561,7 @@ export class DelegationEngine extends EventEmitter {
           average_apy: 12.5,
           risk_score: 0.3,
         };
-        
+
       case SubAgentType.SECURITY_SCANNER:
         return {
           vulnerabilities: [],
@@ -574,7 +569,7 @@ export class DelegationEngine extends EventEmitter {
           audit_complete: true,
           recommendations: ['Consider adding time locks'],
         };
-        
+
       case SubAgentType.ALPHA_HUNTER:
         return {
           opportunities: [
@@ -583,50 +578,50 @@ export class DelegationEngine extends EventEmitter {
           ],
           signals_detected: 5,
         };
-        
+
       default:
         return { processed: true };
     }
   }
-  
+
   /**
    * Select optimal delegation strategy
    */
-  private selectOptimalStrategy(tasks: any[], context?: any): DelegationStrategy {
+  private selectOptimalStrategy(_tasks: any[], context?: any): DelegationStrategy {
     // File-heavy operations
     if (context?.fileCount > 100) {
       return DelegationStrategy.FILES;
     }
-    
+
     // Directory-based operations
     if (context?.directoryCount > 10) {
       return DelegationStrategy.PARALLEL_DIRS;
     }
-    
+
     // Multi-domain operations
     if (context?.domains?.length > 3) {
       return DelegationStrategy.DOMAINS;
     }
-    
+
     // Focus-based operations
     if (context?.focusAreas?.length > 2) {
       return DelegationStrategy.PARALLEL_FOCUS;
     }
-    
+
     // Default to task-based
     return DelegationStrategy.TASKS;
   }
-  
+
   /**
    * Create delegation tasks based on strategy
    */
   private createDelegationTasks(
     tasks: any[],
     strategy: DelegationStrategy,
-    context?: any
+    _context?: any,
   ): DelegationTask[] {
     const delegationTasks: DelegationTask[] = [];
-    
+
     switch (strategy) {
       case DelegationStrategy.FILES:
         // Create task per file
@@ -634,7 +629,7 @@ export class DelegationEngine extends EventEmitter {
           delegationTasks.push(this.createFileTask(task));
         }
         break;
-        
+
       case DelegationStrategy.DOMAINS:
         // Group by domain
         const domainGroups = this.groupByDomain(tasks);
@@ -642,24 +637,24 @@ export class DelegationEngine extends EventEmitter {
           delegationTasks.push(this.createDomainTask(domain, domainTasks));
         }
         break;
-        
+
       case DelegationStrategy.PARALLEL_DIRS:
         // Create parallel directory tasks
         for (const task of tasks) {
           delegationTasks.push(this.createDirectoryTask(task));
         }
         break;
-        
+
       default:
         // Generic task creation
         for (const task of tasks) {
           delegationTasks.push(this.createGenericTask(task));
         }
     }
-    
+
     return delegationTasks;
   }
-  
+
   /**
    * Create file-based task
    */
@@ -677,7 +672,7 @@ export class DelegationEngine extends EventEmitter {
       status: 'pending',
     };
   }
-  
+
   /**
    * Create domain-based task
    */
@@ -695,7 +690,7 @@ export class DelegationEngine extends EventEmitter {
       status: 'pending',
     };
   }
-  
+
   /**
    * Create directory-based task
    */
@@ -713,7 +708,7 @@ export class DelegationEngine extends EventEmitter {
       status: 'pending',
     };
   }
-  
+
   /**
    * Create generic task
    */
@@ -731,7 +726,7 @@ export class DelegationEngine extends EventEmitter {
       status: 'pending',
     };
   }
-  
+
   /**
    * Select agent for task
    */
@@ -742,10 +737,10 @@ export class DelegationEngine extends EventEmitter {
     if (task.type?.includes('security')) return SubAgentType.SECURITY_SCANNER;
     if (task.type?.includes('alpha')) return SubAgentType.ALPHA_HUNTER;
     if (task.type?.includes('market')) return SubAgentType.MARKET_MONITOR;
-    
+
     return SubAgentType.CHAIN_EXPLORER; // Default
   }
-  
+
   /**
    * Select agent for domain
    */
@@ -765,16 +760,16 @@ export class DelegationEngine extends EventEmitter {
       [CryptoDomain.ONCHAIN]: SubAgentType.CHAIN_EXPLORER,
       [CryptoDomain.QUANT]: SubAgentType.CHAIN_EXPLORER, // Using CHAIN_EXPLORER as default for QUANT
     };
-    
+
     return domainAgentMap[domain] || SubAgentType.CHAIN_EXPLORER;
   }
-  
+
   /**
    * Group tasks by domain
    */
   private groupByDomain(tasks: any[]): Map<CryptoDomain, any[]> {
     const groups = new Map<CryptoDomain, any[]>();
-    
+
     for (const task of tasks) {
       const domain = task.domain || CryptoDomain.MARKET;
       if (!groups.has(domain)) {
@@ -782,38 +777,38 @@ export class DelegationEngine extends EventEmitter {
       }
       groups.get(domain)!.push(task);
     }
-    
+
     return groups;
   }
-  
+
   /**
    * Allocate resources to agents
    */
   private allocateResources(tasks: DelegationTask[]): Map<SubAgentType, number> {
     const allocation = new Map<SubAgentType, number>();
-    
+
     // Count tasks per agent type
     for (const task of tasks) {
       const current = allocation.get(task.agent) || 0;
       allocation.set(task.agent, current + 1);
     }
-    
+
     // Calculate resource percentage
     const total = tasks.length;
     for (const [agent, count] of allocation) {
       allocation.set(agent, (count / total) * 100);
     }
-    
+
     return allocation;
   }
-  
+
   /**
    * Calculate maximum concurrency
    */
   private calculateMaxConcurrency(tasks: DelegationTask[]): number {
     // Based on resource zone
     const zone = this.resourceManager.getCurrentZone();
-    
+
     switch (zone) {
       case ResourceZone.GREEN:
         return Math.min(15, tasks.length);
@@ -829,53 +824,52 @@ export class DelegationEngine extends EventEmitter {
         return 7;
     }
   }
-  
+
   /**
    * Estimate duration
    */
   private estimateDuration(tasks: DelegationTask[]): number {
     if (tasks.length === 0) return 0;
-    
+
     // Group by dependencies to find critical path
-    const independentTasks = tasks.filter(t => t.dependencies.length === 0);
-    const dependentTasks = tasks.filter(t => t.dependencies.length > 0);
-    
+    const independentTasks = tasks.filter((t) => t.dependencies.length === 0);
+    const dependentTasks = tasks.filter((t) => t.dependencies.length > 0);
+
     // Estimate based on parallelization
-    const parallelTime = Math.max(...independentTasks.map(t => t.timeout)) || 0;
+    const parallelTime = Math.max(...independentTasks.map((t) => t.timeout)) || 0;
     const sequentialTime = dependentTasks.reduce((sum, t) => sum + t.timeout, 0);
-    
+
     return parallelTime + sequentialTime;
   }
-  
+
   /**
    * Estimate token usage
    */
   private estimateTokens(tasks: DelegationTask[]): number {
     // Base estimate per task
     const baseTokensPerTask = 2000;
-    
+
     // Add complexity multiplier
-    const complexityMultiplier = tasks.some(t => t.type === 'deep_analysis') ? 2 : 1;
-    
+    const complexityMultiplier = tasks.some((t) => t.type === 'deep_analysis') ? 2 : 1;
+
     return tasks.length * baseTokensPerTask * complexityMultiplier;
   }
-  
+
   /**
    * Check if dependencies are met
    */
   private areDependenciesMet(task: DelegationTask): boolean {
-    return task.dependencies.every(dep => {
-      const depTask = Array.from(this.activeTasks.values())
-        .find(t => t.id === dep);
+    return task.dependencies.every((dep) => {
+      const depTask = Array.from(this.activeTasks.values()).find((t) => t.id === dep);
       return !depTask || depTask.status === 'completed';
     });
   }
-  
+
   /**
    * Wait for resources
    */
   private async waitForResources(): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         const zone = this.resourceManager.getCurrentZone();
         if (zone !== ResourceZone.RED && zone !== ResourceZone.CRITICAL) {
@@ -885,51 +879,51 @@ export class DelegationEngine extends EventEmitter {
       }, 2000);
     });
   }
-  
+
   /**
    * Wait for available agent
    */
   private async waitForAgent(): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(resolve, 1000);
     });
   }
-  
+
   /**
    * Update agent metrics
    */
   private updateAgentMetrics(agent: SubAgent, result: DelegationResult): void {
     agent.metrics.tasksCompleted++;
-    
+
     // Update success rate
     const successCount = agent.metrics.tasksCompleted * agent.metrics.successRate;
-    agent.metrics.successRate = (successCount + (result.success ? 1 : 0)) / 
-      agent.metrics.tasksCompleted;
-    
+    agent.metrics.successRate =
+      (successCount + (result.success ? 1 : 0)) / agent.metrics.tasksCompleted;
+
     // Update average duration
     const totalDuration = agent.metrics.averageDuration * (agent.metrics.tasksCompleted - 1);
-    agent.metrics.averageDuration = (totalDuration + result.metrics.duration) / 
-      agent.metrics.tasksCompleted;
-    
+    agent.metrics.averageDuration =
+      (totalDuration + result.metrics.duration) / agent.metrics.tasksCompleted;
+
     // Update token usage
     agent.metrics.totalTokensUsed += result.metrics.tokensUsed;
   }
-  
+
   /**
    * Get statistics
    */
   public getStatistics(): any {
     const agents = Array.from(this.subAgents.values());
-    
+
     return {
       totalAgents: agents.length,
-      activeAgents: agents.filter(a => a.status === 'busy').length,
+      activeAgents: agents.filter((a) => a.status === 'busy').length,
       totalTasksProcessed: agents.reduce((sum, a) => sum + a.metrics.tasksCompleted, 0),
       averageSuccessRate: agents.reduce((sum, a) => sum + a.metrics.successRate, 0) / agents.length,
       totalTokensUsed: agents.reduce((sum, a) => sum + a.metrics.totalTokensUsed, 0),
       taskQueueSize: this.taskQueue.length,
       activeTaskCount: this.activeTasks.size,
-      agentUtilization: agents.map(a => ({
+      agentUtilization: agents.map((a) => ({
         type: a.type,
         status: a.status,
         tasksCompleted: a.metrics.tasksCompleted,
@@ -937,20 +931,19 @@ export class DelegationEngine extends EventEmitter {
       })),
     };
   }
-  
+
   /**
    * Set maximum concurrency
    */
   public setMaxConcurrency(value: number): void {
     this.maxConcurrency = Math.max(1, Math.min(15, value));
   }
-  
+
   /**
    * Get available agents
    */
   public getAvailableAgents(): SubAgent[] {
-    return Array.from(this.subAgents.values())
-      .filter(agent => agent.status === 'idle');
+    return Array.from(this.subAgents.values()).filter((agent) => agent.status === 'idle');
   }
 }
 

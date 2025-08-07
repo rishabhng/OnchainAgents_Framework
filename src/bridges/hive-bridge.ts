@@ -50,23 +50,27 @@ export class HiveBridge {
   private availableTools: Tool[] = [];
   private mcpClient?: any; // Will be Client type when MCP SDK is configured
   private axiosClient: AxiosInstance;
-  
+
   constructor(config?: HiveBridgeConfig) {
     this.config = {
-      hiveUrl: config?.hiveUrl || config?.mcpServerUrl || process.env.HIVE_MCP_URL || 'https://hiveintelligence.xyz/mcp',
+      hiveUrl:
+        config?.hiveUrl ||
+        config?.mcpServerUrl ||
+        process.env.HIVE_MCP_URL ||
+        'https://hiveintelligence.xyz/mcp',
       cacheTTL: config?.cacheTTL || 3600,
       maxRetries: config?.maxRetries || 3,
       timeout: config?.timeout || 30000,
-      fallbackMode: config?.fallbackMode ?? (process.env.HIVE_FALLBACK_MODE === 'true'),
+      fallbackMode: config?.fallbackMode ?? process.env.HIVE_FALLBACK_MODE === 'true',
     };
-    
+
     // Initialize cache
     this.cache = new NodeCache({
       stdTTL: this.config.cacheTTL,
       checkperiod: 120,
       useClones: false,
     });
-    
+
     // Initialize logger
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || 'info',
@@ -78,25 +82,22 @@ export class HiveBridge {
       defaultMeta: { service: 'HiveBridge' },
       transports: [
         new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple(),
-          ),
+          format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
         }),
       ],
     });
-    
+
     // Initialize axios client for direct API calls
     this.axiosClient = axios.create({
       baseURL: this.config.hiveUrl,
       timeout: this.config.timeout,
       headers: {
         'Content-Type': 'application/json',
-        ...(this.config.apiKey ? { 'Authorization': `Bearer ${this.config.apiKey}` } : {}),
+        ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}),
       },
     });
   }
-  
+
   /**
    * Initialize connection to Hive MCP
    */
@@ -106,35 +107,34 @@ export class HiveBridge {
         url: this.config.hiveUrl,
         fallbackMode: this.config.fallbackMode,
       });
-      
+
       if (!this.config.fallbackMode) {
         // Try to connect to Hive MCP server
         await this.connectToHiveMCP();
       } else {
         this.logger.info('Running in fallback mode - using direct API calls');
       }
-      
+
       // List available tools from Hive
       await this.discoverTools();
-      
+
       this.isInitialized = true;
       this.logger.info('Hive bridge initialized', {
         toolCount: this.availableTools.length,
       });
-      
     } catch (error) {
       this.logger.error('Failed to initialize Hive bridge', { error });
-      
+
       if (!this.config.fallbackMode) {
         throw error;
       }
-      
+
       // Fall back to mock mode
       this.logger.warn('Using fallback mode with simulated data');
       this.isInitialized = true;
     }
   }
-  
+
   /**
    * Discover available tools from Hive MCP
    */
@@ -147,14 +147,14 @@ export class HiveBridge {
     // For now, we'll use direct API calls
     this.logger.info('Using direct API connection to Hive Intelligence');
     this.mcpClient = undefined;
-    
+
     // TODO: Implement actual MCP connection when SDK is available
     // This would involve:
     // 1. WebSocket connection to Hive MCP server
     // 2. Stdio connection as fallback
     // 3. Tool discovery and registration
   }
-  
+
   private async discoverTools(): Promise<void> {
     // Try to get tools from MCP server
     if (this.mcpClient) {
@@ -169,7 +169,7 @@ export class HiveBridge {
         this.logger.warn('Failed to list tools from MCP', { error });
       }
     }
-    
+
     // Fallback to known Hive tools
     this.availableTools = [
       {
@@ -232,12 +232,12 @@ export class HiveBridge {
         },
       },
     ];
-    
+
     this.logger.debug('Discovered Hive tools', {
-      tools: this.availableTools.map(t => t.name),
+      tools: this.availableTools.map((t) => t.name),
     });
   }
-  
+
   /**
    * Call a Hive MCP tool
    */
@@ -245,11 +245,11 @@ export class HiveBridge {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     // Check cache first
     const cacheKey = this.getCacheKey(name, args);
     const cachedResult = this.cache.get<any>(cacheKey);
-    
+
     if (cachedResult) {
       this.logger.debug('Cache hit for Hive tool', { tool: name });
       return {
@@ -258,12 +258,12 @@ export class HiveBridge {
         cached: true,
       };
     }
-    
+
     try {
       this.logger.info('Calling Hive tool', { tool: name, args });
-      
+
       let result: any;
-      
+
       // Try MCP client first
       if (this.mcpClient) {
         try {
@@ -277,83 +277,82 @@ export class HiveBridge {
         // Use direct API calls as fallback
         result = await this.callHiveAPI(name, args);
       }
-      
+
       // Cache the result
       this.cache.set(cacheKey, result);
-      
+
       return {
         success: true,
         data: result,
         cached: false,
       };
-      
     } catch (error) {
       this.logger.error('Hive tool call failed', { tool: name, error });
-      
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
-  
+
   /**
    * Analyze a token using Hive data
    */
   public async analyze(context: any): Promise<any> {
     // This is called by agents to get Hive data
     // It routes to appropriate Hive tools
-    
+
     const { network, address, symbol } = context;
-    
+
     if (address) {
       // Get token data from Hive
       const tokenData = await this.callTool('hive_token_data', {
         address,
         network: network || 'ethereum',
       });
-      
+
       const securityData = await this.callTool('hive_security_scan', {
         address,
         network: network || 'ethereum',
       });
-      
+
       return {
         token: tokenData.data,
         security: securityData.data,
       };
     }
-    
+
     if (symbol) {
       // Get sentiment data
       const sentimentData = await this.callTool('hive_social_sentiment', {
         symbol,
         platforms: ['twitter', 'telegram', 'reddit'],
       });
-      
+
       return {
         sentiment: sentimentData.data,
       };
     }
-    
+
     // Get alpha signals
     const alphaData = await this.callTool('hive_alpha_signals', {
       category: context.category || 'all',
       risk: context.risk || 'medium',
     });
-    
+
     return {
       opportunities: alphaData.data,
     };
   }
-  
+
   /**
    * Get available Hive tools
    */
   public getAvailableTools(): Tool[] {
     return [...this.availableTools];
   }
-  
+
   /**
    * Check if Hive bridge is healthy
    */
@@ -364,7 +363,7 @@ export class HiveBridge {
         address: '0x0000000000000000000000000000000000000000',
         network: 'ethereum',
       });
-      
+
       return result.success;
     } catch {
       return false;
@@ -384,36 +383,36 @@ export class HiveBridge {
   public async request(endpoint: string, params?: Record<string, any>): Promise<HiveResponse> {
     return this.callTool(endpoint, params || {});
   }
-  
+
   // Private methods
-  
+
   private getCacheKey(tool: string, args: Record<string, any>): string {
     return `hive:${tool}:${JSON.stringify(args)}`;
   }
-  
+
   /**
    * Call Hive API directly (fallback when MCP is not available)
    */
   private async callHiveAPI(tool: string, args: Record<string, any>): Promise<any> {
     // Map tool names to API endpoints
     const toolEndpointMap: Record<string, string> = {
-      'hive_token_data': '/api/v1/token',
-      'hive_security_scan': '/api/v1/security',
-      'hive_whale_activity': '/api/v1/whale',
-      'hive_social_sentiment': '/api/v1/sentiment',
-      'hive_alpha_signals': '/api/v1/alpha',
-      'hive_defi_opportunities': '/api/v1/defi',
-      'hive_nft_analysis': '/api/v1/nft',
-      'hive_market_structure': '/api/v1/market',
-      'hive_cross_chain': '/api/v1/bridge',
-      'hive_governance': '/api/v1/governance',
+      hive_token_data: '/api/v1/token',
+      hive_security_scan: '/api/v1/security',
+      hive_whale_activity: '/api/v1/whale',
+      hive_social_sentiment: '/api/v1/sentiment',
+      hive_alpha_signals: '/api/v1/alpha',
+      hive_defi_opportunities: '/api/v1/defi',
+      hive_nft_analysis: '/api/v1/nft',
+      hive_market_structure: '/api/v1/market',
+      hive_cross_chain: '/api/v1/bridge',
+      hive_governance: '/api/v1/governance',
     };
-    
+
     const endpoint = toolEndpointMap[tool];
     if (!endpoint) {
       throw new Error(`Unknown Hive tool: ${tool}`);
     }
-    
+
     try {
       const response = await this.axiosClient.post(endpoint, args);
       return response.data;
@@ -429,7 +428,7 @@ export class HiveBridge {
       throw error;
     }
   }
-  
+
   /**
    * Get minimal fallback data when Hive is completely unavailable
    * This ensures the system can still function for testing
@@ -450,7 +449,7 @@ export class HiveBridge {
           liquidity: 0,
           error: 'Hive API unavailable',
         };
-      
+
       case 'hive_security_scan':
         return {
           address: args.address,
@@ -464,7 +463,7 @@ export class HiveBridge {
           recommendations: ['Unable to analyze - Hive API unavailable'],
           error: 'Hive API unavailable',
         };
-      
+
       case 'hive_whale_activity':
         return {
           wallet: args.wallet,
@@ -475,7 +474,7 @@ export class HiveBridge {
           whaleActivity: 0,
           error: 'Hive API unavailable',
         };
-      
+
       case 'hive_social_sentiment':
         return {
           symbol: args.symbol,
@@ -486,7 +485,7 @@ export class HiveBridge {
           trending: false,
           error: 'Hive API unavailable',
         };
-      
+
       case 'hive_alpha_signals':
         return {
           opportunities: [],
@@ -494,7 +493,7 @@ export class HiveBridge {
           risk: args.risk,
           error: 'Hive API unavailable',
         };
-      
+
       default:
         return {
           error: 'Hive API unavailable',

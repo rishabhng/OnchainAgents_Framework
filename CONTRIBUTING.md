@@ -91,10 +91,11 @@ git checkout -b feature/something-cool
 # 2. do your thing
 # write code, break stuff, fix stuff
 
-# 3. test it (please)
+# 3. test it (REQUIRED - WE AIM FOR 100% COVERAGE)
 npm run lint
 npm run typecheck
 npm test
+npm test -- --coverage  # Check coverage - must be >90%
 
 # 4. commit with a decent message
 git commit -m "feat: add moon prediction agent"
@@ -255,14 +256,15 @@ tell people how to use your masterpiece
 
 ## 🧪 testing
 
-### we're serious about tests
+### we're DEAD SERIOUS about tests (100% COVERAGE TARGET)
 
 ```bash
 # run all tests
 npm test
 
-# run with coverage (must be >80%)
+# run with coverage (MUST BE >90%, TARGET 100%)
 npm run test:coverage
+npm test -- --coverage  # Alternative command
 
 # run specific test
 npm test -- MoonPredictor
@@ -270,6 +272,23 @@ npm test -- MoonPredictor
 # watch mode (for the productive procrastinators)
 npm run test:watch
 ```
+
+### NEW Testing Requirements (v2.0)
+
+**ALL PULL REQUESTS MUST INCLUDE:**
+- Unit tests for all new code
+- Integration tests for new features
+- Updated tests for modified code
+- Coverage report showing >90% coverage
+- No failing tests
+
+**Test Categories Required:**
+1. **Agent Tests**: Every agent must have tests
+2. **Command Tests**: All 11 commands must be tested
+3. **Flag Tests**: Flag parsing and activation
+4. **Wave Engine Tests**: Multi-stage execution
+5. **Persona Tests**: Auto-activation logic
+6. **Integration Tests**: End-to-end scenarios
 
 ### write good tests
 

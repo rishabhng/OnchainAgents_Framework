@@ -45,13 +45,13 @@ export class BottleneckAnalyzer extends EventEmitter {
   private asyncHook?: async_hooks.AsyncHook;
   private heapSnapshots: any[] = [];
   private cpuProfiles: any[] = [];
-  
+
   constructor() {
     super();
     this.setupPerformanceObserver();
     this.setupAsyncHooks();
   }
-  
+
   /**
    * Setup performance observer for detailed metrics
    */
@@ -66,12 +66,12 @@ export class BottleneckAnalyzer extends EventEmitter {
         });
       }
     });
-    
-    this.performanceObserver.observe({ 
-      entryTypes: ['measure', 'mark', 'function', 'gc'] 
+
+    this.performanceObserver.observe({
+      entryTypes: ['measure', 'mark', 'function', 'gc'],
     });
   }
-  
+
   /**
    * Setup async hooks for tracking async operations
    */
@@ -88,51 +88,51 @@ export class BottleneckAnalyzer extends EventEmitter {
         this.asyncResourceMap.delete(asyncId);
       },
     });
-    
+
     this.asyncHook.enable();
   }
-  
+
   /**
    * Start profiling a component
    */
   public startProfiling(componentName: string, metadata?: Record<string, any>): string {
     const markId = `${componentName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     this.marks.set(markId, {
       name: componentName,
       startTime: performance.now(),
       metadata,
     });
-    
+
     performance.mark(`${markId}_start`);
-    
+
     return markId;
   }
-  
+
   /**
    * End profiling a component
    */
   public endProfiling(markId: string): void {
     const mark = this.marks.get(markId);
     if (!mark) return;
-    
+
     mark.duration = performance.now() - mark.startTime;
     performance.mark(`${markId}_end`);
     performance.measure(mark.name, `${markId}_start`, `${markId}_end`);
-    
+
     // Update component metrics
     this.updateComponentMetrics(mark);
-    
+
     // Check for performance issues
     this.checkPerformanceIssues(mark);
   }
-  
+
   /**
    * Update component metrics
    */
   private updateComponentMetrics(mark: PerformanceMark): void {
     const { name, duration = 0 } = mark;
-    
+
     if (!this.componentMetrics.has(name)) {
       this.componentMetrics.set(name, {
         name,
@@ -147,25 +147,25 @@ export class BottleneckAnalyzer extends EventEmitter {
         memoryDelta: 0,
       });
     }
-    
+
     const metrics = this.componentMetrics.get(name)!;
     metrics.callCount++;
     metrics.totalDuration += duration;
     metrics.averageDuration = metrics.totalDuration / metrics.callCount;
     metrics.minDuration = Math.min(metrics.minDuration, duration);
     metrics.maxDuration = Math.max(metrics.maxDuration, duration);
-    
+
     // TODO: Calculate percentiles properly with a rolling window
     metrics.p95Duration = metrics.maxDuration * 0.95;
     metrics.p99Duration = metrics.maxDuration * 0.99;
   }
-  
+
   /**
    * Check for performance issues in a component
    */
   private checkPerformanceIssues(mark: PerformanceMark): void {
     const { name, duration = 0 } = mark;
-    
+
     // Check for slow operations
     if (duration > 1000) {
       this.emit('bottleneck', {
@@ -177,7 +177,7 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { duration },
       });
     }
-    
+
     // Check for memory issues
     const memUsage = process.memoryUsage();
     if (memUsage.heapUsed > 500 * 1024 * 1024) {
@@ -191,32 +191,32 @@ export class BottleneckAnalyzer extends EventEmitter {
       });
     }
   }
-  
+
   /**
    * Analyze MCP server performance
    */
   public async analyzeMCPServer(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Simulate MCP server load
     const testRequests = 100;
     const results: number[] = [];
-    
+
     for (let i = 0; i < testRequests; i++) {
       const startTime = performance.now();
-      
+
       // Simulate MCP tool call
       await this.simulateMCPCall();
-      
+
       const duration = performance.now() - startTime;
       results.push(duration);
     }
-    
+
     // Analyze results
     const avgTime = results.reduce((a, b) => a + b, 0) / results.length;
     const maxTime = Math.max(...results);
     const minTime = Math.min(...results);
-    
+
     if (avgTime > 100) {
       reports.push({
         component: 'MCP Server',
@@ -227,7 +227,7 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { avgTime, maxTime, minTime },
       });
     }
-    
+
     // Check for request queuing
     if (maxTime > avgTime * 3) {
       reports.push({
@@ -239,39 +239,39 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { avgTime, maxTime, variance: maxTime - minTime },
       });
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Analyze orchestrator performance
    */
   public async analyzeOrchestrator(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Profile orchestrator execution
     const profileId = this.startProfiling('Orchestrator');
-    
+
     // Simulate orchestrator operations
     const operations = ['detect', 'route', 'execute', 'compile'];
     const operationMetrics: Record<string, number[]> = {};
-    
+
     for (const op of operations) {
       operationMetrics[op] = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const opStart = performance.now();
         await this.simulateOrchestratorOperation(op);
         operationMetrics[op].push(performance.now() - opStart);
       }
     }
-    
+
     this.endProfiling(profileId);
-    
+
     // Analyze operation metrics
     for (const [op, times] of Object.entries(operationMetrics)) {
       const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
-      
+
       if (avgTime > 50) {
         reports.push({
           component: `Orchestrator.${op}`,
@@ -283,7 +283,7 @@ export class BottleneckAnalyzer extends EventEmitter {
         });
       }
     }
-    
+
     // Check for agent bottlenecks
     const agentMetrics = this.componentMetrics.get('Agent');
     if (agentMetrics && agentMetrics.averageDuration > 200) {
@@ -296,32 +296,32 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: agentMetrics,
       });
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Analyze resource manager effectiveness
    */
   public async analyzeResourceManager(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Test resource allocation under stress
     const allocations: number[] = [];
     const rejections = 0;
-    
+
     for (let i = 0; i < 100; i++) {
       const startTime = performance.now();
       const canAllocate = await this.simulateResourceAllocation(i);
       allocations.push(performance.now() - startTime);
-      
+
       if (!canAllocate) {
         // Count rejections
       }
     }
-    
+
     const avgAllocationTime = allocations.reduce((a, b) => a + b, 0) / allocations.length;
-    
+
     if (avgAllocationTime > 10) {
       reports.push({
         component: 'ResourceManager',
@@ -332,11 +332,11 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { avgAllocationTime },
       });
     }
-    
+
     // Check for resource exhaustion patterns
     const memoryUsage = process.memoryUsage();
     const memoryPercent = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
-    
+
     if (memoryPercent > 75) {
       reports.push({
         component: 'ResourceManager',
@@ -347,44 +347,44 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { memoryUsage, memoryPercent },
       });
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Analyze Hive bridge performance
    */
   public async analyzeHiveBridge(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Test cache effectiveness
     const cacheHits = 0;
     const cacheMisses = 0;
     const cacheTests = 100;
-    
+
     for (let i = 0; i < cacheTests; i++) {
       const useCache = i % 3 === 0; // Simulate 33% cache hit rate
       const startTime = performance.now();
-      
+
       if (useCache) {
         // Simulate cache hit
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise((resolve) => setTimeout(resolve, 5));
       } else {
         // Simulate cache miss
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
-      
+
       const duration = performance.now() - startTime;
-      
+
       if (duration < 50) {
         // Cache hit
       } else {
         // Cache miss
       }
     }
-    
+
     const cacheHitRate = (cacheHits / cacheTests) * 100;
-    
+
     if (cacheHitRate < 50) {
       reports.push({
         component: 'HiveBridge.Cache',
@@ -395,19 +395,19 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { cacheHits, cacheMisses, hitRate: cacheHitRate },
       });
     }
-    
+
     // Test connection pooling
     const connectionTests: number[] = [];
-    
+
     for (let i = 0; i < 50; i++) {
       const startTime = performance.now();
       await this.simulateHiveConnection();
       connectionTests.push(performance.now() - startTime);
     }
-    
+
     const avgConnectionTime = connectionTests.reduce((a, b) => a + b, 0) / connectionTests.length;
     const maxConnectionTime = Math.max(...connectionTests);
-    
+
     if (avgConnectionTime > 50) {
       reports.push({
         component: 'HiveBridge.Connection',
@@ -418,31 +418,31 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { avgConnectionTime, maxConnectionTime },
       });
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Analyze memory usage patterns
    */
   public async analyzeMemoryUsage(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Take heap snapshot
     const heapSnapshot = v8.getHeapSnapshot();
     const heapData: any[] = [];
-    
+
     // Process heap snapshot (simplified)
     heapSnapshot.on('data', (chunk) => {
       heapData.push(chunk);
     });
-    
-    await new Promise(resolve => heapSnapshot.on('end', resolve));
-    
+
+    await new Promise((resolve) => heapSnapshot.on('end', resolve));
+
     // Analyze heap statistics
     const heapStats = v8.getHeapStatistics();
     const heapUsagePercent = (heapStats.used_heap_size / heapStats.heap_size_limit) * 100;
-    
+
     if (heapUsagePercent > 70) {
       reports.push({
         component: 'Memory',
@@ -453,13 +453,14 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: heapStats,
       });
     }
-    
+
     // Check for memory leaks
     const gcStats = performance.getEntriesByType('gc');
     if (gcStats.length > 0) {
       const recentGCs = gcStats.slice(-10);
-      const avgGCDuration = recentGCs.reduce((sum, gc: any) => sum + gc.duration, 0) / recentGCs.length;
-      
+      const avgGCDuration =
+        recentGCs.reduce((sum, gc: any) => sum + gc.duration, 0) / recentGCs.length;
+
       if (avgGCDuration > 50) {
         reports.push({
           component: 'Memory.GC',
@@ -471,39 +472,39 @@ export class BottleneckAnalyzer extends EventEmitter {
         });
       }
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Analyze concurrency handling
    */
   public async analyzeConcurrency(): Promise<BottleneckReport[]> {
     const reports: BottleneckReport[] = [];
-    
+
     // Test parallel execution
     const concurrencyLevels = [10, 50, 100, 200];
     const results: Record<number, number> = {};
-    
+
     for (const level of concurrencyLevels) {
       const startTime = performance.now();
-      
-      const promises = Array(level).fill(0).map(() => 
-        this.simulateConcurrentOperation()
-      );
-      
+
+      const promises = Array(level)
+        .fill(0)
+        .map(() => this.simulateConcurrentOperation());
+
       await Promise.all(promises);
-      
+
       const duration = performance.now() - startTime;
       results[level] = duration;
     }
-    
+
     // Check for concurrency bottlenecks
     for (const [level, duration] of Object.entries(results)) {
       const expectedDuration = 100; // Base duration for single operation
       const actualOverhead = duration - expectedDuration;
       const overheadPercent = (actualOverhead / expectedDuration) * 100;
-      
+
       if (overheadPercent > 100) {
         reports.push({
           component: 'Concurrency',
@@ -515,7 +516,7 @@ export class BottleneckAnalyzer extends EventEmitter {
         });
       }
     }
-    
+
     // Check async resource usage
     const asyncResourceCount = this.asyncResourceMap.size;
     if (asyncResourceCount > 1000) {
@@ -528,10 +529,10 @@ export class BottleneckAnalyzer extends EventEmitter {
         evidence: { asyncResourceCount },
       });
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Generate comprehensive bottleneck report
    */
@@ -542,29 +543,29 @@ export class BottleneckAnalyzer extends EventEmitter {
     metrics: ComponentMetrics[];
   }> {
     console.log('🔍 Analyzing system bottlenecks...');
-    
+
     const allReports: BottleneckReport[] = [];
-    
+
     // Run all analyses
-    allReports.push(...await this.analyzeMCPServer());
-    allReports.push(...await this.analyzeOrchestrator());
-    allReports.push(...await this.analyzeResourceManager());
-    allReports.push(...await this.analyzeHiveBridge());
-    allReports.push(...await this.analyzeMemoryUsage());
-    allReports.push(...await this.analyzeConcurrency());
-    
+    allReports.push(...(await this.analyzeMCPServer()));
+    allReports.push(...(await this.analyzeOrchestrator()));
+    allReports.push(...(await this.analyzeResourceManager()));
+    allReports.push(...(await this.analyzeHiveBridge()));
+    allReports.push(...(await this.analyzeMemoryUsage()));
+    allReports.push(...(await this.analyzeConcurrency()));
+
     // Sort by severity
-    const criticalIssues = allReports.filter(r => r.severity === 'critical');
-    const highIssues = allReports.filter(r => r.severity === 'high');
-    
+    const criticalIssues = allReports.filter((r) => r.severity === 'critical');
+    const highIssues = allReports.filter((r) => r.severity === 'high');
+
     // Generate summary
     let summary = '## Bottleneck Analysis Summary\n\n';
     summary += `Found ${allReports.length} performance issues:\n`;
     summary += `- Critical: ${criticalIssues.length}\n`;
     summary += `- High: ${highIssues.length}\n`;
-    summary += `- Medium: ${allReports.filter(r => r.severity === 'medium').length}\n`;
-    summary += `- Low: ${allReports.filter(r => r.severity === 'low').length}\n\n`;
-    
+    summary += `- Medium: ${allReports.filter((r) => r.severity === 'medium').length}\n`;
+    summary += `- Low: ${allReports.filter((r) => r.severity === 'low').length}\n\n`;
+
     if (criticalIssues.length > 0) {
       summary += '### Critical Issues Requiring Immediate Attention:\n';
       for (const issue of criticalIssues) {
@@ -573,10 +574,10 @@ export class BottleneckAnalyzer extends EventEmitter {
         summary += `  Recommendation: ${issue.recommendation}\n\n`;
       }
     }
-    
+
     // Convert component metrics to array
     const metrics = Array.from(this.componentMetrics.values());
-    
+
     return {
       summary,
       criticalIssues,
@@ -584,13 +585,13 @@ export class BottleneckAnalyzer extends EventEmitter {
       metrics,
     };
   }
-  
+
   // Helper methods for simulations
-  
+
   private async simulateMCPCall(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 150));
+    await new Promise((resolve) => setTimeout(resolve, 50 + Math.random() * 150));
   }
-  
+
   private async simulateOrchestratorOperation(op: string): Promise<void> {
     const delays: Record<string, number> = {
       detect: 20,
@@ -598,22 +599,22 @@ export class BottleneckAnalyzer extends EventEmitter {
       execute: 100,
       compile: 30,
     };
-    await new Promise(resolve => setTimeout(resolve, delays[op] || 50));
+    await new Promise((resolve) => setTimeout(resolve, delays[op] || 50));
   }
-  
+
   private async simulateResourceAllocation(index: number): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 5 + Math.random() * 10));
+    await new Promise((resolve) => setTimeout(resolve, 5 + Math.random() * 10));
     return index < 80; // Simulate 80% success rate
   }
-  
+
   private async simulateHiveConnection(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 20 + Math.random() * 80));
+    await new Promise((resolve) => setTimeout(resolve, 20 + Math.random() * 80));
   }
-  
+
   private async simulateConcurrentOperation(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  
+
   private getOrchestratorRecommendation(operation: string): string {
     const recommendations: Record<string, string> = {
       detect: 'Cache detection results for similar requests',
@@ -623,7 +624,7 @@ export class BottleneckAnalyzer extends EventEmitter {
     };
     return recommendations[operation] || 'Optimize operation logic';
   }
-  
+
   /**
    * Cleanup resources
    */

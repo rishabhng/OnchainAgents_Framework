@@ -11,7 +11,7 @@ import {
   ListToolsRequestSchema,
   Tool,
   CallToolResult,
-  ListToolsResult
+  ListToolsResult,
 } from '@modelcontextprotocol/sdk/types.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { OnChainAgents } from '../index.js';
@@ -29,14 +29,15 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 // Define available tools
 const tools: Tool[] = [
   {
     name: 'oca_analyze',
-    description: 'Comprehensive multi-agent analysis of a token or protocol using 10 specialized AI agents',
+    description:
+      'Comprehensive multi-agent analysis of a token or protocol using 10 specialized AI agents',
     inputSchema: {
       type: 'object',
       properties: {
@@ -52,15 +53,16 @@ const tools: Tool[] = [
           type: 'string',
           enum: ['quick', 'standard', 'deep'],
           description: 'Analysis depth level',
-          default: 'standard'
-        }
+          default: 'standard',
+        },
       },
       required: ['network', 'target'],
     },
   },
   {
     name: 'oca_security',
-    description: 'Security-focused analysis including advanced rug pull detection and contract risk assessment',
+    description:
+      'Security-focused analysis including advanced rug pull detection and contract risk assessment',
     inputSchema: {
       type: 'object',
       properties: {
@@ -71,7 +73,7 @@ const tools: Tool[] = [
         network: {
           type: 'string',
           description: 'Blockchain network',
-          default: 'ethereum'
+          default: 'ethereum',
         },
       },
       required: ['address'],
@@ -91,16 +93,16 @@ const tools: Tool[] = [
           type: 'string',
           enum: ['low', 'medium', 'high'],
           description: 'Risk tolerance level',
-          default: 'medium'
+          default: 'medium',
         },
         marketCapMin: {
           type: 'number',
-          description: 'Minimum market cap filter'
+          description: 'Minimum market cap filter',
         },
         marketCapMax: {
-          type: 'number', 
-          description: 'Maximum market cap filter'
-        }
+          type: 'number',
+          description: 'Maximum market cap filter',
+        },
       },
       required: [],
     },
@@ -118,7 +120,7 @@ const tools: Tool[] = [
         alerts: {
           type: 'boolean',
           description: 'Enable real-time alerts for significant movements',
-          default: false
+          default: false,
         },
       },
       required: ['wallet'],
@@ -137,13 +139,13 @@ const tools: Tool[] = [
         sources: {
           type: 'string',
           description: 'Comma-separated list of sources (twitter,telegram,discord,reddit)',
-          default: 'twitter,telegram,reddit'
+          default: 'twitter,telegram,reddit',
         },
         timeframe: {
           type: 'string',
           description: 'Analysis timeframe (1h, 4h, 24h, 7d)',
-          default: '24h'
-        }
+          default: '24h',
+        },
       },
       required: ['token'],
     },
@@ -161,7 +163,7 @@ const tools: Tool[] = [
         deep: {
           type: 'boolean',
           description: 'Enable comprehensive deep research mode',
-          default: false
+          default: false,
         },
       },
       required: ['token'],
@@ -187,14 +189,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 
     switch (name) {
       case 'oca_analyze':
-        const analyzeResult = await oca.analyze(
-          args.network as string, 
-          args.target as string, 
-          {
-            depth: (args.depth as string) || 'standard'
-          }
-        );
-        
+        const analyzeResult = await oca.analyze(args.network as string, args.target as string, {
+          depth: (args.depth as string) || 'standard',
+        });
+
         return {
           content: [
             {
@@ -206,9 +204,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 
       case 'oca_security':
         const securityResult = await oca.security(args.address as string, {
-          network: (args.network as string) || 'ethereum'
+          network: (args.network as string) || 'ethereum',
         });
-        
+
         return {
           content: [
             {
@@ -221,9 +219,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
       case 'oca_hunt':
         const huntResult = await oca.hunt({
           category: args.category as string,
-          risk: (args.risk as 'low' | 'medium' | 'high') || 'medium'
+          risk: (args.risk as 'low' | 'medium' | 'high') || 'medium',
         });
-        
+
         return {
           content: [
             {
@@ -235,9 +233,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 
       case 'oca_track':
         const trackResult = await oca.track(args.wallet as string, {
-          alerts: (args.alerts as boolean) || false
+          alerts: (args.alerts as boolean) || false,
         });
-        
+
         return {
           content: [
             {
@@ -249,9 +247,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 
       case 'oca_sentiment':
         const sentimentResult = await oca.sentiment(args.token as string, {
-          sources: (args.sources as string) || 'twitter,telegram,reddit'
+          sources: (args.sources as string) || 'twitter,telegram,reddit',
         });
-        
+
         return {
           content: [
             {
@@ -263,9 +261,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 
       case 'oca_research':
         const researchResult = await oca.research(args.token as string, {
-          deep: (args.deep as boolean) || false
+          deep: (args.deep as boolean) || false,
         });
-        
+
         return {
           content: [
             {
@@ -280,7 +278,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     return {
       content: [
         {
@@ -298,10 +296,10 @@ function formatAnalysisResult(result: any): string {
   if (!result.success) {
     return `❌ Analysis failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   const { data } = result;
   let output = '🔍 **Comprehensive Token Analysis**\n\n';
-  
+
   // Security section
   if (data.security) {
     output += '🛡️ **Security Analysis**\n';
@@ -315,7 +313,7 @@ function formatAnalysisResult(result: any): string {
     }
     output += '\n';
   }
-  
+
   // Market section
   if (data.market) {
     output += '📊 **Market Intelligence**\n';
@@ -327,13 +325,13 @@ function formatAnalysisResult(result: any): string {
     }
     output += '\n';
   }
-  
+
   // Summary
   if (data.summary) {
     output += '📋 **Summary**\n';
     output += `• Overall Score: ${data.summary.score}/100\n`;
     output += `• Verdict: ${data.summary.verdict}\n`;
-    
+
     if (data.summary.recommendations?.length > 0) {
       output += '\n**Recommendations:**\n';
       data.summary.recommendations.forEach((rec: string) => {
@@ -341,7 +339,7 @@ function formatAnalysisResult(result: any): string {
       });
     }
   }
-  
+
   return output;
 }
 
@@ -349,15 +347,15 @@ function formatSecurityResult(result: any): string {
   if (!result.success) {
     return `❌ Security analysis failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   let output = '🛡️ **Security Analysis Results**\n\n';
-  
+
   if (result.data.rugDetection) {
     const rug = result.data.rugDetection.data;
     output += `**Rug Pull Detection**\n`;
     output += `• Risk Score: ${rug?.riskScore || 0}/100\n`;
     output += `• Verdict: ${rug?.verdict || 'UNKNOWN'}\n`;
-    
+
     if (rug?.flags?.length > 0) {
       output += `\n**Risk Flags:**\n`;
       rug.flags.forEach((flag: string) => {
@@ -365,7 +363,7 @@ function formatSecurityResult(result: any): string {
       });
     }
   }
-  
+
   return output;
 }
 
@@ -373,12 +371,12 @@ function formatHuntResult(result: any): string {
   if (!result.success) {
     return `❌ Alpha hunt failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   let output = '🎯 **Alpha Opportunities**\n\n';
-  
+
   if (result.data.opportunities?.length > 0) {
     output += `Found **${result.data.opportunities.length}** opportunities:\n\n`;
-    
+
     result.data.opportunities.slice(0, 5).forEach((opp: any, index: number) => {
       output += `**${index + 1}. ${opp.symbol || opp.name}**\n`;
       output += `• Score: ${opp.score || opp.momentumScore}/100\n`;
@@ -388,7 +386,7 @@ function formatHuntResult(result: any): string {
   } else {
     output += 'No opportunities found with current filters.\n';
   }
-  
+
   return output;
 }
 
@@ -396,15 +394,15 @@ function formatTrackResult(result: any): string {
   if (!result.success) {
     return `❌ Wallet tracking failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   let output = '🐋 **Wallet Analysis**\n\n';
-  
+
   if (result.data.whaleActivity) {
     const whale = result.data.whaleActivity.data;
     output += `**Whale Status:** ${whale?.isWhale ? 'Yes 🐋' : 'No'}\n`;
     output += `**Wallet Type:** ${whale?.walletType || 'Unknown'}\n\n`;
   }
-  
+
   if (result.data.portfolio) {
     const portfolio = result.data.portfolio.data?.portfolio;
     if (portfolio) {
@@ -414,7 +412,7 @@ function formatTrackResult(result: any): string {
       output += `• Assets: ${portfolio.numberOfAssets}\n`;
     }
   }
-  
+
   return output;
 }
 
@@ -422,19 +420,19 @@ function formatSentimentResult(result: any): string {
   if (!result.success) {
     return `❌ Sentiment analysis failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   let output = '😊 **Sentiment Analysis**\n\n';
-  
+
   output += `**Overall Sentiment:** ${getSentimentEmoji(result.data.sentiment)}\n`;
   output += `**Score:** ${result.data.score.toFixed(2)}/100\n\n`;
-  
+
   if (result.data.analysis?.sources) {
     output += '**By Platform:**\n';
     Object.entries(result.data.analysis.sources).forEach(([source, data]: [string, any]) => {
       output += `• ${source}: ${data.sentiment || 'N/A'}\n`;
     });
   }
-  
+
   return output;
 }
 
@@ -442,23 +440,23 @@ function formatResearchResult(result: any): string {
   if (!result.success) {
     return `❌ Research failed: ${result.errors?.join(', ') || 'Unknown error'}`;
   }
-  
+
   let output = '🔬 **Token Research**\n\n';
-  
+
   if (result.data.research) {
     const research = result.data.research;
     output += `**Research Score:** ${research.researchScore}/100\n`;
     output += `**Investment Conviction:** ${research.investmentThesis?.conviction || 'N/A'}\n`;
     output += `**Market Position:** ${research.competitivePosition?.marketPosition || 'N/A'}\n\n`;
   }
-  
+
   if (result.data.summary?.recommendations?.length > 0) {
     output += '**Key Insights:**\n';
     result.data.summary.recommendations.forEach((rec: string) => {
       output += `• ${rec}\n`;
     });
   }
-  
+
   return output;
 }
 
@@ -493,7 +491,7 @@ function formatNumber(num: number): string {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   console.error('OnChainAgents MCP server running on stdio');
 }
 

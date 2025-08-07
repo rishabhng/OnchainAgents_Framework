@@ -10,6 +10,12 @@ export interface ResourceLimits {
   maxMemory?: number;
 }
 
+export interface ResourceUsage {
+  tokens: number;
+  time: number;
+  memory: number;
+}
+
 export interface ResourceCheck {
   available: boolean;
   reason?: string;
@@ -41,27 +47,27 @@ export class ResourceManager {
   };
   private usageHistory: UsageRecord[];
   private startTime: number;
-  
+
   constructor(limits?: ResourceLimits) {
     this.limits = {
       maxTokens: limits?.maxTokens || 100000,
       maxTime: limits?.maxTime || 60000, // 60 seconds
       maxMemory: limits?.maxMemory || 512 * 1024 * 1024, // 512MB
     };
-    
+
     this.currentUsage = {
       tokens: 0,
       time: 0,
       memory: 0,
     };
-    
+
     this.usageHistory = [];
     this.startTime = Date.now();
-    
+
     // Start memory monitoring
     this.startMemoryMonitoring();
   }
-  
+
   /**
    * Check if resources are available for operation
    */
@@ -69,20 +75,20 @@ export class ResourceManager {
     const estimatedTokens = context.estimatedTokens || 1000;
     const estimatedTime = context.estimatedTime || 5000;
     const currentMemory = this.getCurrentMemoryUsage();
-    
+
     // Calculate remaining capacity
     const remainingTokens = this.limits.maxTokens - this.currentUsage.tokens;
     const remainingTime = this.limits.maxTime - (Date.now() - this.startTime);
     const remainingMemory = this.limits.maxMemory - currentMemory;
-    
+
     // Check if we have enough resources
     const hasTokens = remainingTokens >= estimatedTokens;
     const hasTime = remainingTime >= estimatedTime;
     const hasMemory = remainingMemory > 50 * 1024 * 1024; // Keep 50MB buffer
-    
+
     let available = hasTokens && hasTime && hasMemory;
     let reason: string | undefined;
-    
+
     if (!hasTokens) {
       reason = `Token limit exceeded. Remaining: ${remainingTokens}, Required: ${estimatedTokens}`;
     } else if (!hasTime) {
@@ -90,14 +96,14 @@ export class ResourceManager {
     } else if (!hasMemory) {
       reason = `Memory limit exceeded. Available: ${(remainingMemory / 1024 / 1024).toFixed(2)}MB`;
     }
-    
+
     // Determine resource zone
     const tokenUsagePercent = (this.currentUsage.tokens / this.limits.maxTokens) * 100;
     const timeUsagePercent = ((Date.now() - this.startTime) / this.limits.maxTime) * 100;
     const memoryUsagePercent = (currentMemory / this.limits.maxMemory) * 100;
-    
+
     const maxUsagePercent = Math.max(tokenUsagePercent, timeUsagePercent, memoryUsagePercent);
-    
+
     // Apply resource management thresholds (from SuperClaude pattern)
     if (maxUsagePercent >= 95) {
       // Critical Zone - Essential operations only
@@ -118,7 +124,7 @@ export class ResourceManager {
         reason = `Resource warning (${maxUsagePercent.toFixed(1)}%). Low priority operations deferred.`;
       }
     }
-    
+
     return {
       available,
       reason,
@@ -134,7 +140,7 @@ export class ResourceManager {
       },
     };
   }
-  
+
   /**
    * Record resource usage
    */
@@ -142,28 +148,28 @@ export class ResourceManager {
     // Update current usage
     this.currentUsage.tokens += usage.tokensUsed;
     this.currentUsage.time += usage.executionTime;
-    
+
     // Add to history
     this.usageHistory.push({
       ...usage,
       timestamp: Date.now(),
     });
-    
+
     // Trim old history (keep last 100 records)
     if (this.usageHistory.length > 100) {
       this.usageHistory = this.usageHistory.slice(-100);
     }
-    
+
     // Log resource status
     this.logResourceStatus();
   }
-  
+
   /**
    * Get current resource status
    */
   public getStatus(): {
-    usage: typeof this.currentUsage;
-    limits: typeof this.limits;
+    usage: ResourceUsage;
+    limits: ResourceLimits;
     percentage: {
       tokens: number;
       time: number;
@@ -173,19 +179,19 @@ export class ResourceManager {
   } {
     const currentMemory = this.getCurrentMemoryUsage();
     const elapsedTime = Date.now() - this.startTime;
-    
+
     const tokenPercent = (this.currentUsage.tokens / this.limits.maxTokens) * 100;
     const timePercent = (elapsedTime / this.limits.maxTime) * 100;
     const memoryPercent = (currentMemory / this.limits.maxMemory) * 100;
-    
+
     const maxPercent = Math.max(tokenPercent, timePercent, memoryPercent);
-    
+
     let zone = 'green';
     if (maxPercent >= 95) zone = 'critical';
     else if (maxPercent >= 85) zone = 'red';
     else if (maxPercent >= 75) zone = 'orange';
     else if (maxPercent >= 60) zone = 'yellow';
-    
+
     return {
       usage: {
         tokens: this.currentUsage.tokens,
@@ -201,7 +207,7 @@ export class ResourceManager {
       zone,
     };
   }
-  
+
   /**
    * Reset resource counters
    */
@@ -214,7 +220,7 @@ export class ResourceManager {
     this.usageHistory = [];
     this.startTime = Date.now();
   }
-  
+
   /**
    * Get usage statistics
    */
@@ -234,12 +240,12 @@ export class ResourceManager {
         peakTime: 0,
       };
     }
-    
+
     const totalTokens = this.usageHistory.reduce((sum, r) => sum + r.tokensUsed, 0);
     const totalTime = this.usageHistory.reduce((sum, r) => sum + r.executionTime, 0);
-    const peakTokens = Math.max(...this.usageHistory.map(r => r.tokensUsed));
-    const peakTime = Math.max(...this.usageHistory.map(r => r.executionTime));
-    
+    const peakTokens = Math.max(...this.usageHistory.map((r) => r.tokensUsed));
+    const peakTime = Math.max(...this.usageHistory.map((r) => r.executionTime));
+
     return {
       totalOperations: this.usageHistory.length,
       averageTokens: Math.round(totalTokens / this.usageHistory.length),
@@ -248,24 +254,24 @@ export class ResourceManager {
       peakTime,
     };
   }
-  
+
   // Private methods
-  
+
   private getCurrentMemoryUsage(): number {
     const memUsage = process.memoryUsage();
     return memUsage.heapUsed + memUsage.external;
   }
-  
+
   private startMemoryMonitoring(): void {
     // Update memory usage every 5 seconds
     setInterval(() => {
       this.currentUsage.memory = this.getCurrentMemoryUsage();
     }, 5000).unref(); // unref to not block process exit
   }
-  
+
   private logResourceStatus(): void {
     const status = this.getStatus();
-    
+
     // Log warnings based on zone
     if (status.zone === 'critical') {
       console.error('[ResourceManager] CRITICAL: Resource usage critical', status.percentage);

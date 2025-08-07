@@ -59,32 +59,34 @@ export class AlphaHunter extends BaseAgent {
       maxRetries: 3,
       timeout: 45000,
     };
-    
+
     super(config, hiveService);
   }
-  
+
   protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       category: z.string().optional(),
-      options: z.object({
-        marketCapMin: z.number().optional(),
-        marketCapMax: z.number().optional(),
-        minLiquidity: z.number().optional(),
-        riskTolerance: z.enum(['low', 'medium', 'high']).optional(),
-        networks: z.array(z.string()).optional(),
-        excludeStablecoins: z.boolean().optional(),
-        socialGrowth: z.enum(['any', 'increasing', 'viral']).optional(),
-        timeframe: z.enum(['1h', '4h', '24h', '7d']).optional(),
-      }).optional(),
+      options: z
+        .object({
+          marketCapMin: z.number().optional(),
+          marketCapMax: z.number().optional(),
+          minLiquidity: z.number().optional(),
+          riskTolerance: z.enum(['low', 'medium', 'high']).optional(),
+          networks: z.array(z.string()).optional(),
+          excludeStablecoins: z.boolean().optional(),
+          socialGrowth: z.enum(['any', 'increasing', 'viral']).optional(),
+          timeframe: z.enum(['1h', '4h', '24h', '7d']).optional(),
+        })
+        .optional(),
     });
   }
-  
+
   protected async performAnalysis(context: AgentContext): Promise<AlphaHunterResult> {
     this.logger.info('Starting alpha hunting', {
       category: context.category,
       options: context.options,
     });
-    
+
     // Use the centralized MCP call for alpha opportunities
     const response = await this.hiveService.callTool('hive_alpha_signals', {
       networks: context.options?.networks || ['ethereum', 'bsc', 'polygon'],
@@ -92,26 +94,26 @@ export class AlphaHunter extends BaseAgent {
       market_cap_max: context.options?.marketCapMax,
       risk_level: context.options?.riskTolerance || 'medium',
     });
-    
+
     if (!response.success || !response.data) {
       throw new Error(`Alpha hunting failed: ${response.error}`);
     }
-    
-    const data = response.data as any;
+
+    const data = response.data;
     const rawOpportunities = data.opportunities || [];
-    
+
     // Score and rank opportunities
     const scoredOpportunities = await this.scoreOpportunities(rawOpportunities, context);
-    
+
     // Filter based on risk tolerance
     const filteredOpportunities = this.filterByRisk(scoredOpportunities, context);
-    
+
     // Sort by momentum score
     const rankedOpportunities = filteredOpportunities
       .sort((a, b) => b.momentumScore - a.momentumScore)
       .slice(0, 10) // Top 10 opportunities
       .map((opp, index) => ({ ...opp, rank: index + 1 }));
-    
+
     return {
       opportunities: rankedOpportunities,
       scanTime: new Date(),
@@ -119,24 +121,26 @@ export class AlphaHunter extends BaseAgent {
       filters: context.options || {},
     };
   }
-  
-  
-  private async scoreOpportunities(opportunities: any[], _context: AgentContext): Promise<Opportunity[]> {
+
+  private async scoreOpportunities(
+    opportunities: any[],
+    _context: AgentContext,
+  ): Promise<Opportunity[]> {
     const scoredOpps: Opportunity[] = [];
-    
+
     for (const opp of opportunities) {
       // Calculate momentum score
       const momentumScore = this.calculateMomentumScore(opp);
-      
+
       // Assess risk
       const riskAssessment = await this.assessRisk(opp);
-      
+
       // Determine time sensitivity
       const timeSensitivity = this.determineTimeSensitivity(opp);
-      
+
       // Calculate conviction level
       const convictionLevel = this.calculateConviction(momentumScore, riskAssessment);
-      
+
       // Format signals
       const signals: MomentumSignals = {
         whaleActivity: this.formatWhaleSignal(opp),
@@ -146,13 +150,17 @@ export class AlphaHunter extends BaseAgent {
         technicalSignal: this.formatTechnicalSignal(opp),
         holderGrowth: this.formatHolderSignal(opp),
       };
-      
+
       // Extract catalysts
       const catalysts = this.extractCatalysts(opp);
-      
+
       // Generate recommendation
-      const recommendedAction = this.generateRecommendation(momentumScore, riskAssessment, timeSensitivity);
-      
+      const recommendedAction = this.generateRecommendation(
+        momentumScore,
+        riskAssessment,
+        timeSensitivity,
+      );
+
       scoredOpps.push({
         rank: 0, // Will be set later
         token: {
@@ -174,62 +182,59 @@ export class AlphaHunter extends BaseAgent {
         recommendedAction,
       });
     }
-    
+
     return scoredOpps;
   }
-  
+
   private calculateMomentumScore(opp: any): number {
     let score = 5; // Base score
-    
+
     // Volume increase
     if (opp.volumeChange > 200) score += 2;
     else if (opp.volumeChange > 100) score += 1;
-    
+
     // Price momentum
     if (opp.change24h > 20) score += 1.5;
     else if (opp.change24h > 10) score += 0.5;
-    
+
     // Social signals
     if (opp.socialGrowth > 200) score += 1.5;
     else if (opp.socialGrowth > 100) score += 0.5;
-    
+
     // Whale accumulation
     if (opp.whaleCount > 3) score += 1;
-    
+
     // Technical breakout
     if (opp.technicalBreakout) score += 0.5;
-    
+
     // Developer activity
     if (opp.devActivity > 10) score += 0.5;
-    
+
     return Math.min(10, Math.max(0, score));
   }
-  
+
   private async assessRisk(opp: any): Promise<RiskAssessment> {
-    const liquidityRisk = opp.liquidity < 100000 ? 'HIGH' : 
-                          opp.liquidity < 500000 ? 'MEDIUM' : 'LOW';
-    
-    const contractRisk = opp.verified ? 'LOW' : 
-                        opp.audited ? 'MEDIUM' : 'HIGH';
-    
-    const teamRisk = opp.teamDoxxed ? 'LOW' : 
-                    opp.teamPartial ? 'MEDIUM' : 'HIGH';
-    
-    const marketRisk = opp.marketCap > 10000000 ? 'LOW' : 
-                      opp.marketCap > 1000000 ? 'MEDIUM' : 'HIGH';
-    
+    const liquidityRisk =
+      opp.liquidity < 100000 ? 'HIGH' : opp.liquidity < 500000 ? 'MEDIUM' : 'LOW';
+
+    const contractRisk = opp.verified ? 'LOW' : opp.audited ? 'MEDIUM' : 'HIGH';
+
+    const teamRisk = opp.teamDoxxed ? 'LOW' : opp.teamPartial ? 'MEDIUM' : 'HIGH';
+
+    const marketRisk =
+      opp.marketCap > 10000000 ? 'LOW' : opp.marketCap > 1000000 ? 'MEDIUM' : 'HIGH';
+
     // Calculate overall risk
     const riskScores = { LOW: 1, MEDIUM: 2, HIGH: 3 };
-    const avgRiskScore = (
-      riskScores[liquidityRisk] + 
-      riskScores[contractRisk] + 
-      riskScores[teamRisk] + 
-      riskScores[marketRisk]
-    ) / 4;
-    
-    const overallRisk = avgRiskScore <= 1.5 ? 'LOW' : 
-                       avgRiskScore <= 2.5 ? 'MEDIUM' : 'HIGH';
-    
+    const avgRiskScore =
+      (riskScores[liquidityRisk] +
+        riskScores[contractRisk] +
+        riskScores[teamRisk] +
+        riskScores[marketRisk]) /
+      4;
+
+    const overallRisk = avgRiskScore <= 1.5 ? 'LOW' : avgRiskScore <= 2.5 ? 'MEDIUM' : 'HIGH';
+
     return {
       liquidityRisk,
       contractRisk,
@@ -238,7 +243,7 @@ export class AlphaHunter extends BaseAgent {
       overallRisk,
     };
   }
-  
+
   private determineTimeSensitivity(opp: any): 'hours' | 'days' | 'weeks' {
     if (opp.momentumVelocity > 100 || opp.viralScore > 80) {
       return 'hours';
@@ -247,89 +252,89 @@ export class AlphaHunter extends BaseAgent {
     }
     return 'weeks';
   }
-  
+
   private calculateConviction(momentumScore: number, risk: RiskAssessment): number {
     let conviction = momentumScore;
-    
+
     // Adjust for risk
     if (risk.overallRisk === 'HIGH') conviction -= 2;
     else if (risk.overallRisk === 'MEDIUM') conviction -= 1;
-    
+
     return Math.max(0, Math.min(10, conviction));
   }
-  
+
   private formatWhaleSignal(opp: any): string {
     if (opp.whaleCount > 3) {
       return `${opp.whaleCount} new wallets >$100K`;
     }
     return 'No significant whale activity';
   }
-  
+
   private formatSocialSignal(opp: any): string {
     if (opp.socialGrowth > 200) {
       return `+${opp.socialGrowth}% mentions in 48h`;
     }
     return 'Normal social activity';
   }
-  
+
   private formatDevSignal(opp: any): string {
     if (opp.devActivity > 10) {
       return `${opp.devActivity} commits this week`;
     }
     return 'Low development activity';
   }
-  
+
   private formatVolumeSignal(opp: any): string {
     if (opp.volumeChange > 100) {
       return `+${opp.volumeChange}% vs 7-day average`;
     }
     return 'Normal trading volume';
   }
-  
+
   private formatTechnicalSignal(opp: any): string {
     if (opp.technicalBreakout) {
       return 'Breaking key resistance';
     }
     return 'No technical signal';
   }
-  
+
   private formatHolderSignal(opp: any): string {
     if (opp.holderGrowth > 20) {
       return `+${opp.holderGrowth}% holders in 24h`;
     }
     return 'Stable holder count';
   }
-  
+
   private extractCatalysts(opp: any): string[] {
     const catalysts: string[] = [];
-    
+
     if (opp.upcomingEvents) {
       catalysts.push(...opp.upcomingEvents);
     }
-    
+
     if (opp.partnerships) {
       catalysts.push(`Partnership rumors with ${opp.partnerships}`);
     }
-    
+
     if (opp.tokenBurn) {
       catalysts.push('Token burn mechanism activating');
     }
-    
+
     if (opp.majorRelease) {
       catalysts.push(`${opp.majorRelease} scheduled`);
     }
-    
+
     if (opp.influencerMentions > 5) {
       catalysts.push('Influencer endorsements increasing');
     }
-    
+
     return catalysts;
   }
-  
+
   private generateRecommendation(
     momentumScore: number,
     risk: RiskAssessment,
-    timeSensitivity: string
+    timeSensitivity: string,
   ): string {
     if (momentumScore >= 8 && risk.overallRisk === 'LOW') {
       return 'Strong buy signal - Research immediately';
@@ -342,16 +347,16 @@ export class AlphaHunter extends BaseAgent {
     }
     return 'Continue monitoring for better entry';
   }
-  
+
   private filterByRisk(opportunities: Opportunity[], context: AgentContext): Opportunity[] {
     const riskTolerance = context.options?.riskTolerance || 'medium';
-    
+
     if (riskTolerance === 'low') {
-      return opportunities.filter(opp => opp.riskAssessment.overallRisk === 'LOW');
+      return opportunities.filter((opp) => opp.riskAssessment.overallRisk === 'LOW');
     } else if (riskTolerance === 'medium') {
-      return opportunities.filter(opp => opp.riskAssessment.overallRisk !== 'HIGH');
+      return opportunities.filter((opp) => opp.riskAssessment.overallRisk !== 'HIGH');
     }
-    
+
     return opportunities; // High risk tolerance - return all
   }
 }

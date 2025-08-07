@@ -24,6 +24,10 @@ export enum PersonaType {
   RISK_MANAGER = 'RiskManager',
   CHAIN_ANALYST = 'ChainAnalyst',
   CRYPTO_QUANT = 'CryptoQuant', // New persona with 20 years financial engineering experience
+  YIELD_FARMER = 'YieldFarmer',
+  NFT_DEGEN = 'NFTDegen',
+  BRIDGE_GUARDIAN = 'BridgeGuardian',
+  GOVERNANCE_GURU = 'GovernanceGuru',
 }
 
 // Priority hierarchy for each persona
@@ -72,12 +76,12 @@ export abstract class BasePersona extends EventEmitter {
   protected confidenceScore: number = 0;
   protected decisionHistory: any[] = [];
   protected successRate: number = 0;
-  
+
   constructor(config: PersonaConfig) {
     super();
     this.config = config;
   }
-  
+
   /**
    * Evaluate if this persona should activate
    */
@@ -85,70 +89,68 @@ export abstract class BasePersona extends EventEmitter {
     domains: CryptoDomain[],
     _operations: OperationType[],
     keywords: string[],
-    _context?: any
+    _context?: any,
   ): number {
     let score = 0;
-    
+
     // Keyword matching (30% weight - SuperClaude inspired)
-    const keywordMatches = keywords.filter(kw => 
-      this.config.autoActivationKeywords.includes(kw)
+    const keywordMatches = keywords.filter((kw) =>
+      this.config.autoActivationKeywords.includes(kw),
     ).length;
     score += (keywordMatches / Math.max(1, this.config.autoActivationKeywords.length)) * 0.3;
-    
+
     // Context analysis (40% weight)
     for (const domain of domains) {
       const weight = this.config.contextEvaluation[domain] || 0;
       score += weight * 0.4;
     }
-    
+
     // User history (20% weight)
     score += this.successRate * 0.2;
-    
+
     // Performance metrics (10% weight)
     score += this.evaluatePerformance() * 0.1;
-    
+
     this.confidenceScore = score;
     return score;
   }
-  
+
   /**
    * Activate the persona
    */
   public activate(): void {
     if (this.isActive) return;
-    
+
     this.isActive = true;
     this.emit('activated', {
       persona: this.config.type,
       confidence: this.confidenceScore,
       timestamp: Date.now(),
     });
-    
-    console.log(`[PERSONA] ${this.config.type} activated with confidence ${(this.confidenceScore * 100).toFixed(1)}%`);
+
+    console.log(
+      `[PERSONA] ${this.config.type} activated with confidence ${(this.confidenceScore * 100).toFixed(1)}%`,
+    );
   }
-  
+
   /**
    * Deactivate the persona
    */
   public deactivate(): void {
     if (!this.isActive) return;
-    
+
     this.isActive = false;
     this.emit('deactivated', {
       persona: this.config.type,
       timestamp: Date.now(),
     });
   }
-  
+
   /**
    * Make a decision based on persona's framework
    */
-  public abstract makeDecision(
-    operation: string,
-    options: any[],
-    context?: any
-  ): Promise<any>;
-  
+  public abstract makeDecision(operation: string, options: any[], context?: any): Promise<any>;
+
   /**
    * Evaluate performance metrics
    */
@@ -156,7 +158,7 @@ export abstract class BasePersona extends EventEmitter {
     // Override in specific personas
     return 0.5;
   }
-  
+
   /**
    * Update success metrics
    */
@@ -166,22 +168,22 @@ export abstract class BasePersona extends EventEmitter {
       success,
       timestamp: Date.now(),
     });
-    
+
     // Keep last 100 decisions
     if (this.decisionHistory.length > 100) {
       this.decisionHistory.shift();
     }
-    
+
     // Calculate success rate
-    const successes = this.decisionHistory.filter(d => d.success).length;
+    const successes = this.decisionHistory.filter((d) => d.success).length;
     this.successRate = successes / Math.max(1, this.decisionHistory.length);
   }
-  
+
   /**
    * Get persona recommendations
    */
   public abstract getRecommendations(context: any): string[];
-  
+
   /**
    * Get quality standards for this persona
    */
@@ -196,7 +198,8 @@ export class WhaleHunterPersona extends BasePersona {
   constructor() {
     super({
       type: PersonaType.WHALE_HUNTER,
-      identity: 'Large holder analysis specialist, accumulation pattern expert, whale behavior predictor',
+      identity:
+        'Large holder analysis specialist, accumulation pattern expert, whale behavior predictor',
       priorityHierarchy: {
         primary: 'whale movements',
         secondary: 'accumulation patterns',
@@ -217,7 +220,13 @@ export class WhaleHunterPersona extends BasePersona {
       preferredTools: ['WhaleAgent', 'on-chain analysis', 'wallet clustering'],
       avoidedTools: ['sentiment analysis', 'technical indicators'],
       confidenceThreshold: 0.85,
-      autoActivationKeywords: ['whale', 'large holder', 'accumulation', 'distribution', 'smart money'],
+      autoActivationKeywords: [
+        'whale',
+        'large holder',
+        'accumulation',
+        'distribution',
+        'smart money',
+      ],
       contextEvaluation: {
         [CryptoDomain.WHALE]: 1.0,
         [CryptoDomain.MARKET]: 0.7,
@@ -225,7 +234,7 @@ export class WhaleHunterPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     // Whale-specific decision logic
     if (operation === 'track_wallet') {
@@ -236,42 +245,42 @@ export class WhaleHunterPersona extends BasePersona {
         return scoreB - scoreA;
       })[0];
     }
-    
+
     if (operation === 'analyze_movement') {
       // Determine if accumulation or distribution
       const netFlow = context?.netFlow || 0;
       const priceImpact = context?.priceImpact || 0;
-      
+
       if (netFlow > 0 && priceImpact < 0.05) {
         return { pattern: 'accumulation', confidence: 0.85 };
       } else if (netFlow < 0 && priceImpact > 0.05) {
         return { pattern: 'distribution', confidence: 0.85 };
       }
-      
+
       return { pattern: 'neutral', confidence: 0.5 };
     }
-    
+
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
-    
+
     if (context.whaleCount > 10) {
       recommendations.push('High whale concentration - monitor for coordinated movements');
     }
-    
+
     if (context.recentAccumulation > 0.2) {
       recommendations.push('Significant accumulation detected - potential price movement ahead');
     }
-    
+
     if (context.dormantWhalesActivated) {
       recommendations.push('Dormant whales activated - major market event possible');
     }
-    
+
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       minimumBalance: 1000000, // $1M USD
@@ -319,7 +328,7 @@ export class DeFiArchitectPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'select_pool') {
       // Evaluate pools based on risk-adjusted returns
@@ -329,11 +338,11 @@ export class DeFiArchitectPersona extends BasePersona {
         return riskAdjustedB - riskAdjustedA;
       })[0];
     }
-    
+
     if (operation === 'optimize_position') {
       const currentAPY = context?.currentAPY || 0;
       const targetAPY = this.config.performanceMetrics.averageAPY.target;
-      
+
       if (currentAPY < targetAPY) {
         return {
           action: 'rebalance',
@@ -341,36 +350,36 @@ export class DeFiArchitectPersona extends BasePersona {
           protocols: this.findBetterProtocols(currentAPY),
         };
       }
-      
+
       return { action: 'maintain', recommendation: 'Current position is optimal' };
     }
-    
+
     return null;
   }
-  
+
   private findBetterProtocols(_currentAPY: number): string[] {
     // Would fetch real protocol data
     return ['Aave v3', 'Compound v3', 'Yearn v3'];
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
-    
+
     if (context.tvlGrowth > 0.5) {
       recommendations.push('Rapid TVL growth - consider early exit before yield compression');
     }
-    
+
     if (context.protocolAge < 30) {
       recommendations.push('New protocol - higher risk, conduct thorough audit review');
     }
-    
+
     if (context.concentrationRisk > 0.3) {
       recommendations.push('High concentration risk - diversify across protocols');
     }
-    
+
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       minimumTVL: 10000000, // $10M
@@ -419,19 +428,19 @@ export class SecurityAuditorPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'assess_risk') {
       const vulnerabilities = context?.vulnerabilities || [];
       const severity = this.calculateSeverity(vulnerabilities);
-      
+
       return {
         riskLevel: severity > 0.7 ? 'critical' : severity > 0.4 ? 'high' : 'medium',
         action: severity > 0.7 ? 'block' : severity > 0.4 ? 'warn' : 'proceed',
-        vulnerabilities: vulnerabilities.filter(v => v.severity > 0.5),
+        vulnerabilities: vulnerabilities.filter((v: any) => v.severity > 0.5),
       };
     }
-    
+
     if (operation === 'prioritize_audits') {
       return options.sort((a, b) => {
         const scoreA = a.tvl * 0.4 + a.userCount * 0.3 + a.complexity * 0.3;
@@ -439,41 +448,42 @@ export class SecurityAuditorPersona extends BasePersona {
         return scoreB - scoreA;
       });
     }
-    
+
     return null;
   }
-  
+
   private calculateSeverity(vulnerabilities: any[]): number {
     if (vulnerabilities.length === 0) return 0;
-    
-    const maxSeverity = Math.max(...vulnerabilities.map(v => v.severity || 0));
-    const avgSeverity = vulnerabilities.reduce((sum, v) => sum + (v.severity || 0), 0) / vulnerabilities.length;
-    
+
+    const maxSeverity = Math.max(...vulnerabilities.map((v) => v.severity || 0));
+    const avgSeverity =
+      vulnerabilities.reduce((sum, v) => sum + (v.severity || 0), 0) / vulnerabilities.length;
+
     return maxSeverity * 0.7 + avgSeverity * 0.3;
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
-    
+
     if (!context.audited) {
       recommendations.push('CRITICAL: Contract not audited - extreme caution advised');
     }
-    
+
     if (context.ownershipNotRenounced) {
       recommendations.push('Owner can modify contract - rug pull risk');
     }
-    
+
     if (context.proxyContract) {
       recommendations.push('Proxy contract detected - implementation can be changed');
     }
-    
+
     if (context.complexityScore > 0.8) {
       recommendations.push('High complexity - increased vulnerability risk');
     }
-    
+
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       requiredAudits: 2,
@@ -522,7 +532,7 @@ export class SentimentAnalystPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'analyze_sentiment') {
       const score = (context?.positive || 0) - (context?.negative || 0);
@@ -534,7 +544,7 @@ export class SentimentAnalystPersona extends BasePersona {
     }
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     if (context.sentimentShift > 0.5) {
@@ -542,7 +552,7 @@ export class SentimentAnalystPersona extends BasePersona {
     }
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       minimumDataPoints: 1000,
@@ -589,11 +599,11 @@ export class AlphaSeekerPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'evaluate_opportunity') {
       const score = this.calculateAlphaScore(context);
-      
+
       return {
         recommendation: score > 0.8 ? 'strong buy' : score > 0.6 ? 'accumulate' : 'watch',
         alphaScore: score,
@@ -601,54 +611,56 @@ export class AlphaSeekerPersona extends BasePersona {
         riskLevel: score > 0.8 ? 'high' : 'medium',
       };
     }
-    
+
     if (operation === 'rank_opportunities') {
-      return options.sort((a, b) => {
-        const alphaA = (a.momentum * 0.4) + (a.uniqueness * 0.3) + (a.timing * 0.3);
-        const alphaB = (b.momentum * 0.4) + (b.uniqueness * 0.3) + (b.timing * 0.3);
-        return alphaB - alphaA;
-      }).slice(0, 5);
+      return options
+        .sort((a, b) => {
+          const alphaA = a.momentum * 0.4 + a.uniqueness * 0.3 + a.timing * 0.3;
+          const alphaB = b.momentum * 0.4 + b.uniqueness * 0.3 + b.timing * 0.3;
+          return alphaB - alphaA;
+        })
+        .slice(0, 5);
     }
-    
+
     return null;
   }
-  
+
   private calculateAlphaScore(context: any): number {
     let score = 0;
-    
+
     // Social momentum
     if (context.socialGrowth > 0.5) score += 0.3;
-    
+
     // Technical breakout
     if (context.priceBreakout) score += 0.2;
-    
+
     // Fundamental catalyst
     if (context.catalyst) score += 0.3;
-    
+
     // Early stage
     if (context.marketCap < 10000000) score += 0.2;
-    
+
     return Math.min(1.0, score);
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
-    
+
     if (context.momentumScore > 0.8) {
       recommendations.push('Strong momentum detected - consider position entry');
     }
-    
+
     if (context.whaleAccumulation && context.retailUnaware) {
       recommendations.push('Smart money accumulating before retail - high alpha potential');
     }
-    
+
     if (context.narrativeAlignment) {
       recommendations.push('Aligns with current market narrative - increased success probability');
     }
-    
+
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       minimumLiquidity: 100000,
@@ -695,15 +707,15 @@ export class NFTValuatorPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { minimumVolume: 100 };
   }
@@ -740,15 +752,15 @@ export class MarketMakerPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { minimumVolume: 1000000 };
   }
@@ -785,15 +797,15 @@ export class GovernanceAdvisorPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { quorumRequirement: 0.04 };
   }
@@ -830,15 +842,15 @@ export class YieldOptimizerPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { minimumTVL: 10000000 };
   }
@@ -875,15 +887,15 @@ export class RiskManagerPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { maxLeverage: 3 };
   }
@@ -920,15 +932,15 @@ export class ChainAnalystPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     return [];
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return { minimumConfirmations: 6 };
   }
@@ -938,7 +950,8 @@ export class CryptoQuantPersona extends BasePersona {
   constructor() {
     super({
       type: PersonaType.CRYPTO_QUANT,
-      identity: 'Financial engineer with 20 years experience, quantitative analyst, statistical arbitrage expert',
+      identity:
+        'Financial engineer with 20 years experience, quantitative analyst, statistical arbitrage expert',
       priorityHierarchy: {
         primary: 'quantitative modeling',
         secondary: 'statistical arbitrage',
@@ -956,10 +969,24 @@ export class CryptoQuantPersona extends BasePersona {
         alphaGeneration: { target: 15, unit: '%', critical: false },
       },
       optimizedCommands: ['/quant', '/arb', '/model', '/backtest'],
-      preferredTools: ['CryptoQuant', 'statistical models', 'GARCH', 'cointegration', 'machine learning'],
+      preferredTools: [
+        'CryptoQuant',
+        'statistical models',
+        'GARCH',
+        'cointegration',
+        'machine learning',
+      ],
       avoidedTools: ['social sentiment', 'news-based trading'],
       confidenceThreshold: 0.85,
-      autoActivationKeywords: ['quant', 'statistical', 'arbitrage', 'model', 'backtest', 'sharpe', 'alpha'],
+      autoActivationKeywords: [
+        'quant',
+        'statistical',
+        'arbitrage',
+        'model',
+        'backtest',
+        'sharpe',
+        'alpha',
+      ],
       contextEvaluation: {
         [CryptoDomain.QUANT]: 1.0,
         [CryptoDomain.RISK]: 0.8,
@@ -967,7 +994,7 @@ export class CryptoQuantPersona extends BasePersona {
       },
     });
   }
-  
+
   async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'model_selection') {
       // Apply 20 years of financial engineering experience
@@ -979,7 +1006,7 @@ export class CryptoQuantPersona extends BasePersona {
     }
     return null;
   }
-  
+
   getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     if (context.volatilityRegime === 'high') {
@@ -990,7 +1017,7 @@ export class CryptoQuantPersona extends BasePersona {
     }
     return recommendations;
   }
-  
+
   getQualityStandards(): Record<string, any> {
     return {
       minimumDataPoints: 5000,
@@ -1009,13 +1036,13 @@ export class PersonaManager extends EventEmitter {
   private personas: Map<PersonaType, BasePersona>;
   private activePersona: BasePersona | null = null;
   private activationHistory: any[] = [];
-  
+
   constructor() {
     super();
     this.personas = new Map();
     this.initializePersonas();
   }
-  
+
   private initializePersonas(): void {
     // Initialize all 12 personas (11 original + 1 new CryptoQuant)
     this.personas.set(PersonaType.WHALE_HUNTER, new WhaleHunterPersona());
@@ -1031,7 +1058,7 @@ export class PersonaManager extends EventEmitter {
     this.personas.set(PersonaType.CHAIN_ANALYST, new ChainAnalystPersona());
     this.personas.set(PersonaType.CRYPTO_QUANT, new CryptoQuantPersona()); // New persona with 20 years experience
   }
-  
+
   /**
    * Auto-activate best persona based on context
    */
@@ -1039,27 +1066,27 @@ export class PersonaManager extends EventEmitter {
     domains: CryptoDomain[],
     operations: OperationType[],
     keywords: string[],
-    context?: any
+    context?: any,
   ): BasePersona | null {
     let bestPersona: BasePersona | null = null;
     let bestScore = 0;
-    
+
     for (const [_type, persona] of this.personas) {
       const score = persona.evaluateActivation(domains, operations, keywords, context);
-      
+
       if (score > bestScore && score >= (persona as any).config.confidenceThreshold) {
         bestScore = score;
         bestPersona = persona;
       }
     }
-    
+
     if (bestPersona) {
       this.activatePersona(bestPersona);
     }
-    
+
     return bestPersona;
   }
-  
+
   /**
    * Manually activate a specific persona
    */
@@ -1067,39 +1094,39 @@ export class PersonaManager extends EventEmitter {
     if (this.activePersona) {
       this.activePersona.deactivate();
     }
-    
+
     if (typeof persona === 'string') {
       persona = this.personas.get(persona)!;
     }
-    
+
     this.activePersona = persona;
     persona.activate();
-    
+
     this.activationHistory.push({
       persona: (persona as any).config.type,
       timestamp: Date.now(),
     });
-    
+
     this.emit('persona-activated', {
       persona: (persona as any).config.type,
       confidence: (persona as any).confidenceScore,
     });
   }
-  
+
   /**
    * Get current active persona
    */
   public getActivePersona(): BasePersona | null {
     return this.activePersona;
   }
-  
+
   /**
    * Get all personas
    */
   public getAllPersonas(): Map<PersonaType, BasePersona> {
     return this.personas;
   }
-  
+
   /**
    * Get activation statistics
    */
@@ -1108,12 +1135,11 @@ export class PersonaManager extends EventEmitter {
       totalActivations: this.activationHistory.length,
       personaUsage: {},
     };
-    
+
     for (const activation of this.activationHistory) {
-      stats.personaUsage[activation.persona] = 
-        (stats.personaUsage[activation.persona] || 0) + 1;
+      stats.personaUsage[activation.persona] = (stats.personaUsage[activation.persona] || 0) + 1;
     }
-    
+
     return stats;
   }
 }

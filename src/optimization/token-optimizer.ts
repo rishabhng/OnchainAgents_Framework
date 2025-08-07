@@ -17,7 +17,7 @@ export const CRYPTO_SYMBOLS = {
   '⚡': 'transaction',
   '🔑': 'wallet',
   '📜': 'contract',
-  
+
   // DeFi symbols
   '🏦': 'protocol',
   '💰': 'liquidity',
@@ -27,7 +27,7 @@ export const CRYPTO_SYMBOLS = {
   '🌾': 'farming',
   '🏛️': 'governance',
   '🎯': 'apy',
-  
+
   // Security symbols
   '🛡️': 'security',
   '🔒': 'locked',
@@ -37,7 +37,7 @@ export const CRYPTO_SYMBOLS = {
   '❌': 'failed',
   '🔍': 'audit',
   '🐛': 'bug',
-  
+
   // Market symbols
   '📊': 'market',
   '🐂': 'bullish',
@@ -47,7 +47,7 @@ export const CRYPTO_SYMBOLS = {
   '🐋': 'whale',
   '🦐': 'shrimp',
   '💹': 'price',
-  
+
   // Operations
   '➕': 'add',
   '➖': 'remove',
@@ -62,18 +62,18 @@ export const CRYPTO_SYMBOLS = {
 // Abbreviation dictionary
 export const ABBREVIATIONS: Record<string, string> = {
   // Blockchain terms
-  'address': 'addr',
-  'transaction': 'tx',
-  'block': 'blk',
-  'height': 'ht',
-  'confirmation': 'conf',
-  'signature': 'sig',
-  'validator': 'val',
-  'delegator': 'del',
-  
+  address: 'addr',
+  transaction: 'tx',
+  block: 'blk',
+  height: 'ht',
+  confirmation: 'conf',
+  signature: 'sig',
+  validator: 'val',
+  delegator: 'del',
+
   // DeFi terms
-  'liquidity': 'liq',
-  'provider': 'prov',
+  liquidity: 'liq',
+  provider: 'prov',
   'automatic market maker': 'AMM',
   'decentralized exchange': 'DEX',
   'centralized exchange': 'CEX',
@@ -81,39 +81,39 @@ export const ABBREVIATIONS: Record<string, string> = {
   'annual percentage yield': 'APY',
   'annual percentage rate': 'APR',
   'impermanent loss': 'IL',
-  
+
   // Technical terms
-  'ethereum': 'ETH',
-  'bitcoin': 'BTC',
-  'polygon': 'POLY',
+  ethereum: 'ETH',
+  bitcoin: 'BTC',
+  polygon: 'POLY',
   'binance smart chain': 'BSC',
-  'arbitrum': 'ARB',
-  'optimism': 'OP',
-  'configuration': 'cfg',
-  'implementation': 'impl',
-  'optimization': 'opt',
-  'validation': 'val',
-  
+  arbitrum: 'ARB',
+  optimism: 'OP',
+  configuration: 'cfg',
+  implementation: 'impl',
+  optimization: 'opt',
+  validation: 'val',
+
   // Common patterns
   'greater than': '>',
   'less than': '<',
   'equal to': '=',
   'not equal': '≠',
-  'approximately': '≈',
-  'therefore': '∴',
-  'because': '∵',
-  'maximum': 'max',
-  'minimum': 'min',
-  'average': 'avg',
+  approximately: '≈',
+  therefore: '∴',
+  because: '∵',
+  maximum: 'max',
+  minimum: 'min',
+  average: 'avg',
 };
 
 // Compression strategies
 export enum CompressionStrategy {
   NONE = 'none',
-  SOFT = 'soft',        // 10-20% reduction
-  MEDIUM = 'medium',    // 20-35% reduction
-  HARD = 'hard',        // 35-50% reduction
-  ULTRA = 'ultra',      // 50%+ reduction (may lose clarity)
+  SOFT = 'soft', // 10-20% reduction
+  MEDIUM = 'medium', // 20-35% reduction
+  HARD = 'hard', // 35-50% reduction
+  ULTRA = 'ultra', // 50%+ reduction (may lose clarity)
 }
 
 // Token optimization result
@@ -139,12 +139,12 @@ export class TokenOptimizer extends EventEmitter {
   private customAbbreviations: Map<string, string> = new Map();
   private preserveReadability: boolean = true;
   private autoGenerateLegend: boolean = true;
-  
+
   constructor() {
     super();
     this.initializeSymbolLegend();
   }
-  
+
   /**
    * Initialize symbol legend
    */
@@ -153,7 +153,7 @@ export class TokenOptimizer extends EventEmitter {
       this.symbolLegend.set(symbol, meaning);
     }
   }
-  
+
   /**
    * Set compression strategy
    */
@@ -161,18 +161,18 @@ export class TokenOptimizer extends EventEmitter {
     this.strategy = strategy;
     this.emit('strategy-changed', { strategy });
   }
-  
+
   /**
    * Optimize text
    */
   public optimize(text: string, strategy?: CompressionStrategy): OptimizationResult {
     const startTime = Date.now();
     strategy = strategy || this.strategy;
-    
+
     const originalTokens = this.estimateTokens(text);
     let optimized = text;
     const symbolsUsed: Set<string> = new Set();
-    
+
     // Apply optimization based on strategy
     switch (strategy) {
       case CompressionStrategy.SOFT:
@@ -191,16 +191,16 @@ export class TokenOptimizer extends EventEmitter {
         // No compression
         break;
     }
-    
+
     const optimizedTokens = this.estimateTokens(optimized);
     const reduction = originalTokens - optimizedTokens;
     const reductionPercentage = (reduction / originalTokens) * 100;
-    
+
     // Generate legend if needed
     if (this.autoGenerateLegend && symbolsUsed.size > 0) {
       optimized = this.appendLegend(optimized, symbolsUsed);
     }
-    
+
     const result: OptimizationResult = {
       original: text,
       optimized,
@@ -212,24 +212,24 @@ export class TokenOptimizer extends EventEmitter {
       symbolsUsed: Array.from(symbolsUsed),
       preservedInformation: this.calculateInformationPreservation(text, optimized),
     };
-    
+
     this.emit('optimization-complete', {
       result,
       duration: Date.now() - startTime,
     });
-    
+
     return result;
   }
-  
+
   /**
    * Apply soft compression (10-20% reduction)
    */
   private applySoftCompression(text: string, symbolsUsed: Set<string>): string {
     let compressed = text;
-    
+
     // Remove unnecessary whitespace
     compressed = compressed.replace(/\s+/g, ' ').trim();
-    
+
     // Use common abbreviations
     for (const [full, abbr] of Object.entries(ABBREVIATIONS).slice(0, 10)) {
       const regex = new RegExp(`\\b${full}\\b`, 'gi');
@@ -237,7 +237,7 @@ export class TokenOptimizer extends EventEmitter {
         compressed = compressed.replace(regex, abbr);
       }
     }
-    
+
     // Add a few symbols for common terms
     const commonSymbols = ['🔗', '💎', '📊', '✅'];
     for (const symbol of commonSymbols) {
@@ -247,16 +247,16 @@ export class TokenOptimizer extends EventEmitter {
         symbolsUsed.add(symbol);
       }
     }
-    
+
     return compressed;
   }
-  
+
   /**
    * Apply medium compression (20-35% reduction)
    */
   private applyMediumCompression(text: string, symbolsUsed: Set<string>): string {
     let compressed = this.applySoftCompression(text, symbolsUsed);
-    
+
     // Use more abbreviations
     for (const [full, abbr] of Object.entries(ABBREVIATIONS)) {
       const regex = new RegExp(`\\b${full}\\b`, 'gi');
@@ -264,7 +264,7 @@ export class TokenOptimizer extends EventEmitter {
         compressed = compressed.replace(regex, abbr);
       }
     }
-    
+
     // Use more symbols
     for (const [symbol, meaning] of this.symbolLegend) {
       if (compressed.includes(meaning)) {
@@ -272,55 +272,55 @@ export class TokenOptimizer extends EventEmitter {
         symbolsUsed.add(symbol);
       }
     }
-    
+
     // Compress common phrases
     compressed = this.compressCommonPhrases(compressed);
-    
+
     // Remove articles when safe
     compressed = compressed.replace(/\b(the|a|an)\s+/gi, '');
-    
+
     return compressed;
   }
-  
+
   /**
    * Apply hard compression (35-50% reduction)
    */
   private applyHardCompression(text: string, symbolsUsed: Set<string>): string {
     let compressed = this.applyMediumCompression(text, symbolsUsed);
-    
+
     // Aggressive abbreviation
     compressed = this.aggressiveAbbreviate(compressed);
-    
+
     // Use compound symbols
     compressed = this.useCompoundSymbols(compressed, symbolsUsed);
-    
+
     // Remove all non-essential words
     compressed = this.removeNonEssential(compressed);
-    
+
     // Use mathematical notation
     compressed = this.useMathNotation(compressed);
-    
+
     return compressed;
   }
-  
+
   /**
    * Apply ultra compression (50%+ reduction)
    */
   private applyUltraCompression(text: string, symbolsUsed: Set<string>): string {
     let compressed = this.applyHardCompression(text, symbolsUsed);
-    
+
     // Extreme abbreviation
     compressed = this.extremeAbbreviate(compressed);
-    
+
     // Use custom encoding
     compressed = this.customEncode(compressed, symbolsUsed);
-    
+
     // Remove all spaces where possible
     compressed = this.removeSpaces(compressed);
-    
+
     return compressed;
   }
-  
+
   /**
    * Compress common phrases
    */
@@ -342,15 +342,15 @@ export class TokenOptimizer extends EventEmitter {
       'do your own research': 'DYOR',
       'not financial advice': 'NFA',
     };
-    
+
     let compressed = text;
     for (const [phrase, abbr] of Object.entries(phrases)) {
       compressed = compressed.replace(new RegExp(phrase, 'gi'), abbr);
     }
-    
+
     return compressed;
   }
-  
+
   /**
    * Aggressive abbreviation
    */
@@ -358,12 +358,12 @@ export class TokenOptimizer extends EventEmitter {
     // Abbreviate all words > 6 characters
     return text.replace(/\b(\w{7,})\b/g, (match) => {
       if (match.toUpperCase() === match) return match; // Keep acronyms
-      
+
       // Take first 3 letters + last letter
       return match.substring(0, 3) + match.slice(-1);
     });
   }
-  
+
   /**
    * Use compound symbols
    */
@@ -380,38 +380,51 @@ export class TokenOptimizer extends EventEmitter {
       'rug pull': '🏃💰',
       'gas war': '⛽⚔️',
     };
-    
+
     let compressed = text;
     for (const [phrase, symbols] of Object.entries(compounds)) {
       if (compressed.includes(phrase)) {
         compressed = compressed.replace(new RegExp(phrase, 'gi'), symbols);
-        symbols.split('').forEach(s => symbolsUsed.add(s));
+        symbols.split('').forEach((s) => symbolsUsed.add(s));
       }
     }
-    
+
     return compressed;
   }
-  
+
   /**
    * Remove non-essential words
    */
   private removeNonEssential(text: string): string {
     const nonEssential = [
-      'very', 'really', 'actually', 'basically', 'simply',
-      'just', 'quite', 'rather', 'somewhat', 'fairly',
-      'however', 'therefore', 'moreover', 'furthermore',
-      'additionally', 'consequently', 'nevertheless',
+      'very',
+      'really',
+      'actually',
+      'basically',
+      'simply',
+      'just',
+      'quite',
+      'rather',
+      'somewhat',
+      'fairly',
+      'however',
+      'therefore',
+      'moreover',
+      'furthermore',
+      'additionally',
+      'consequently',
+      'nevertheless',
     ];
-    
+
     let compressed = text;
     for (const word of nonEssential) {
       compressed = compressed.replace(new RegExp(`\\b${word}\\b`, 'gi'), '');
     }
-    
+
     // Clean up extra spaces
     return compressed.replace(/\s+/g, ' ').trim();
   }
-  
+
   /**
    * Use mathematical notation
    */
@@ -427,19 +440,19 @@ export class TokenOptimizer extends EventEmitter {
       'sum of': 'Σ',
       'product of': 'Π',
       'square root of': '√',
-      'infinity': '∞',
-      'delta': 'Δ',
-      'percent': '%',
+      infinity: '∞',
+      delta: 'Δ',
+      percent: '%',
     };
-    
+
     let compressed = text;
     for (const [phrase, notation] of Object.entries(notations)) {
       compressed = compressed.replace(new RegExp(phrase, 'gi'), notation);
     }
-    
+
     return compressed;
   }
-  
+
   /**
    * Extreme abbreviation
    */
@@ -450,7 +463,7 @@ export class TokenOptimizer extends EventEmitter {
       return match.substring(0, 2);
     });
   }
-  
+
   /**
    * Custom encoding
    */
@@ -458,19 +471,19 @@ export class TokenOptimizer extends EventEmitter {
     // Create custom abbreviations for frequent words
     const words = text.split(/\s+/);
     const frequency: Map<string, number> = new Map();
-    
+
     for (const word of words) {
       frequency.set(word, (frequency.get(word) || 0) + 1);
     }
-    
+
     // Sort by frequency
     const sorted = Array.from(frequency.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
-    
+
     let compressed = text;
     let index = 1;
-    
+
     for (const [word, count] of sorted) {
       if (count > 2 && word.length > 3) {
         const code = `#${index}`;
@@ -479,32 +492,32 @@ export class TokenOptimizer extends EventEmitter {
         index++;
       }
     }
-    
+
     return compressed;
   }
-  
+
   /**
    * Remove spaces where safe
    */
   private removeSpaces(text: string): string {
     // Remove spaces around punctuation
     let compressed = text.replace(/\s*([,;:!?])\s*/g, '$1');
-    
+
     // Remove spaces around symbols
     compressed = compressed.replace(/\s*([→←↔️⚡🔗💎])\s*/g, '$1');
-    
+
     // Remove spaces between number and unit
     compressed = compressed.replace(/(\d+)\s+(ETH|BTC|USD|USDC|USDT|%)/g, '$1$2');
-    
+
     return compressed;
   }
-  
+
   /**
    * Append legend for symbols used
    */
   private appendLegend(text: string, symbolsUsed: Set<string>): string {
     if (symbolsUsed.size === 0) return text;
-    
+
     let legend = '\n---\nSymbol Legend:\n';
     for (const symbol of symbolsUsed) {
       const meaning = this.symbolLegend.get(symbol);
@@ -512,7 +525,7 @@ export class TokenOptimizer extends EventEmitter {
         legend += `${symbol} = ${meaning}\n`;
       }
     }
-    
+
     // Add custom abbreviations if any
     if (this.customAbbreviations.size > 0) {
       legend += '\nCustom Codes:\n';
@@ -520,10 +533,10 @@ export class TokenOptimizer extends EventEmitter {
         legend += `${code} = ${word}\n`;
       }
     }
-    
+
     return text + legend;
   }
-  
+
   /**
    * Estimate token count
    */
@@ -531,15 +544,15 @@ export class TokenOptimizer extends EventEmitter {
     // Rough estimation: 1 token ≈ 4 characters
     return Math.ceil(text.length / 4);
   }
-  
+
   /**
    * Calculate information preservation
    */
   private calculateInformationPreservation(original: string, optimized: string): number {
     // Simple heuristic based on key terms preservation
     const originalWords = original.toLowerCase().split(/\s+/);
-    const keyWords = originalWords.filter(w => w.length > 4);
-    
+    const keyWords = originalWords.filter((w) => w.length > 4);
+
     let preserved = 0;
     for (const word of keyWords) {
       // Check if word or its abbreviation exists
@@ -547,34 +560,34 @@ export class TokenOptimizer extends EventEmitter {
         preserved++;
       }
     }
-    
+
     return Math.min(100, (preserved / Math.max(1, keyWords.length)) * 100);
   }
-  
+
   /**
    * Decompress text (restore original)
    */
   public decompress(compressed: string): string {
     let decompressed = compressed;
-    
+
     // Replace symbols with meanings
     for (const [symbol, meaning] of this.symbolLegend) {
       decompressed = decompressed.replace(new RegExp(symbol, 'g'), meaning);
     }
-    
+
     // Replace custom codes
     for (const [code, word] of this.customAbbreviations) {
       decompressed = decompressed.replace(new RegExp(code, 'g'), word);
     }
-    
+
     // Expand abbreviations
     for (const [full, abbr] of Object.entries(ABBREVIATIONS)) {
       decompressed = decompressed.replace(new RegExp(`\\b${abbr}\\b`, 'g'), full);
     }
-    
+
     return decompressed;
   }
-  
+
   /**
    * Get statistics
    */
@@ -588,14 +601,14 @@ export class TokenOptimizer extends EventEmitter {
       autoGenerateLegend: this.autoGenerateLegend,
     };
   }
-  
+
   /**
    * Add custom abbreviation
    */
   public addAbbreviation(full: string, abbreviated: string): void {
     this.customAbbreviations.set(abbreviated, full);
   }
-  
+
   /**
    * Clear custom abbreviations
    */

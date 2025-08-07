@@ -18,12 +18,12 @@ export interface DetectionResult {
 
 export class DetectionEngine {
   private patterns: Map<string, any>;
-  
+
   constructor() {
     this.patterns = new Map();
     this.initializePatterns();
   }
-  
+
   /**
    * Initialize crypto-specific patterns
    */
@@ -31,12 +31,7 @@ export class DetectionEngine {
     // Complexity patterns
     this.patterns.set('complexity', {
       simple: {
-        indicators: [
-          'single token lookup',
-          'price check',
-          'basic info',
-          'quick scan',
-        ],
+        indicators: ['single token lookup', 'price check', 'basic info', 'quick scan'],
         tokenBudget: 5000,
         timeEstimate: 5000, // 5 seconds
       },
@@ -62,7 +57,7 @@ export class DetectionEngine {
         timeEstimate: 30000, // 30 seconds
       },
     });
-    
+
     // Domain patterns
     this.patterns.set('domains', {
       security: {
@@ -106,7 +101,7 @@ export class DetectionEngine {
         tools: ['oca_portfolio'],
       },
     });
-    
+
     // Tool-specific patterns
     this.patterns.set('tools', {
       oca_analyze: {
@@ -171,7 +166,7 @@ export class DetectionEngine {
       },
     });
   }
-  
+
   /**
    * Analyze a request to determine complexity and requirements
    */
@@ -181,22 +176,22 @@ export class DetectionEngine {
     if (!toolPattern) {
       throw new Error(`Unknown tool: ${tool}`);
     }
-    
+
     // Determine complexity
     const complexity = this.detectComplexity(tool, args, toolPattern);
-    
+
     // Determine domains
     const domains = this.detectDomains(tool, args, toolPattern);
-    
+
     // Determine required agents
     const agents = this.detectAgents(tool, args, toolPattern, domains);
-    
+
     // Estimate resources
     const { time, tokens } = this.estimateResources(complexity, agents);
-    
+
     // Calculate confidence
     const confidence = this.calculateConfidence(tool, args, toolPattern);
-    
+
     return {
       tool,
       args,
@@ -209,64 +204,60 @@ export class DetectionEngine {
       confidence,
     };
   }
-  
+
   /**
    * Detect operation complexity
    */
   private detectComplexity(
-    tool: string,
+    _tool: string,
     args: Record<string, any>,
-    toolPattern: any
+    toolPattern: any,
   ): 'simple' | 'moderate' | 'complex' {
     // Check for depth parameter
     if (args.depth === 'quick') return 'simple';
     if (args.depth === 'deep' || args.depth === 'forensic') return 'complex';
-    
+
     // Check for multiple targets
     if (Array.isArray(args.targets) && args.targets.length > 3) return 'complex';
-    
+
     // Check for comprehensive flags
     if (args.comprehensive || args.detailed || args.all) return 'complex';
-    
+
     // Use tool default
     return toolPattern.complexity || 'moderate';
   }
-  
+
   /**
    * Detect relevant domains
    */
-  private detectDomains(
-    tool: string,
-    args: Record<string, any>,
-    toolPattern: any
-  ): string[] {
+  private detectDomains(_tool: string, args: Record<string, any>, toolPattern: any): string[] {
     const domains = new Set<string>(toolPattern.domains || []);
-    
+
     // Check args for domain keywords
     const domainPatterns = this.patterns.get('domains');
     const argString = JSON.stringify(args).toLowerCase();
-    
+
     for (const [domain, pattern] of Object.entries(domainPatterns)) {
       const keywords = (pattern as any).keywords;
       if (keywords.some((kw: string) => argString.includes(kw))) {
         domains.add(domain);
       }
     }
-    
+
     return Array.from(domains);
   }
-  
+
   /**
    * Detect required agents
    */
   private detectAgents(
-    tool: string,
-    args: Record<string, any>,
+    _tool: string,
+    _args: Record<string, any>,
     toolPattern: any,
-    domains: string[]
+    domains: string[],
   ): string[] {
     const agents = new Set<string>(toolPattern.agents || []);
-    
+
     // Add domain-specific agents
     const domainPatterns = this.patterns.get('domains');
     for (const domain of domains) {
@@ -275,60 +266,56 @@ export class DetectionEngine {
         pattern.agents.forEach((agent: string) => agents.add(agent));
       }
     }
-    
+
     // Filter based on depth
-    if (args.depth === 'quick' && agents.size > 2) {
+    if (_args.depth === 'quick' && agents.size > 2) {
       // Keep only essential agents for quick analysis
       return Array.from(agents).slice(0, 2);
     }
-    
+
     return Array.from(agents);
   }
-  
+
   /**
    * Estimate resource requirements
    */
   private estimateResources(
     complexity: string,
-    agents: string[]
+    agents: string[],
   ): { time: number; tokens: number } {
     const complexityPatterns = this.patterns.get('complexity');
     const pattern = complexityPatterns[complexity];
-    
+
     // Base estimates
     let time = pattern.timeEstimate;
     let tokens = pattern.tokenBudget;
-    
+
     // Adjust for number of agents
     const agentMultiplier = Math.max(1, agents.length * 0.5);
     time *= agentMultiplier;
     tokens *= agentMultiplier;
-    
+
     return { time, tokens };
   }
-  
+
   /**
    * Calculate confidence in detection
    */
-  private calculateConfidence(
-    tool: string,
-    args: Record<string, any>,
-    toolPattern: any
-  ): number {
+  private calculateConfidence(_tool: string, args: Record<string, any>, _toolPattern: any): number {
     let confidence = 0.5; // Base confidence
-    
+
     // Known tool pattern
-    if (toolPattern) confidence += 0.3;
-    
+    if (_toolPattern) confidence += 0.3;
+
     // Has required arguments
     if (args.target || args.wallet || args.token || args.protocol) confidence += 0.1;
-    
+
     // Has network specified
     if (args.network) confidence += 0.05;
-    
+
     // Has clear parameters
     if (args.depth || args.analysis || args.format) confidence += 0.05;
-    
+
     return Math.min(1, confidence);
   }
 }

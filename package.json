@@ -1,7 +1,7 @@
 {
   "name": "@onchainagents/core",
   "version": "1.0.0",
-  "description": "🤖 Free, open-source crypto intelligence platform with 12 specialized AI personas (SuperClaude parity) powered by Hive Intelligence",
+  "description": "🤖 Free, open-source crypto intelligence platform with 16 specialized AI agents powered by Hive Intelligence",
   "main": "dist/index-minimal.js",
   "types": "dist/index-minimal.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:hive-mcp": "ts-node test-hive-mcp.ts",
+    "test:hive-mcp": "ts-node tests/manual/test-hive-mcp.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -61,13 +61,13 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.1",
     "axios": "^1.11.0",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "dotenv": "^16.3.1",
     "ethers": "^6.9.0",
     "node-cache": "^5.1.2",
-    "ora": "^7.0.1",
     "p-queue": "^7.4.1",
     "winston": "^3.11.0",
     "ws": "^8.16.0",

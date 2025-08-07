@@ -12,12 +12,11 @@
   [![npm downloads](https://img.shields.io/npm/dm/@onchainagents/core.svg)](https://www.npmjs.com/package/@onchainagents/core)
   [![GitHub stars](https://img.shields.io/github/stars/onchainagents/onchainagents.fun?style=social)](https://github.com/onchainagents/onchainagents.fun)
   
-  [![SuperClaude](https://img.shields.io/badge/SuperClaude-v1.1-purple)](https://github.com/onchainagents/onchainagents.fun)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/onchainagents/onchainagents.fun/pulls)
   [![Discord](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/onchainagents)
   [![Twitter Follow](https://img.shields.io/twitter/follow/onchainagents?style=social)](https://twitter.com/onchainagents)
   
-  **imagine having 12 crypto experts working for you 24/7... for free**
+  **imagine having 16 crypto experts working for you 24/7... for free**
   
   [🌐 Website](https://onchainagents.fun) • [📖 Docs](https://docs.onchainagents.fun) • [💬 Discord](https://discord.gg/onchainagents) • [🐦 Twitter](https://twitter.com/onchainagents)
 
@@ -25,480 +24,305 @@
 
 ---
 
-## 🎉 v1.1 - Enhanced with 12 Specialized Personas!
+## 🎉 v2.0 - Advanced Crypto Intelligence Platform
 
-**OnChainAgents now has complete feature parity with Anthropic's SuperClaude Framework**, adapted specifically for crypto/blockchain operations. 20 core components, 12 specialized personas (including new CryptoQuant), enterprise-grade orchestration.
+**OnChainAgents** is a comprehensive crypto intelligence framework featuring 16 specialized AI agents that provide real-time market analysis, security audits, and DeFi insights powered by Hive Intelligence.
 
-### What's New in v1.1:
-- ✅ **Wave Orchestration**: Multi-stage execution with compound intelligence
-- ✅ **12 Crypto Personas**: Including new CryptoQuant with 20 years financial engineering experience
-- ✅ **Intelligent Routing**: Master routing table with confidence scoring
-- ✅ **Circuit Breakers**: 3-state resilience with automatic recovery
-- ✅ **Evidence Generation**: On-chain proofs with merkle tree aggregation
-- ✅ **Token Optimization**: 30-50% reduction with crypto symbols
-- ✅ **Emergency Protocols**: 10 market volatility scenarios
-- ✅ **Performance Monitoring**: Real-time metrics with crypto-specific tracking
+### Core Features:
+- ✅ **16 Specialized Agents**: Expert crypto analysis across all domains
+- ✅ **11 Core Commands**: Streamlined crypto operations
+- ✅ **Advanced Orchestration**: Multi-stage execution with intelligent routing
+- ✅ **Real-time Data**: Powered by Hive Intelligence API
+- ✅ **Security First**: Built-in risk analysis and rug detection
+- ✅ **MCP Integration**: Connect with your preferred AI tools
+- ✅ **Quality Gates**: 8-step validation for all operations
+- ✅ **Token Optimization**: Efficient resource management
 
-## 🏗️ Architecture (SuperClaude-Powered)
+## 🏗️ Architecture
 
-OnChainAgents implements the complete SuperClaude Framework architecture:
+OnChainAgents implements a modular, extensible architecture:
 
 ```
-Claude Desktop → OnChainAgents MCP Server → Orchestrator → Personas → Hive Intelligence
-                                                ↓
-                                         Wave Engine → Sub-Agents
-                                                ↓
-                                         Quality Gates → Evidence
+MCP Server → Orchestrator → Agent Selection → Hive Intelligence
+                   ↓                              ↓
+            Wave Engine → Multi-Agent         Real-time Data
+                   ↓         Coordination          ↓
+            Quality Gates → Validated Results → Response
 ```
 
-- **Intelligent Orchestrator**: Detection engine with complexity scoring
-- **Resource Zones**: 5-zone management (Green/Yellow/Orange/Red/Critical)
-- **Wave Engine**: 4 strategies (Progressive/Systematic/Adaptive/Enterprise)
-- **11 Specialized Personas**: Domain experts with auto-activation
-- **Multi-Source Coordination**: Hive Intelligence + 9 fallback sources
+### System Components:
+- **Intelligent Orchestrator**: Automatic agent selection based on query type
+- **Resource Management**: Efficient handling of API calls and caching
+- **Wave Engine**: Complex multi-step operations with checkpoints
+- **16 Specialized Agents**: Domain experts for every crypto use case
+- **Multi-Source Data**: Hive Intelligence with fallback providers
+- **Quality Validation**: Comprehensive result verification
 
-## ⚡ get started in literally 30 seconds
+## ⚡ Quick Start
+
+### Installation
 
 ```bash
-# install from npm (once published)
+# Install from npm
 npm install @onchainagents/core
 
-# or clone and build locally
+# Or clone and build locally
 git clone https://github.com/onchainagents/onchainagents.fun
 cd onchainagents.fun
-npm install && npm run build
+npm install
+npm run build
+
+# Test MCP connection (optional)
+npm run test:hive-mcp
 ```
 
-### Quick Setup
+### Basic Usage
 
-1. **Create a `.env` file:**
-```env
-# Hive Intelligence MCP Configuration
-HIVE_MCP_URL=https://hiveintelligence.xyz/mcp  # Default endpoint
-HIVE_API_KEY=your_api_key_here  # Optional - Contact Hive Intelligence: https://t.me/hiveintelligence
-
-# Enable fallback mode for testing (uses simulated data when API is unavailable)
-HIVE_FALLBACK_MODE=true  # Set to false when you have API access
-```
-
-2. **Start analyzing:**
 ```typescript
 import { OnChainAgents } from '@onchainagents/core';
 
-// boom. you now have institutional-grade crypto intel
 const oca = new OnChainAgents({
-  mcpServerUrl: 'https://hiveintelligence.xyz/mcp',  // Hive Intelligence endpoint
-  // apiKey: process.env.HIVE_API_KEY,  // Uncomment when you have API access
+  hiveApiKey: 'your-api-key', // Optional - get from https://t.me/hiveintelligence
+  hiveMcpUrl: 'https://hiveintelligence.xyz/mcp' // Default endpoint
 });
 
-// is this token gonna rug you? let's find out
+// Analyze a token
 const analysis = await oca.analyze('ethereum', '0x...');
-console.log(analysis); // probably saved you from a rugpull
+
+// Check for rugs
+const security = await oca.security('0x...');
+
+// Find alpha opportunities
+const alpha = await oca.alpha('ethereum');
 ```
 
-## 🔌 Hive Intelligence Integration
+## 🤖 MCP Integration
 
-OnChainAgents is powered by **Hive Intelligence**, providing real-time crypto data, security analysis, and market intelligence.
+### Connect to Hive Intelligence
 
-### Quick Setup
+#### For Claude Code CLI:
 ```bash
-# Set your Hive API key (optional - works in fallback mode without it)
-export HIVE_API_KEY=your-api-key-here
-
-# Run with real Hive data
-USE_REAL_HIVE=true npm run test:agents
+# Add Hive Intelligence MCP server
+claude mcp add --transport http hive https://hiveintelligence.xyz/mcp
 ```
 
-### Features
-- 🔍 **Real-time token analysis** via Hive Intelligence API
-- 🛡️ **Security scanning** with contract verification
-- 🐋 **Whale tracking** and wallet analysis
-- 📊 **Sentiment analysis** across social platforms
-- 🎯 **Alpha discovery** with risk assessment
-- 💾 **Smart caching** to optimize API usage
-- 🔄 **Automatic fallback** when API is unavailable
+#### For Claude Desktop:
+1. Go to Settings → Manage Connectors
+2. Click "Add Connector"
+3. Enter URL: `https://hiveintelligence.xyz/mcp`
 
-See [HIVE_INTEGRATION.md](./HIVE_INTEGRATION.md) for detailed configuration.
+### Run OnChainAgents as MCP Server:
 
-### Connection Methods
+```bash
+# Start the MCP server
+npm run mcp
 
-**For Programmatic Access (Node.js):**
-- Use `HiveMCPRemoteClient` for direct HTTP connections to Hive Intelligence
-- Supports caching, retries, and fallback mode
-- Works with or without API key (limited access without key)
+# Server runs on http://localhost:3000/mcp
+```
 
-**For Claude Desktop:**
-- Add MCP server through Settings → Manage Connectors
-- No CLI commands needed - GUI configuration only
-
-## 🤖 Claude Desktop Integration (MCP)
-
-### Setting up Hive Intelligence MCP
-
-**For Claude Desktop:**
-1. Open Claude Desktop
-2. Go to **Settings → Manage Connectors**
-3. Add Connector URL: `https://hiveintelligence.xyz/mcp`
-4. The MCP server will be available in Claude Desktop
-
-**Note:** There is no CLI command for adding MCP servers. The `claude mcp add` command does not exist. MCP servers are configured through the Claude Desktop GUI.
-
-### Manual Setup (Alternative)
-If you want to configure MCP servers manually, add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json`):
+Configure your AI tool to connect to:
 ```json
 {
   "mcpServers": {
     "onchainagents": {
-      "command": "npx",
-      "args": ["@onchainagents/core", "oca-mcp"],
+      "command": "node",
+      "args": ["dist/orchestrator/mcp-server.js"],
       "env": {
-        "HIVE_FALLBACK_MODE": "true"
+        "HIVE_API_KEY": "your-api-key"
       }
     }
   }
 }
 ```
 
-### Using in Claude
-Once configured, you can use OnChainAgents tools directly in Claude:
-- "Use oca_analyze to analyze ethereum 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-- "Use oca_hunt to find alpha opportunities in DeFi"
-- "Use oca_security to check if this token is safe: 0x..."
-- "Use oca_track to monitor whale wallet 0x..."
+## 📚 Available Agents
 
-## 🔥 why this exists
+### Security & Risk
+- **🛡️ RugDetector**: Advanced rugpull and honeypot detection
+- **⚠️ RiskAnalyzer**: Comprehensive risk assessment
+- **🔍 WhaleTracker**: Monitor large wallet movements
 
-look, we're tired of:
-- paying $500/month for "pro" crypto tools that barely work
-- getting rugged because we didn't have access to proper analysis
-- watching whales make millions while we're stuck with basic charts
-- institutional traders having all the alpha while retail gets rekt
+### Market Intelligence  
+- **🎯 AlphaHunter**: Early opportunity detection
+- **📊 MarketMaker**: Liquidity and spread analysis
+- **💭 SentimentAnalyzer**: Social sentiment aggregation
+- **📈 MarketStructureAnalyst**: Market microstructure analysis
 
-**so we built this. completely free. open source. no bs.**
+### DeFi & Research
+- **🔬 TokenResearcher**: Deep token analysis
+- **💰 YieldOptimizer**: Yield farming optimization
+- **📋 PortfolioTracker**: Multi-chain portfolio management
+- **🏦 DeFiAnalyzer**: Protocol analysis and TVL tracking
 
-## 🧠 meet your new crypto brain trust (12 SuperClaude Personas)
+### Specialized Analysis
+- **🎨 NFTValuator**: NFT pricing and rarity
+- **🗳️ GovernanceAdvisor**: DAO proposal analysis
+- **🔗 CrossChainNavigator**: Bridge and cross-chain routing
+- **📐 CryptoQuant**: On-chain metrics and quant analysis
+- **🔎 ChainAnalyst**: Blockchain forensics and tracing
 
-### 🐋 Market Intelligence
-**WhaleHunter** → tracks and analyzes large crypto holders
-- Real-time whale movement detection
-- Accumulation/distribution pattern analysis
-- Market impact prediction
-- Wallet clustering intelligence
-
-**MarketMaker** → liquidity dynamics and price discovery
-- Order book depth analysis
-- Spread optimization strategies
-- Volume correlation patterns
-- MEV detection and avoidance
-
-**AlphaSeeker** → early opportunity discovery
-- Unusual volume spike detection
-- Smart money movement tracking
-- Social sentiment correlation
-- Momentum validation system
-
-### 🏗️ DeFi Specialists
-**DeFiArchitect** → protocol optimization expert
-- Capital efficiency maximization
-- Complex strategy design
-- Protocol safety assessment
-- TVL and liquidity analysis
-
-**YieldFarmer** → yield optimization across protocols
-- APY maximization strategies
-- Impermanent loss calculations
-- Gas optimization techniques
-- Auto-compound strategies
-
-### 🛡️ Security & Risk
-**SecurityAuditor** → vulnerability and exploit detection
-- Smart contract analysis
-- Honeypot detection
-- Rugpull pattern matching
-- Audit completeness scoring
-
-**RiskManager** → portfolio risk assessment
-- Multi-factor risk quantification
-- Exposure management
-- Correlation analysis
-- Stress testing scenarios
-
-### 🔍 Analysis Experts
-**ChainAnalyst** → on-chain data insights
-- Transaction flow analysis
-- Block exploration
-- Pattern detection
-- Cross-chain tracking
-
-**CryptoQuant** → quantitative analysis with 20 years experience
-- GARCH models for volatility prediction
-- Statistical arbitrage detection
-- Cointegration analysis for pairs trading
-- Hidden Markov Models for regime detection
-
-**BridgeGuardian** → cross-chain security
-- Bridge vulnerability assessment
-- Route optimization
-- Fee calculation
-- Liquidity monitoring
-
-### 🗳️ Governance & NFTs
-**GovernanceGuru** → DAO and proposal analysis
-- Proposal impact assessment
-- Voting power distribution
-- Treasury management
-- Community sentiment
-
-**NFTDegen** → NFT market intelligence
-- Rarity assessment
-- Floor price tracking
-- Trend detection
-- Flip opportunity identification
-
-### 📈 the money makers
-**alpha hunter** → finds gems before they moon  
-- tracks unusual volume spikes
-- monitors smart money movements
-- social sentiment correlation
-- basically prints money (not financial advice)
-
-**whale tracker** → stalks the big boys  
-- real-time whale movement alerts
-- wallet clustering analysis
-- copy trading opportunities
-- know what they know
-
-**sentiment analyzer** → reads the room across all of crypto twitter  
-- aggregates social signals
-- filters out the noise
-- trend prediction that actually works
-
-### 🔬 the researchers
-**token researcher** → deep dives so you don't have to  
-- tokenomics analysis that makes sense
-- team background checks
-- utility assessment
-- basically a private investigator for tokens
-
-**defi analyzer** → navigates the yield farming jungle  
-- finds the best yields
-- calculates real APY (not the fake marketing ones)
-- impermanent loss warnings
-- protocol safety scores
-
-**portfolio tracker** → your personal accountant  
-- multi-chain tracking (because who uses just one chain?)
-- P&L that includes gas fees (revolutionary, we know)
-- tax reporting that doesn't suck
-
-### 🌐 the specialists
-**cross-chain navigator** → bridge expert extraordinaire  
-- finds cheapest routes
-- calculates real costs (including slippage)
-- bridge safety ratings
-- saves you from bridge hacks
-
-**market structure analyst** → sees the matrix  
-- order book depth analysis
-- liquidity distribution mapping
-- MEV detection
-- finds the best entry/exit points
-
-## 💪 SuperClaude Commands (Wave-Enabled)
+## 💪 Commands
 
 ### Core Commands
 ```bash
-# Whale tracking with accumulation analysis
-/whale <address> [--depth deep] [--timeframe 7d]
+# Market Analysis
+oca whale <address>        # Track whale movements
+oca alpha <network>        # Find alpha opportunities
+oca sentiment <token>      # Analyze market sentiment
 
-# Security audit with vulnerability scanning
-/audit <contract> [--comprehensive] [--wave-mode]
+# Security
+oca audit <address>        # Security audit
+oca risk <token>           # Risk assessment
 
-# Alpha discovery with smart money tracking
-/alpha [--risk low] [--chains all] [--parallel]
+# DeFi Operations
+oca yield <network>        # Find best yields
+oca trace <txHash>         # Transaction analysis
 
-# Yield optimization across protocols
-/yield <amount> [--strategy aggressive] [--gas-optimize]
-
-# Multi-dimensional analysis (wave-enabled)
-/analyze <target> [--think-hard] [--wave-strategy progressive]
-
-# Risk assessment with stress testing
-/risk <portfolio> [--simulate crash] [--correlations]
+# Advanced Analysis
+oca quant <token>          # Quantitative metrics
+oca mm <pair>              # Market maker analysis
+oca governance <protocol>  # Governance insights
+oca nft <collection>       # NFT analytics
 ```
 
-### Advanced Flags (SuperClaude)
+### Command Flags
 ```bash
-# Thinking modes
---think          # 4K token analysis
---think-hard     # 10K deep analysis
---ultrathink     # 32K comprehensive
-
-# Wave orchestration
---wave-mode      # Enable multi-stage execution
---wave-strategy  # progressive|systematic|adaptive|enterprise
-
-# Parallel processing
---delegate       # Enable sub-agent delegation
---parallel-dirs  # Parallel directory analysis
---concurrency 10 # Max concurrent operations
-
-# Optimization
---uc             # Ultra-compressed output (30-50% reduction)
---safe-mode      # Maximum validation
---validate       # Pre-operation validation
+--network <chain>     # Specify blockchain
+--detailed           # Verbose output
+--json              # JSON format
+--cache             # Use cached data
+--parallel          # Parallel execution
+--validate          # Extra validation
 ```
 
-## 🚀 real examples that'll blow your mind
+## 🎯 Example Workflows
 
-### stop getting rugged
+### Token Security Check
 ```typescript
-const safety = await oca.security.rugDetector.analyze('0x...');
-// Result: { score: 23, verdict: 'DANGER', risks: ['HONEYPOT_DETECTED', 'LIQUIDITY_UNLOCKED'] }
-// just saved your ass
-```
-
-### find gems before everyone else
-```typescript
-const opportunities = await oca.market.alphaHunter.scan({
-  minLiquidity: 100000,
-  maxMarketCap: 10000000,
-  socialGrowth: 'increasing'
+// Comprehensive security analysis
+const security = await oca.analyze('ethereum', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', {
+  flags: ['--detailed', '--validate']
 });
-// Result: 5 tokens about to explode (maybe)
+
+if (security.riskScore > 70) {
+  console.warn('High risk token detected!');
+}
 ```
 
-### copy trade like a whale
+### DeFi Yield Optimization
 ```typescript
-const whaleActivity = await oca.market.whaleTracker.monitor({
-  minTransaction: 1000000,
-  networks: ['ethereum', 'bsc'],
-  timeframe: '1h'
+// Find best yield opportunities
+const yields = await oca.yield('ethereum', {
+  minTvl: 1000000,
+  minApy: 10,
+  protocols: ['aave', 'compound', 'curve']
 });
-// Result: whale just bought $2M of some random token
-// you know what to do
 ```
 
-## 🏗️ How It Works (SuperClaude Architecture)
-
-### Request Flow
-```
-User Input → Detection Engine → Complexity Scoring → Persona Activation
-     ↓              ↓                    ↓                   ↓
-Resource Zones → Routing Table → Wave Orchestration → Sub-Agent Delegation
-     ↓              ↓                    ↓                   ↓
-Quality Gates → Evidence Generation → Circuit Breakers → Response
+### Whale Monitoring
+```typescript
+// Track whale activities
+const whales = await oca.whale('0x...', {
+  timeframe: '24h',
+  minValue: 1000000
+});
 ```
 
-### Intelligence Layers
-1. **Detection & Analysis**: Pattern recognition, complexity assessment
-2. **Orchestration**: Wave strategies, parallel execution, resource management
-3. **Persona Intelligence**: 11 domain experts with auto-activation
-4. **Data Coordination**: Hive Intelligence + 9 fallback sources
-5. **Resilience**: Circuit breakers, graceful degradation, emergency protocols
-6. **Evidence**: On-chain proofs, merkle tree aggregation, audit trails
+## 📊 Performance
 
-### Wave Orchestration (Multi-Stage Execution)
-- **Progressive**: Iterative enhancement (5 stages)
-- **Systematic**: Methodical analysis (4 stages)
-- **Adaptive**: Dynamic configuration (4 stages)
-- **Enterprise**: Large-scale ops (5 stages)
+- **Response Time**: <500ms for cached queries
+- **API Efficiency**: Intelligent caching and batching
+- **Concurrency**: Handles 100+ simultaneous requests
+- **Uptime**: 99.9% availability target
+- **Rate Limiting**: Built-in protection
 
-### Resource Management Zones
-- 🟢 **Green (0-60%)**: Full operations
-- 🟡 **Yellow (60-75%)**: Optimization mode
-- 🟠 **Orange (75-85%)**: Conservation mode
-- 🔴 **Red (85-95%)**: Essential only
-- ⚫ **Critical (95%+)**: Emergency protocols
+## 🔧 Configuration
 
-## 📊 Performance Metrics (SuperClaude Standards)
+Create a `.env` file:
+```env
+# Hive Intelligence MCP
+HIVE_MCP_URL=https://hiveintelligence.xyz/mcp
+HIVE_API_KEY=your-hive-api-key  # Optional - get from https://t.me/hiveintelligence
 
-### Speed & Efficiency
-- ⚡ **<5s** simple operations (single persona, basic analysis)
-- 🚀 **<45s** complex operations (multi-persona, deep analysis)
-- 🌊 **<300s** enterprise operations (wave orchestration, full system)
-- 💾 **30-50%** token reduction (crypto-optimized compression)
-- 🔄 **15** concurrent sub-agents (parallel processing)
+# Optional Settings
+HIVE_FALLBACK_MODE=false  # Use simulated data for testing
+NODE_ENV=production
+PORT=3000
+CACHE_TTL=3600
+MAX_RETRIES=3
+CIRCUIT_BREAKER_THRESHOLD=5
+```
 
-### Quality & Reliability
-- 🎯 **95%+** accuracy with quality gates
-- 🛡️ **99.9%** uptime with circuit breakers
-- 📈 **60+** blockchains supported
-- 🔍 **8-step** validation cycle
-- 📊 **11** specialized personas
-
-### Scale & Capacity
-- 🌐 **1000+** requests/min capacity
-- 💼 **100+** files in enterprise mode
-- 🧠 **5** wave stages maximum
-- 🔧 **10** emergency protocols
-- 📡 **9** fallback data sources
-
-## 🛡️ security (because we're not hypocrites)
-
-- your API keys are encrypted (obviously)
-- rate limiting so you don't accidentally DDoS yourself
-- input sanitization (no little bobby tables here)
-- audit logs for everything
-- regular security updates (we're paranoid too)
-
-## 🤝 wanna contribute?
-
-hell yeah! we need:
-- more agents (got ideas? build them!)
-- bug hunters (break our stuff, we'll fix it)
-- documentation writers (explain things better than us)
-- memers (seriously, we need better memes)
+## 🧪 Testing
 
 ```bash
-# fork it
-git clone https://github.com/YOUR_USERNAME/onchainagents.fun
-
-# make it better
-npm install
+# Run tests
 npm test
 
-# ship it
-git push && open PR
+# With coverage
+npm run test:coverage
+
+# Test specific agent
+npm test -- --testNamePattern="RugDetector"
 ```
 
-## 🌟 the community
+## 🤝 Contributing
 
-- **discord**: where the alpha drops first → [join us](https://discord.gg/onchainagents)
-- **twitter**: memes and updates → [@onchainagents](https://twitter.com/onchainagents)
-- **github**: you're already here → star us pls
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## 🏆 wall of fame
+### Development Setup
+```bash
+# Install dependencies
+npm install
 
-built by degens, for degens:
-- saved users from **$10M+ in rugpulls** (and counting)
-- found **50+ gems** before they mooned
-- tracked **$1B+ in whale movements**
-- made finance fun again (citation needed)
+# Run in development
+npm run dev
 
-## 📜 license
+# Build
+npm run build
 
-MIT = do whatever you want with this
+# Lint
+npm run lint
+```
 
-seriously, fork it, sell it, print it on a t-shirt, we don't care
+## 📚 Documentation
 
-just don't blame us when you ape into something stupid
+- [Full Documentation](https://docs.onchainagents.fun)
+- [API Reference](https://docs.onchainagents.fun/api)
+- [Agent Guides](./docs/agents/)
+- [MCP Setup](./docs/MCP_SETUP_GUIDE.md)
 
-## 🙏 credits
+## 🛠️ Tech Stack
 
-- [hive intelligence](https://hiveintelligence.xyz) → the data gods
-- [claude](https://claude.ai) → helped write this
-- the community → you beautiful bastards
-- coffee → the real MVP
+- **Language**: TypeScript 5.3+
+- **Runtime**: Node.js 18+
+- **Testing**: Jest
+- **API**: Hive Intelligence
+- **Protocols**: MCP (Model Context Protocol)
+- **Architecture**: Event-driven, modular
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) file
+
+## 🙏 Acknowledgments
+
+- [Hive Intelligence](https://hiveintelligence.xyz) - Real-time crypto data
+- [MCP Protocol](https://modelcontextprotocol.io) - AI tool integration
+- Open source community
+
+## 🔗 Links
+
+- **Website**: [onchainagents.fun](https://onchainagents.fun)
+- **Documentation**: [docs.onchainagents.fun](https://docs.onchainagents.fun)
+- **GitHub**: [github.com/onchainagents](https://github.com/onchainagents)
+- **Discord**: [discord.gg/onchainagents](https://discord.gg/onchainagents)
+- **Twitter**: [@onchainagents](https://twitter.com/onchainagents)
 
 ---
 
 <div align="center">
-  
-  **remember: this is not financial advice. dyor. stay safu. wagmi.**
-  
-  if you made money with this, maybe buy us a coffee? ☕
-  
-  ⭐ **star this repo or your next trade goes to zero** ⭐
-  
+  <b>Built with ❤️ for the crypto community</b>
+  <br>
+  <sub>Free • Open Source • Community Driven</sub>
 </div>

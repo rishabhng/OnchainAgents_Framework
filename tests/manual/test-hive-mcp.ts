@@ -10,7 +10,7 @@
  * and provides instructions for Claude Desktop setup
  */
 
-import { HiveMCPRemoteClient } from './src/mcp/HiveMCPRemoteClient';
+import { HiveMCPRemoteClient } from '../../src/mcp/HiveMCPRemoteClient';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 
@@ -66,14 +66,14 @@ async function listTools(client: HiveMCPRemoteClient): Promise<void> {
     const tools = await client.listTools();
     console.log(chalk.green(`  ✓ Found ${tools.length} tools:`));
     
-    tools.forEach(tool => {
-      console.log(chalk.gray(`    • ${tool}`));
+    tools.forEach((tool: any) => {
+      console.log(chalk.gray(`    • ${tool.name || tool}`));
     });
   } catch (error) {
     console.log(chalk.yellow(`  ⚠ Using fallback tool list`));
     const fallbackTools = client.getAvailableTools();
-    fallbackTools.forEach(tool => {
-      console.log(chalk.gray(`    • ${tool}`));
+    fallbackTools.forEach((tool: any) => {
+      console.log(chalk.gray(`    • ${tool.name || tool}`));
     });
   }
 }
@@ -172,9 +172,9 @@ function printClaudeDesktopInstructions() {
   console.log(chalk.yellow('4.') + ' Enter URL: ' + chalk.green('https://hiveintelligence.xyz/mcp'));
   console.log(chalk.yellow('5.') + ' The MCP server will be available in Claude Desktop\n');
   
-  console.log(chalk.gray('Note: There is no CLI command for adding MCP servers.'));
-  console.log(chalk.gray('The "claude mcp add" command does not exist.'));
-  console.log(chalk.gray('MCP servers must be configured through the GUI.\n'));
+  console.log(chalk.gray('Note: For Claude Code CLI, use:'));
+  console.log(chalk.green('  claude mcp add --transport http hive https://hiveintelligence.xyz/mcp'));
+  console.log(chalk.gray('\nFor Claude Desktop, configure through the GUI.\n'));
 }
 
 async function main() {

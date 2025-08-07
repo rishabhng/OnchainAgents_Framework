@@ -81,12 +81,12 @@ export abstract class BaseCommand extends EventEmitter {
   protected detectionEngine: DetectionEngine;
   protected personaManager: PersonaManager;
   protected activationEngine: PersonaActivationEngine;
-  
+
   constructor(
     config: CommandConfig,
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super();
     this.config = config;
@@ -94,25 +94,25 @@ export abstract class BaseCommand extends EventEmitter {
     this.personaManager = personaManager;
     this.activationEngine = activationEngine;
   }
-  
+
   /**
    * Validate command arguments
    */
   protected validateArguments(args: Record<string, any>): string[] {
     const errors: string[] = [];
-    
+
     for (const argDef of this.config.arguments) {
       const value = args[argDef.name];
-      
+
       // Check required
       if (argDef.required && value === undefined) {
         errors.push(`Missing required argument: ${argDef.name}`);
         continue;
       }
-      
+
       // Skip if not provided and not required
       if (value === undefined) continue;
-      
+
       // Type validation
       if (argDef.type === 'address') {
         if (!/^0x[a-fA-F0-9]{40}$/.test(value)) {
@@ -128,58 +128,58 @@ export abstract class BaseCommand extends EventEmitter {
           errors.push(`Invalid number: ${argDef.name}`);
         }
       }
-      
+
       // Custom validation
       if (argDef.validation && !argDef.validation(value)) {
         errors.push(`Validation failed for: ${argDef.name}`);
       }
     }
-    
+
     return errors;
   }
-  
+
   /**
    * Parse command flags
    */
   protected parseFlags(flags: Record<string, any>): Record<string, any> {
     const parsed: Record<string, any> = {};
-    
+
     for (const [key, value] of Object.entries(flags)) {
       // Remove -- prefix if present
       const cleanKey = key.startsWith('--') ? key.slice(2) : key;
       parsed[cleanKey] = value;
     }
-    
+
     return parsed;
   }
-  
+
   /**
    * Execute the command
    */
   public abstract execute(context: CommandContext): Promise<CommandResult>;
-  
+
   /**
    * Get command help
    */
   public getHelp(): string {
     let help = `${this.config.command} - ${this.config.purpose}\n\n`;
-    
+
     help += 'Arguments:\n';
     for (const arg of this.config.arguments) {
       const required = arg.required ? ' (required)' : ' (optional)';
       help += `  ${arg.name}: ${arg.type}${required} - ${arg.description}\n`;
     }
-    
+
     help += '\nFlags:\n';
     for (const flag of this.config.flags) {
       help += `  --${flag}\n`;
     }
-    
+
     help += '\nExamples:\n';
     for (const example of this.config.examples) {
       help += `  ${example}\n`;
     }
-    
+
     return help;
   }
 }
@@ -191,7 +191,7 @@ export class WhaleCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -226,20 +226,17 @@ export class WhaleCommand extends BaseCommand {
           },
         ],
         flags: ['--deep', '--realtime', '--alert', '--history'],
-        examples: [
-          '/whale 0x123... --deep',
-          '/whale 0x456... --network polygon --realtime',
-        ],
+        examples: ['/whale 0x123... --deep', '/whale 0x456... --network polygon --realtime'],
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     // Validate arguments
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
@@ -249,10 +246,10 @@ export class WhaleCommand extends BaseCommand {
         errors,
       };
     }
-    
+
     // Parse flags
     const flags = this.parseFlags(context.flags);
-    
+
     // Auto-activate persona
     const activationContext = {
       domains: [CryptoDomain.WHALE],
@@ -262,9 +259,9 @@ export class WhaleCommand extends BaseCommand {
       riskLevel: 0.3,
       urgency: flags.realtime ? 0.8 : 0.3,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     // Simulate whale tracking
     const whaleData = {
       address: context.args.address,
@@ -288,11 +285,10 @@ export class WhaleCommand extends BaseCommand {
       riskScore: 0.3,
       influence: 0.7,
     };
-    
+
     // Get persona recommendations
-    const recommendations = persona ? 
-      (persona as any).getRecommendations(whaleData) : [];
-    
+    const recommendations = persona ? (persona as any).getRecommendations(whaleData) : [];
+
     return {
       success: true,
       command: this.config.command,
@@ -322,7 +318,7 @@ export class AuditCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -357,20 +353,17 @@ export class AuditCommand extends BaseCommand {
           },
         ],
         flags: ['--critical-only', '--include-deps', '--simulate', '--report'],
-        examples: [
-          '/audit 0xcontract... --deep',
-          '/audit 0xtoken... --critical-only --report',
-        ],
+        examples: ['/audit 0xcontract... --deep', '/audit 0xtoken... --critical-only --report'],
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     // Validate arguments
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
@@ -380,10 +373,10 @@ export class AuditCommand extends BaseCommand {
         errors,
       };
     }
-    
+
     // Parse flags
     const flags = this.parseFlags(context.flags);
-    
+
     // Auto-activate security persona
     const activationContext = {
       domains: [CryptoDomain.SECURITY],
@@ -393,9 +386,9 @@ export class AuditCommand extends BaseCommand {
       riskLevel: 0.8,
       urgency: 0.5,
     };
-    
+
     await this.activationEngine.activateBestPersona(activationContext);
-    
+
     // Simulate audit results
     const auditResults = {
       contract: context.args.contract,
@@ -419,15 +412,14 @@ export class AuditCommand extends BaseCommand {
       ownershipRenounced: false,
       auditSummary: 'Contract is relatively safe with minor improvements needed',
     };
-    
+
     return {
       success: true,
       command: this.config.command,
       data: auditResults,
-      warnings: flags['critical-only'] ? [] : [
-        'Owner can still modify contract',
-        'Consider renouncing ownership after deployment',
-      ],
+      warnings: flags['critical-only']
+        ? []
+        : ['Owner can still modify contract', 'Consider renouncing ownership after deployment'],
       metadata: {
         executionTime: Date.now() - startTime,
         tokensUsed: 15000,
@@ -445,7 +437,7 @@ export class AlphaCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -481,23 +473,20 @@ export class AlphaCommand extends BaseCommand {
           },
         ],
         flags: ['--trending', '--whale-backed', '--narrative', '--momentum'],
-        examples: [
-          '/alpha --trending --whale-backed',
-          '/alpha defi --risk high --momentum',
-        ],
+        examples: ['/alpha --trending --whale-backed', '/alpha defi --risk high --momentum'],
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     // Parse flags
     const flags = this.parseFlags(context.flags);
-    
+
     // Auto-activate alpha seeker
     const activationContext = {
       domains: [CryptoDomain.ALPHA],
@@ -507,9 +496,9 @@ export class AlphaCommand extends BaseCommand {
       riskLevel: context.args.risk === 'high' ? 0.8 : 0.5,
       urgency: flags.momentum ? 0.7 : 0.4,
     };
-    
+
     await this.activationEngine.activateBestPersona(activationContext);
-    
+
     // Simulate alpha discoveries
     const opportunities = [
       {
@@ -533,7 +522,7 @@ export class AlphaCommand extends BaseCommand {
         reasoning: 'Aligns with AI narrative, active development',
       },
     ];
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -566,7 +555,7 @@ export class YieldCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -601,20 +590,17 @@ export class YieldCommand extends BaseCommand {
           },
         ],
         flags: ['--stable-only', '--multi-chain', '--auto-compound', '--gas-optimize'],
-        examples: [
-          '/yield 10000 --stable-only',
-          '/yield 50000 --risk high --multi-chain',
-        ],
+        examples: ['/yield 10000 --stable-only', '/yield 50000 --risk high --multi-chain'],
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     // Validate arguments
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
@@ -624,10 +610,10 @@ export class YieldCommand extends BaseCommand {
         errors,
       };
     }
-    
+
     // Parse flags
     const flags = this.parseFlags(context.flags);
-    
+
     // Auto-activate DeFi architect
     const activationContext = {
       domains: [CryptoDomain.DEFI, CryptoDomain.YIELD],
@@ -637,9 +623,9 @@ export class YieldCommand extends BaseCommand {
       riskLevel: context.args.risk === 'high' ? 0.7 : 0.4,
       urgency: 0.3,
     };
-    
+
     await this.activationEngine.activateBestPersona(activationContext);
-    
+
     // Simulate yield optimization
     const strategies = [
       {
@@ -667,9 +653,9 @@ export class YieldCommand extends BaseCommand {
         gasEstimate: flags['multi-chain'] ? 10 : 100,
       },
     ];
-    
+
     const totalAPY = strategies.reduce((sum, s) => sum + s.apy * s.allocation, 0);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -697,7 +683,7 @@ export class SentimentCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -722,17 +708,17 @@ export class SentimentCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const flags = this.parseFlags(context.flags);
     const activationContext = {
       domains: [CryptoDomain.SENTIMENT],
@@ -740,11 +726,11 @@ export class SentimentCommand extends BaseCommand {
       keywords: ['sentiment', 'social', 'narrative'],
       complexity: 0.4,
       riskLevel: 0.2,
-      urgency: flags.realtime ? 0.7 : 0.3,
+      urgency: (flags as any).realtime ? 0.7 : 0.3,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -770,7 +756,7 @@ export class NFTCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -795,17 +781,17 @@ export class NFTCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const activationContext = {
       domains: [CryptoDomain.NFT],
       operations: [OperationType.ANALYSIS],
@@ -814,9 +800,9 @@ export class NFTCommand extends BaseCommand {
       riskLevel: 0.3,
       urgency: 0.2,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -843,7 +829,7 @@ export class GovernanceCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -868,17 +854,17 @@ export class GovernanceCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const activationContext = {
       domains: [CryptoDomain.GOVERNANCE],
       operations: [OperationType.ANALYSIS],
@@ -887,9 +873,9 @@ export class GovernanceCommand extends BaseCommand {
       riskLevel: 0.3,
       urgency: 0.4,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -916,7 +902,7 @@ export class RiskCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -941,17 +927,17 @@ export class RiskCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const flags = this.parseFlags(context.flags);
     const activationContext = {
       domains: [CryptoDomain.RISK],
@@ -961,9 +947,9 @@ export class RiskCommand extends BaseCommand {
       riskLevel: 0.8,
       urgency: 0.5,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -977,7 +963,7 @@ export class RiskCommand extends BaseCommand {
         executionTime: Date.now() - startTime,
         tokensUsed: 7000,
         persona: persona ? (persona as any).config.type : undefined,
-        waveMode: flags.stress || false,
+        waveMode: (flags as any).stress || false,
       },
     };
   }
@@ -990,7 +976,7 @@ export class TraceCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -1015,18 +1001,18 @@ export class TraceCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
-    const flags = this.parseFlags(context.flags);
+
+    this.parseFlags(context.flags);
     const activationContext = {
       domains: [CryptoDomain.ONCHAIN],
       operations: [OperationType.TRACKING],
@@ -1035,9 +1021,9 @@ export class TraceCommand extends BaseCommand {
       riskLevel: 0.4,
       urgency: 0.3,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -1065,7 +1051,7 @@ export class QuantCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -1091,17 +1077,17 @@ export class QuantCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const flags = this.parseFlags(context.flags);
     const activationContext = {
       domains: [CryptoDomain.QUANT],
@@ -1111,15 +1097,15 @@ export class QuantCommand extends BaseCommand {
       riskLevel: 0.6,
       urgency: 0.4,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
       data: {
         strategy: context.args.strategy || 'arbitrage',
-        model: flags.garch ? 'GARCH-BEKK' : 'Mean Reversion',
+        model: (flags as any).garch ? 'GARCH-BEKK' : 'Mean Reversion',
         sharpeRatio: 2.1,
         expectedReturn: 0.35,
         confidence: 0.85,
@@ -1146,7 +1132,7 @@ export class MarketMakerCommand extends BaseCommand {
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super(
       {
@@ -1171,17 +1157,17 @@ export class MarketMakerCommand extends BaseCommand {
       },
       detectionEngine,
       personaManager,
-      activationEngine
+      activationEngine,
     );
   }
-  
+
   async execute(context: CommandContext): Promise<CommandResult> {
     const startTime = Date.now();
     const errors = this.validateArguments(context.args);
     if (errors.length > 0) {
       return { success: false, command: this.config.command, errors };
     }
-    
+
     const activationContext = {
       domains: [CryptoDomain.MARKET],
       operations: [OperationType.EXECUTION],
@@ -1190,9 +1176,9 @@ export class MarketMakerCommand extends BaseCommand {
       riskLevel: 0.7,
       urgency: 0.8,
     };
-    
+
     const persona = await this.activationEngine.activateBestPersona(activationContext);
-    
+
     return {
       success: true,
       command: this.config.command,
@@ -1221,11 +1207,11 @@ export class CommandManager extends EventEmitter {
   private personaManager: PersonaManager;
   private activationEngine: PersonaActivationEngine;
   private commandHistory: CommandResult[] = [];
-  
+
   constructor(
     detectionEngine: DetectionEngine,
     personaManager: PersonaManager,
-    activationEngine: PersonaActivationEngine
+    activationEngine: PersonaActivationEngine,
   ) {
     super();
     this.detectionEngine = detectionEngine;
@@ -1234,77 +1220,55 @@ export class CommandManager extends EventEmitter {
     this.commands = new Map();
     this.initializeCommands();
   }
-  
+
   private initializeCommands(): void {
     // Register all commands
-    this.registerCommand(new WhaleCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new AuditCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new AlphaCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new YieldCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
+    this.registerCommand(
+      new WhaleCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new AuditCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new AlphaCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new YieldCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
     // Register new commands for all personas
-    this.registerCommand(new SentimentCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new NFTCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new GovernanceCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new RiskCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new TraceCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new QuantCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
-    
-    this.registerCommand(new MarketMakerCommand(
-      this.detectionEngine,
-      this.personaManager,
-      this.activationEngine
-    ));
+    this.registerCommand(
+      new SentimentCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new NFTCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new GovernanceCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new RiskCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new TraceCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new QuantCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
+
+    this.registerCommand(
+      new MarketMakerCommand(this.detectionEngine, this.personaManager, this.activationEngine),
+    );
   }
-  
+
   /**
    * Register a command
    */
@@ -1312,7 +1276,7 @@ export class CommandManager extends EventEmitter {
     const config = (command as any).config;
     this.commands.set(config.command, command);
   }
-  
+
   /**
    * Parse command input
    */
@@ -1325,17 +1289,17 @@ export class CommandManager extends EventEmitter {
     const command = parts[0];
     const args: Record<string, any> = {};
     const flags: Record<string, any> = {};
-    
+
     let currentArg: string | null = null;
-    
+
     for (let i = 1; i < parts.length; i++) {
       const part = parts[i];
-      
+
       if (part.startsWith('--')) {
         // Flag
         const flagName = part.slice(2);
         const nextPart = parts[i + 1];
-        
+
         if (nextPart && !nextPart.startsWith('--')) {
           flags[flagName] = nextPart;
           i++;
@@ -1351,7 +1315,7 @@ export class CommandManager extends EventEmitter {
         currentArg = null;
       }
     }
-    
+
     // Handle single argument commands
     if (currentArg) {
       const cmd = this.commands.get(command);
@@ -1362,16 +1326,16 @@ export class CommandManager extends EventEmitter {
         }
       }
     }
-    
+
     return { command, args, flags };
   }
-  
+
   /**
    * Execute a command
    */
   public async execute(input: string, userId?: string): Promise<CommandResult> {
     const { command, args, flags } = this.parseInput(input);
-    
+
     const cmd = this.commands.get(command);
     if (!cmd) {
       return {
@@ -1380,7 +1344,7 @@ export class CommandManager extends EventEmitter {
         errors: [`Unknown command: ${command}`],
       };
     }
-    
+
     const context: CommandContext = {
       command,
       args,
@@ -1390,23 +1354,23 @@ export class CommandManager extends EventEmitter {
       userId,
       sessionId: `session_${Date.now()}`,
     };
-    
+
     try {
       const result = await cmd.execute(context);
-      
+
       // Store in history
       this.commandHistory.push(result);
       if (this.commandHistory.length > 100) {
         this.commandHistory.shift();
       }
-      
+
       // Emit execution event
       this.emit('command-executed', {
         command,
         result,
         context,
       });
-      
+
       return result;
     } catch (error) {
       return {
@@ -1416,7 +1380,7 @@ export class CommandManager extends EventEmitter {
       };
     }
   }
-  
+
   /**
    * Get command help
    */
@@ -1425,17 +1389,17 @@ export class CommandManager extends EventEmitter {
       const cmd = this.commands.get(commandName);
       return cmd ? cmd.getHelp() : `Unknown command: ${commandName}`;
     }
-    
+
     let help = 'Available Commands:\n\n';
     for (const [name, cmd] of this.commands) {
       const config = (cmd as any).config;
       help += `${name} - ${config.purpose}\n`;
     }
-    
+
     help += '\nUse /help <command> for detailed help on a specific command';
     return help;
   }
-  
+
   /**
    * Get command statistics
    */
@@ -1449,7 +1413,7 @@ export class CommandManager extends EventEmitter {
     const commandUsage: Record<string, number> = {};
     let successCount = 0;
     let totalTime = 0;
-    
+
     for (const result of this.commandHistory) {
       commandUsage[result.command] = (commandUsage[result.command] || 0) + 1;
       if (result.success) successCount++;
@@ -1457,7 +1421,7 @@ export class CommandManager extends EventEmitter {
         totalTime += result.metadata.executionTime;
       }
     }
-    
+
     return {
       totalExecutions,
       commandUsage,

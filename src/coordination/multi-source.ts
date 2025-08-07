@@ -8,22 +8,22 @@ import { EventEmitter } from 'events';
 
 // Data source types
 export enum DataSourceType {
-  HIVE = 'hive',                   // Primary: Hive Intelligence
-  COINGECKO = 'coingecko',         // Fallback: Price data
-  ETHERSCAN = 'etherscan',         // Fallback: Ethereum data
-  DEXSCREENER = 'dexscreener',     // Fallback: DEX data
-  DEFILLAMA = 'defillama',         // Fallback: DeFi TVL
-  CHAINLINK = 'chainlink',         // Fallback: Oracle data
-  GRAPH = 'thegraph',              // Fallback: Protocol data
-  COVALENT = 'covalent',           // Fallback: Multi-chain data
-  MORALIS = 'moralis',             // Fallback: Web3 data
-  ALCHEMY = 'alchemy',             // Fallback: Node provider
+  HIVE = 'hive', // Primary: Hive Intelligence
+  COINGECKO = 'coingecko', // Fallback: Price data
+  ETHERSCAN = 'etherscan', // Fallback: Ethereum data
+  DEXSCREENER = 'dexscreener', // Fallback: DEX data
+  DEFILLAMA = 'defillama', // Fallback: DeFi TVL
+  CHAINLINK = 'chainlink', // Fallback: Oracle data
+  GRAPH = 'thegraph', // Fallback: Protocol data
+  COVALENT = 'covalent', // Fallback: Multi-chain data
+  MORALIS = 'moralis', // Fallback: Web3 data
+  ALCHEMY = 'alchemy', // Fallback: Node provider
 }
 
 // Source configuration
 export interface SourceConfig {
   type: DataSourceType;
-  priority: number;              // 1 = highest priority
+  priority: number; // 1 = highest priority
   endpoint?: string;
   apiKey?: string;
   rateLimit: {
@@ -31,17 +31,17 @@ export interface SourceConfig {
     requestsPerMinute: number;
     requestsPerDay: number;
   };
-  timeout: number;              // milliseconds
+  timeout: number; // milliseconds
   retryAttempts: number;
-  capabilities: string[];       // What data this source can provide
-  reliability: number;          // 0-1 historical reliability score
-  cost: number;                 // Cost per request in USD cents
+  capabilities: string[]; // What data this source can provide
+  reliability: number; // 0-1 historical reliability score
+  cost: number; // Cost per request in USD cents
 }
 
 // Data request
 export interface DataRequest {
   id: string;
-  type: string;                 // whale_data, price_data, defi_data, etc.
+  type: string; // whale_data, price_data, defi_data, etc.
   params: Record<string, any>;
   priority: 'low' | 'medium' | 'high' | 'critical';
   requiredSources?: DataSourceType[];
@@ -75,9 +75,9 @@ export interface DataResponse {
 export interface SourceHealth {
   source: DataSourceType;
   status: 'healthy' | 'degraded' | 'unhealthy' | 'offline';
-  uptime: number;              // Percentage
-  averageLatency: number;      // milliseconds
-  errorRate: number;            // Percentage
+  uptime: number; // Percentage
+  averageLatency: number; // milliseconds
+  errorRate: number; // Percentage
   remainingQuota: {
     requests: number;
     resetTime: number;
@@ -87,11 +87,11 @@ export interface SourceHealth {
 
 // Aggregation strategy
 export enum AggregationStrategy {
-  FIRST_SUCCESS = 'first_success',    // Use first successful response
-  CONSENSUS = 'consensus',            // Require multiple sources to agree
-  WEIGHTED = 'weighted',              // Weight by source reliability
-  COMPLETE = 'complete',              // Merge all responses
-  FALLBACK = 'fallback',              // Use fallback on primary failure
+  FIRST_SUCCESS = 'first_success', // Use first successful response
+  CONSENSUS = 'consensus', // Require multiple sources to agree
+  WEIGHTED = 'weighted', // Weight by source reliability
+  COMPLETE = 'complete', // Merge all responses
+  FALLBACK = 'fallback', // Use fallback on primary failure
 }
 
 /**
@@ -101,18 +101,19 @@ export enum AggregationStrategy {
 export class MultiSourceCoordinator extends EventEmitter {
   private sources: Map<DataSourceType, SourceConfig> = new Map();
   private sourceHealth: Map<DataSourceType, SourceHealth> = new Map();
-  private requestQueue: DataRequest[] = [];
+  // Request queue would be used for batching requests
+  // private _requestQueue: DataRequest[] = [];
   private activeRequests: Map<string, DataRequest> = new Map();
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
   private cacheTTL: number = 60000; // 1 minute default
   private aggregationStrategy: AggregationStrategy = AggregationStrategy.FALLBACK;
-  
+
   constructor() {
     super();
     this.initializeSources();
     this.startHealthMonitoring();
   }
-  
+
   /**
    * Initialize data sources with configuration
    */
@@ -140,7 +141,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       reliability: 0.95,
       cost: 5,
     });
-    
+
     // Fallback sources
     this.sources.set(DataSourceType.COINGECKO, {
       type: DataSourceType.COINGECKO,
@@ -157,7 +158,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       reliability: 0.9,
       cost: 0,
     });
-    
+
     this.sources.set(DataSourceType.ETHERSCAN, {
       type: DataSourceType.ETHERSCAN,
       priority: 3,
@@ -173,7 +174,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       reliability: 0.92,
       cost: 0,
     });
-    
+
     this.sources.set(DataSourceType.DEXSCREENER, {
       type: DataSourceType.DEXSCREENER,
       priority: 4,
@@ -189,7 +190,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       reliability: 0.88,
       cost: 0,
     });
-    
+
     this.sources.set(DataSourceType.DEFILLAMA, {
       type: DataSourceType.DEFILLAMA,
       priority: 5,
@@ -205,7 +206,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       reliability: 0.91,
       cost: 0,
     });
-    
+
     // Initialize health status
     for (const source of this.sources.keys()) {
       this.sourceHealth.set(source, {
@@ -222,7 +223,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       });
     }
   }
-  
+
   /**
    * Start health monitoring for all sources
    */
@@ -231,7 +232,7 @@ export class MultiSourceCoordinator extends EventEmitter {
       this.checkSourceHealth();
     }, 30000); // Check every 30 seconds
   }
-  
+
   /**
    * Check health of all sources
    */
@@ -241,11 +242,11 @@ export class MultiSourceCoordinator extends EventEmitter {
         const startTime = Date.now();
         const isHealthy = await this.pingSource(sourceType);
         const latency = Date.now() - startTime;
-        
+
         const health = this.sourceHealth.get(sourceType)!;
         health.lastCheck = Date.now();
-        health.averageLatency = (health.averageLatency * 0.9) + (latency * 0.1);
-        
+        health.averageLatency = health.averageLatency * 0.9 + latency * 0.1;
+
         if (isHealthy) {
           health.status = latency < config.timeout * 0.5 ? 'healthy' : 'degraded';
           health.uptime = Math.min(100, health.uptime + 1);
@@ -255,21 +256,20 @@ export class MultiSourceCoordinator extends EventEmitter {
           health.uptime = Math.max(0, health.uptime - 5);
           health.errorRate = Math.min(100, health.errorRate + 10);
         }
-        
+
         if (health.errorRate > 50) {
           health.status = 'offline';
         }
-        
+
         this.emit('health-update', {
           source: sourceType,
           health,
         });
-        
       } catch (error) {
         const health = this.sourceHealth.get(sourceType)!;
         health.status = 'offline';
         health.errorRate = 100;
-        
+
         this.emit('health-check-failed', {
           source: sourceType,
           error,
@@ -277,11 +277,11 @@ export class MultiSourceCoordinator extends EventEmitter {
       }
     }
   }
-  
+
   /**
    * Ping a data source
    */
-  private async pingSource(source: DataSourceType): Promise<boolean> {
+  private async pingSource(_source: DataSourceType): Promise<boolean> {
     // Simulate ping - in production, make actual health check request
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -290,13 +290,13 @@ export class MultiSourceCoordinator extends EventEmitter {
       }, Math.random() * 1000);
     });
   }
-  
+
   /**
    * Request data with automatic source selection and fallback
    */
   public async requestData(request: DataRequest): Promise<DataResponse> {
     const startTime = Date.now();
-    
+
     // Check cache first
     if (request.cache) {
       const cached = this.checkCache(request);
@@ -318,13 +318,13 @@ export class MultiSourceCoordinator extends EventEmitter {
         };
       }
     }
-    
+
     // Add to active requests
     this.activeRequests.set(request.id, request);
-    
+
     // Determine eligible sources
     const eligibleSources = this.determineEligibleSources(request);
-    
+
     if (eligibleSources.length === 0) {
       return {
         requestId: request.id,
@@ -333,16 +333,18 @@ export class MultiSourceCoordinator extends EventEmitter {
         fallbacksUsed: [],
         latency: Date.now() - startTime,
         cost: 0,
-        errors: [{
-          source: DataSourceType.HIVE,
-          error: 'No eligible sources available',
-        }],
+        errors: [
+          {
+            source: DataSourceType.HIVE,
+            error: 'No eligible sources available',
+          },
+        ],
       };
     }
-    
+
     // Execute based on aggregation strategy
     let response: DataResponse;
-    
+
     switch (this.aggregationStrategy) {
       case AggregationStrategy.FIRST_SUCCESS:
         response = await this.executeFirstSuccess(request, eligibleSources);
@@ -361,72 +363,72 @@ export class MultiSourceCoordinator extends EventEmitter {
         response = await this.executeFallback(request, eligibleSources);
         break;
     }
-    
+
     // Cache successful responses
     if (response.success && request.cache) {
       this.cacheResponse(request, response.data);
     }
-    
+
     // Clean up
     this.activeRequests.delete(request.id);
-    
+
     return response;
   }
-  
+
   /**
    * Determine eligible sources for request
    */
   private determineEligibleSources(request: DataRequest): DataSourceType[] {
     const eligible: DataSourceType[] = [];
-    
+
     for (const [sourceType, config] of this.sources) {
       // Check if excluded
       if (request.excludeSources?.includes(sourceType)) continue;
-      
+
       // Check if required
       if (request.requiredSources && !request.requiredSources.includes(sourceType)) continue;
-      
+
       // Check health
       const health = this.sourceHealth.get(sourceType)!;
       if (health.status === 'offline') continue;
-      
+
       // Check capabilities
-      const hasCapability = config.capabilities.some(cap => 
-        request.type.includes(cap) || cap.includes(request.type)
+      const hasCapability = config.capabilities.some(
+        (cap) => request.type.includes(cap) || cap.includes(request.type),
       );
       if (!hasCapability) continue;
-      
+
       // Check rate limits
       if (health.remainingQuota.requests <= 0) continue;
-      
+
       eligible.push(sourceType);
     }
-    
+
     // Sort by priority
     eligible.sort((a, b) => {
       const configA = this.sources.get(a)!;
       const configB = this.sources.get(b)!;
       return configA.priority - configB.priority;
     });
-    
+
     return eligible;
   }
-  
+
   /**
    * Execute first success strategy
    */
   private async executeFirstSuccess(
     request: DataRequest,
-    sources: DataSourceType[]
+    sources: DataSourceType[],
   ): Promise<DataResponse> {
     const errors: Array<{ source: DataSourceType; error: string }> = [];
     const fallbacksUsed: DataSourceType[] = [];
     let totalCost = 0;
-    
+
     for (const source of sources) {
       try {
         const data = await this.fetchFromSource(source, request);
-        
+
         return {
           requestId: request.id,
           success: true,
@@ -443,12 +445,12 @@ export class MultiSourceCoordinator extends EventEmitter {
           },
         };
       } catch (error) {
-        errors.push({ source, error: error.toString() });
+        errors.push({ source, error: (error as Error).toString() });
         fallbacksUsed.push(source);
         totalCost += this.sources.get(source)!.cost;
       }
     }
-    
+
     return {
       requestId: request.id,
       success: false,
@@ -459,18 +461,18 @@ export class MultiSourceCoordinator extends EventEmitter {
       errors,
     };
   }
-  
+
   /**
    * Execute consensus strategy
    */
   private async executeConsensus(
     request: DataRequest,
-    sources: DataSourceType[]
+    sources: DataSourceType[],
   ): Promise<DataResponse> {
     const responses: Map<DataSourceType, any> = new Map();
     const errors: Array<{ source: DataSourceType; error: string }> = [];
     let totalCost = 0;
-    
+
     // Fetch from multiple sources in parallel
     const promises = sources.slice(0, 3).map(async (source) => {
       try {
@@ -478,16 +480,16 @@ export class MultiSourceCoordinator extends EventEmitter {
         responses.set(source, data);
         totalCost += this.sources.get(source)!.cost;
       } catch (error) {
-        errors.push({ source, error: error.toString() });
+        errors.push({ source, error: (error as Error).toString() });
       }
     });
-    
+
     await Promise.all(promises);
-    
+
     // Check for consensus
     if (responses.size >= 2) {
       const consensusData = this.findConsensus(responses);
-      
+
       return {
         requestId: request.id,
         success: true,
@@ -504,7 +506,7 @@ export class MultiSourceCoordinator extends EventEmitter {
         },
       };
     }
-    
+
     return {
       requestId: request.id,
       success: false,
@@ -515,23 +517,23 @@ export class MultiSourceCoordinator extends EventEmitter {
       errors,
     };
   }
-  
+
   /**
    * Execute weighted strategy
    */
   private async executeWeighted(
     request: DataRequest,
-    sources: DataSourceType[]
+    sources: DataSourceType[],
   ): Promise<DataResponse> {
     const responses: Map<DataSourceType, any> = new Map();
     const weights: Map<DataSourceType, number> = new Map();
     let totalCost = 0;
-    
+
     // Fetch from sources based on reliability
     const promises = sources.slice(0, 3).map(async (source) => {
       const config = this.sources.get(source)!;
       weights.set(source, config.reliability);
-      
+
       try {
         const data = await this.fetchFromSource(source, request);
         responses.set(source, data);
@@ -540,12 +542,12 @@ export class MultiSourceCoordinator extends EventEmitter {
         weights.set(source, 0);
       }
     });
-    
+
     await Promise.all(promises);
-    
+
     // Calculate weighted result
     const weightedData = this.calculateWeightedResult(responses, weights);
-    
+
     return {
       requestId: request.id,
       success: responses.size > 0,
@@ -562,17 +564,17 @@ export class MultiSourceCoordinator extends EventEmitter {
       },
     };
   }
-  
+
   /**
    * Execute complete strategy
    */
   private async executeComplete(
     request: DataRequest,
-    sources: DataSourceType[]
+    sources: DataSourceType[],
   ): Promise<DataResponse> {
     const responses: Map<DataSourceType, any> = new Map();
     let totalCost = 0;
-    
+
     // Fetch from all sources
     const promises = sources.map(async (source) => {
       try {
@@ -583,12 +585,12 @@ export class MultiSourceCoordinator extends EventEmitter {
         // Continue with other sources
       }
     });
-    
+
     await Promise.all(promises);
-    
+
     // Merge all responses
     const mergedData = this.mergeResponses(responses);
-    
+
     return {
       requestId: request.id,
       success: responses.size > 0,
@@ -605,26 +607,26 @@ export class MultiSourceCoordinator extends EventEmitter {
       },
     };
   }
-  
+
   /**
    * Execute fallback strategy (default)
    */
   private async executeFallback(
     request: DataRequest,
-    sources: DataSourceType[]
+    sources: DataSourceType[],
   ): Promise<DataResponse> {
     const errors: Array<{ source: DataSourceType; error: string }> = [];
     const fallbacksUsed: DataSourceType[] = [];
     let totalCost = 0;
     const startTime = Date.now();
-    
+
     for (const source of sources) {
       try {
         const data = await this.fetchFromSource(source, request);
-        
+
         // Update source metrics
         this.updateSourceMetrics(source, true, Date.now() - startTime);
-        
+
         return {
           requestId: request.id,
           success: true,
@@ -641,13 +643,13 @@ export class MultiSourceCoordinator extends EventEmitter {
           },
         };
       } catch (error) {
-        errors.push({ source, error: error.toString() });
+        errors.push({ source, error: (error as Error).toString() });
         fallbacksUsed.push(source);
         totalCost += this.sources.get(source)!.cost;
-        
+
         // Update source metrics
         this.updateSourceMetrics(source, false, Date.now() - startTime);
-        
+
         this.emit('fallback-triggered', {
           failedSource: source,
           nextSource: sources[sources.indexOf(source) + 1],
@@ -655,7 +657,7 @@ export class MultiSourceCoordinator extends EventEmitter {
         });
       }
     }
-    
+
     return {
       requestId: request.id,
       success: false,
@@ -666,44 +668,44 @@ export class MultiSourceCoordinator extends EventEmitter {
       errors,
     };
   }
-  
+
   /**
    * Fetch data from a specific source
    */
-  private async fetchFromSource(
-    source: DataSourceType,
-    request: DataRequest
-  ): Promise<any> {
+  private async fetchFromSource(source: DataSourceType, request: DataRequest): Promise<any> {
     const config = this.sources.get(source)!;
-    
+
     // Check rate limit
     const health = this.sourceHealth.get(source)!;
     if (health.remainingQuota.requests <= 0) {
       throw new Error(`Rate limit exceeded for ${source}`);
     }
-    
+
     // Update quota
     health.remainingQuota.requests--;
-    
+
     // Simulate API call - in production, make actual request
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error(`Timeout for ${source}`));
       }, config.timeout);
-      
-      setTimeout(() => {
-        clearTimeout(timeout);
-        
-        // Simulate 85% success rate
-        if (Math.random() > 0.15) {
-          resolve(this.generateMockData(source, request));
-        } else {
-          reject(new Error(`Failed to fetch from ${source}`));
-        }
-      }, Math.random() * config.timeout * 0.8);
+
+      setTimeout(
+        () => {
+          clearTimeout(timeout);
+
+          // Simulate 85% success rate
+          if (Math.random() > 0.15) {
+            resolve(this.generateMockData(source, request));
+          } else {
+            reject(new Error(`Failed to fetch from ${source}`));
+          }
+        },
+        Math.random() * config.timeout * 0.8,
+      );
     });
   }
-  
+
   /**
    * Generate mock data based on source and request
    */
@@ -718,7 +720,7 @@ export class MultiSourceCoordinator extends EventEmitter {
         };
       case 'price_data':
         return {
-          price: 2500.50,
+          price: 2500.5,
           change24h: 5.2,
           volume: 1500000000,
           source,
@@ -734,20 +736,20 @@ export class MultiSourceCoordinator extends EventEmitter {
         return { data: 'mock', source };
     }
   }
-  
+
   /**
    * Find consensus among multiple responses
    */
   private findConsensus(responses: Map<DataSourceType, any>): any {
     // Simple consensus: return most common value
     const values = Array.from(responses.values());
-    
+
     if (values.length === 0) return null;
     if (values.length === 1) return values[0];
-    
+
     // For complex data, merge common fields
     const consensus: any = {};
-    
+
     for (const value of values) {
       for (const key in value) {
         if (consensus[key] === undefined) {
@@ -755,33 +757,33 @@ export class MultiSourceCoordinator extends EventEmitter {
         }
       }
     }
-    
+
     return consensus;
   }
-  
+
   /**
    * Calculate weighted result
    */
   private calculateWeightedResult(
     responses: Map<DataSourceType, any>,
-    weights: Map<DataSourceType, number>
+    weights: Map<DataSourceType, number>,
   ): any {
     // For numeric values, calculate weighted average
     // For other types, use highest weight source
-    
+
     let highestWeight = 0;
     let bestSource: DataSourceType | null = null;
-    
+
     for (const [source, weight] of weights) {
       if (weight > highestWeight && responses.has(source)) {
         highestWeight = weight;
         bestSource = source;
       }
     }
-    
+
     return bestSource ? responses.get(bestSource) : null;
   }
-  
+
   /**
    * Merge multiple responses
    */
@@ -790,61 +792,57 @@ export class MultiSourceCoordinator extends EventEmitter {
       sources: Array.from(responses.keys()),
       data: {},
     };
-    
+
     for (const [source, data] of responses) {
       merged.data[source] = data;
     }
-    
+
     return merged;
   }
-  
+
   /**
    * Calculate confidence based on weights
    */
   private calculateConfidence(weights: Map<DataSourceType, number>): number {
     const values = Array.from(weights.values());
     if (values.length === 0) return 0;
-    
+
     const sum = values.reduce((a, b) => a + b, 0);
     return sum / values.length;
   }
-  
+
   /**
    * Update source metrics
    */
-  private updateSourceMetrics(
-    source: DataSourceType,
-    success: boolean,
-    latency: number
-  ): void {
+  private updateSourceMetrics(source: DataSourceType, success: boolean, latency: number): void {
     const health = this.sourceHealth.get(source)!;
-    
+
     if (success) {
       health.errorRate = Math.max(0, health.errorRate - 1);
-      health.averageLatency = (health.averageLatency * 0.9) + (latency * 0.1);
+      health.averageLatency = health.averageLatency * 0.9 + latency * 0.1;
     } else {
       health.errorRate = Math.min(100, health.errorRate + 5);
     }
-    
+
     // Update reliability score
     const config = this.sources.get(source)!;
-    config.reliability = (config.reliability * 0.95) + (success ? 0.05 : 0);
+    config.reliability = config.reliability * 0.95 + (success ? 0.05 : 0);
   }
-  
+
   /**
    * Check cache for request
    */
   private checkCache(request: DataRequest): any | null {
     const cacheKey = this.getCacheKey(request);
     const cached = this.cache.get(cacheKey);
-    
+
     if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
       return cached.data;
     }
-    
+
     return null;
   }
-  
+
   /**
    * Cache response
    */
@@ -854,47 +852,49 @@ export class MultiSourceCoordinator extends EventEmitter {
       data,
       timestamp: Date.now(),
     });
-    
+
     // Clean old cache entries
     if (this.cache.size > 1000) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey);
+      }
     }
   }
-  
+
   /**
    * Generate cache key
    */
   private getCacheKey(request: DataRequest): string {
     return `${request.type}_${JSON.stringify(request.params)}`;
   }
-  
+
   /**
    * Get source health status
    */
   public getSourceHealth(): Map<DataSourceType, SourceHealth> {
     return new Map(this.sourceHealth);
   }
-  
+
   /**
    * Set aggregation strategy
    */
   public setAggregationStrategy(strategy: AggregationStrategy): void {
     this.aggregationStrategy = strategy;
   }
-  
+
   /**
    * Get statistics
    */
   public getStatistics(): any {
     const sources = Array.from(this.sources.values());
     const health = Array.from(this.sourceHealth.values());
-    
+
     return {
       totalSources: sources.length,
-      healthySources: health.filter(h => h.status === 'healthy').length,
-      degradedSources: health.filter(h => h.status === 'degraded').length,
-      offlineSources: health.filter(h => h.status === 'offline').length,
+      healthySources: health.filter((h) => h.status === 'healthy').length,
+      degradedSources: health.filter((h) => h.status === 'degraded').length,
+      offlineSources: health.filter((h) => h.status === 'offline').length,
       averageReliability: sources.reduce((sum, s) => sum + s.reliability, 0) / sources.length,
       averageLatency: health.reduce((sum, h) => sum + h.averageLatency, 0) / health.length,
       cacheSize: this.cache.size,

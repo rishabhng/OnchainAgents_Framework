@@ -6,8 +6,8 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import ora from 'ora';
 import dotenv from 'dotenv';
+import { RetroLoader } from './retro-loader';
 import { OnChainAgents } from './index';
 
 // Load environment variables
@@ -16,12 +16,14 @@ dotenv.config();
 // Create CLI program
 const program = new Command();
 
-// ASCII Art Banner
+// Retro ASCII Art Banner
 const banner = `
-╔══════════════════════════════════════════════╗
-║    ⚡ OnChainAgents.fun CLI v1.0.0 ⚡        ║
-║    10 AI Agents. 60+ Chains. 100% Free.     ║
-╚══════════════════════════════════════════════╝
+${chalk.green('░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░')}
+${chalk.green('▒▒▒')} ${chalk.cyan.bold('⚡ OnChainAgents.fun v1.0.0 ⚡')} ${chalk.green('▒▒▒')}
+${chalk.green('▓▓▓')} ${chalk.dim.green('[ 16 AI Agents ][ 60+ Chains ]')} ${chalk.green('▓▓▓')}
+${chalk.green('███')} ${chalk.dim.green('[ 100% Free ][ Hive Powered ]')} ${chalk.green('███')}
+${chalk.green('░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░')}
+${chalk.dim.cyan('> SYSTEM READY. AWAITING COMMAND...')}
 `;
 
 // Initialize OnChainAgents
@@ -52,15 +54,16 @@ program
   .option('-d, --depth <level>', 'Analysis depth (quick, standard, deep)', 'standard')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (network, target, options) => {
-    const spinner = ora('Running comprehensive analysis...').start();
-    
+    const spinner = new RetroLoader('green', 'phosphor');
+    spinner.start('Running comprehensive analysis...');
+
     try {
       const result = await oca.analyze(network, target, {
         depth: options.depth,
       });
-      
+
       spinner.succeed('Analysis complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -80,15 +83,16 @@ program
   .option('--deep', 'Enable comprehensive analysis')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (token, options) => {
-    const spinner = ora('Conducting research...').start();
-    
+    const spinner = new RetroLoader('amber', 'scanline');
+    spinner.start('Conducting research...');
+
     try {
       const result = await oca.research(token, {
         deep: options.deep,
       });
-      
+
       spinner.succeed('Research complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -108,15 +112,16 @@ program
   .option('-n, --network <network>', 'Blockchain network', 'ethereum')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (address, options) => {
-    const spinner = ora('Running security analysis...').start();
-    
+    const spinner = new RetroLoader('cyan', 'matrix');
+    spinner.start('Running security analysis...');
+
     try {
       const result = await oca.security(address, {
         network: options.network,
       });
-      
+
       spinner.succeed('Security analysis complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -137,16 +142,17 @@ program
   .option('-r, --risk <level>', 'Risk level (low, medium, high)', 'medium')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (options) => {
-    const spinner = ora('Hunting for opportunities...').start();
-    
+    const spinner = new RetroLoader('green', 'bbs');
+    spinner.start('Hunting for opportunities...');
+
     try {
       const result = await oca.hunt({
         category: options.category,
         risk: options.risk,
       });
-      
+
       spinner.succeed('Hunt complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -166,15 +172,16 @@ program
   .option('--alerts', 'Enable real-time alerts')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (wallet, options) => {
-    const spinner = ora('Tracking wallet...').start();
-    
+    const spinner = new RetroLoader('amber', 'modem');
+    spinner.start('Tracking wallet...');
+
     try {
       const result = await oca.track(wallet, {
         alerts: options.alerts,
       });
-      
+
       spinner.succeed('Tracking complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -194,15 +201,16 @@ program
   .option('-s, --sources <sources>', 'Comma-separated sources (twitter,telegram,discord,reddit)')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .action(async (token, options) => {
-    const spinner = ora('Analyzing sentiment...').start();
-    
+    const spinner = new RetroLoader('cyan', 'glitch');
+    spinner.start('Analyzing sentiment...');
+
     try {
       const result = await oca.sentiment(token, {
         sources: options.sources,
       });
-      
+
       spinner.succeed('Sentiment analysis complete!');
-      
+
       if (options.output === 'json') {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -221,7 +229,7 @@ program
   .description('List all available AI agents')
   .action(() => {
     console.log(chalk.cyan('\n📋 Available AI Agents:\n'));
-    
+
     const agents = [
       { name: 'RugDetector', category: 'Security', description: 'Advanced rug pull detection' },
       { name: 'RiskAnalyzer', category: 'Security', description: 'Protocol risk assessment' },
@@ -232,10 +240,14 @@ program
       { name: 'DeFiAnalyzer', category: 'Research', description: 'DeFi protocol analysis' },
       { name: 'PortfolioTracker', category: 'Research', description: 'Portfolio management' },
       { name: 'CrossChainNavigator', category: 'Specialized', description: 'Bridge optimization' },
-      { name: 'MarketStructureAnalyst', category: 'Specialized', description: 'Market microstructure' },
+      {
+        name: 'MarketStructureAnalyst',
+        category: 'Specialized',
+        description: 'Market microstructure',
+      },
     ];
-    
-    agents.forEach(agent => {
+
+    agents.forEach((agent) => {
       console.log(`  ${chalk.green('●')} ${chalk.bold(agent.name)} (${agent.category})`);
       console.log(`    ${agent.description}\n`);
     });
@@ -246,11 +258,12 @@ program
   .command('health')
   .description('Check system health and API connectivity')
   .action(async () => {
-    const spinner = ora('Checking system health...').start();
-    
+    const spinner = new RetroLoader('green', 'phosphor');
+    spinner.start('Checking system health...');
+
     try {
       const healthy = await oca.healthCheck();
-      
+
       if (healthy) {
         spinner.succeed('System is healthy!');
         console.log(chalk.green('✓ API connection successful'));
@@ -271,16 +284,16 @@ function displayAnalysisResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('         ANALYSIS RESULTS'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   // Security section
   if (data.security) {
     console.log(chalk.yellow.bold('🛡️  SECURITY'));
     console.log(`  Rug Risk: ${getRiskColor(data.security.rugDetection?.data?.riskScore || 0)}`);
     console.log(`  Overall Risk: ${data.security.riskAnalysis?.data?.overallRisk || 'Unknown'}\n`);
   }
-  
+
   // Market section
   if (data.market) {
     console.log(chalk.yellow.bold('📊 MARKET'));
@@ -289,13 +302,13 @@ function displayAnalysisResult(result: any) {
     }
     console.log('');
   }
-  
+
   // Summary
   if (data.summary) {
     console.log(chalk.yellow.bold('📋 SUMMARY'));
     console.log(`  Verdict: ${getVerdictColor(data.summary.verdict)}`);
     console.log(`  Score: ${data.summary.score}/100`);
-    
+
     if (data.summary.recommendations?.length > 0) {
       console.log('\n  Recommendations:');
       data.summary.recommendations.forEach((rec: string) => {
@@ -303,7 +316,7 @@ function displayAnalysisResult(result: any) {
       });
     }
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 
@@ -311,9 +324,9 @@ function displayResearchResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('         RESEARCH RESULTS'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   if (data.research) {
     const research = data.research;
     console.log(chalk.yellow.bold('📚 FUNDAMENTAL ANALYSIS'));
@@ -321,11 +334,11 @@ function displayResearchResult(result: any) {
     console.log(`  Conviction: ${research.investmentThesis?.conviction || 'N/A'}`);
     console.log(`  Market Position: ${research.competitivePosition?.marketPosition || 'N/A'}\n`);
   }
-  
+
   if (data.summary) {
     console.log(chalk.yellow.bold('📋 VERDICT'));
     console.log(`  ${getVerdictColor(data.summary.verdict)}`);
-    
+
     if (data.summary.recommendations?.length > 0) {
       console.log('\n  Key Points:');
       data.summary.recommendations.forEach((rec: string) => {
@@ -333,7 +346,7 @@ function displayResearchResult(result: any) {
       });
     }
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 
@@ -341,15 +354,15 @@ function displaySecurityResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('        SECURITY ANALYSIS'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   if (data.rugDetection) {
     const rug = data.rugDetection.data;
     console.log(chalk.yellow.bold('🔍 RUG DETECTION'));
     console.log(`  Risk Score: ${getRiskColor(rug?.riskScore || 0)}`);
     console.log(`  Verdict: ${getVerdictColor(rug?.verdict || 'UNKNOWN')}\n`);
-    
+
     if (rug?.flags?.length > 0) {
       console.log('  Flags:');
       rug.flags.forEach((flag: string) => {
@@ -358,12 +371,12 @@ function displaySecurityResult(result: any) {
       console.log('');
     }
   }
-  
+
   if (data.riskAnalysis) {
     const risk = data.riskAnalysis.data;
     console.log(chalk.yellow.bold('⚠️  RISK ANALYSIS'));
     console.log(`  Overall Risk: ${risk?.overallRisk || 'Unknown'}\n`);
-    
+
     if (risk?.categories) {
       console.log('  Risk Categories:');
       Object.entries(risk.categories).forEach(([category, level]) => {
@@ -371,7 +384,7 @@ function displaySecurityResult(result: any) {
       });
     }
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 
@@ -379,12 +392,12 @@ function displayHuntResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('        ALPHA OPPORTUNITIES'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   if (data.opportunities?.length > 0) {
     console.log(chalk.yellow.bold(`🎯 FOUND ${data.opportunities.length} OPPORTUNITIES\n`));
-    
+
     data.opportunities.slice(0, 5).forEach((opp: any, index: number) => {
       console.log(`  ${index + 1}. ${chalk.bold(opp.symbol || opp.name)}`);
       console.log(`     Score: ${opp.score}/100`);
@@ -394,14 +407,14 @@ function displayHuntResult(result: any) {
   } else {
     console.log(chalk.yellow('No opportunities found with current filters'));
   }
-  
+
   if (data.recommendations?.length > 0) {
     console.log(chalk.yellow.bold('💡 RECOMMENDATIONS'));
     data.recommendations.forEach((rec: string) => {
       console.log(`  • ${rec}`);
     });
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 
@@ -409,33 +422,35 @@ function displayTrackResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('        WALLET TRACKING'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   if (data.whaleActivity) {
     const whale = data.whaleActivity.data;
     console.log(chalk.yellow.bold('🐋 WHALE STATUS'));
     console.log(`  Is Whale: ${whale?.isWhale ? '✅ Yes' : '❌ No'}`);
     console.log(`  Wallet Type: ${whale?.walletType || 'Unknown'}\n`);
   }
-  
+
   if (data.portfolio) {
     const portfolio = data.portfolio.data?.portfolio;
     if (portfolio) {
       console.log(chalk.yellow.bold('💼 PORTFOLIO'));
       console.log(`  Total Value: $${formatNumber(portfolio.totalValue)}`);
-      console.log(`  P&L: ${portfolio.totalPnLPercent > 0 ? '+' : ''}${portfolio.totalPnLPercent.toFixed(2)}%`);
+      console.log(
+        `  P&L: ${portfolio.totalPnLPercent > 0 ? '+' : ''}${portfolio.totalPnLPercent.toFixed(2)}%`,
+      );
       console.log(`  Assets: ${portfolio.numberOfAssets}\n`);
     }
   }
-  
+
   if (data.insights) {
     console.log(chalk.yellow.bold('📊 INSIGHTS'));
     data.insights.insights?.forEach((insight: string) => {
       console.log(`  • ${insight}`);
     });
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 
@@ -443,16 +458,16 @@ function displaySentimentResult(result: any) {
   console.log('\n' + chalk.cyan('═══════════════════════════════════════'));
   console.log(chalk.cyan.bold('       SENTIMENT ANALYSIS'));
   console.log(chalk.cyan('═══════════════════════════════════════\n'));
-  
+
   const { data } = result;
-  
+
   console.log(chalk.yellow.bold('😊 OVERALL SENTIMENT'));
   console.log(`  Sentiment: ${getSentimentEmoji(data.sentiment)}`);
   console.log(`  Score: ${data.score.toFixed(2)}/100\n`);
-  
+
   if (data.analysis) {
     const analysis = data.analysis;
-    
+
     if (analysis.sources) {
       console.log(chalk.yellow.bold('📱 SOURCES'));
       Object.entries(analysis.sources).forEach(([source, sentiment]: [string, any]) => {
@@ -460,7 +475,7 @@ function displaySentimentResult(result: any) {
       });
       console.log('');
     }
-    
+
     if (analysis.keywords?.length > 0) {
       console.log(chalk.yellow.bold('🔤 TRENDING KEYWORDS'));
       analysis.keywords.slice(0, 5).forEach((keyword: string) => {
@@ -468,7 +483,7 @@ function displaySentimentResult(result: any) {
       });
     }
   }
-  
+
   console.log('\n' + chalk.cyan('═══════════════════════════════════════\n'));
 }
 

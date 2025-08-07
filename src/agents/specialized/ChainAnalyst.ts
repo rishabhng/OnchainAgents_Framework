@@ -1,11 +1,11 @@
 /**
  * @fileoverview ChainAnalyst - On-Chain Forensics and Transaction Tracing Expert
  * @module agents/specialized/ChainAnalyst
- * 
+ *
  * Advanced blockchain forensics agent specializing in transaction tracing,
  * flow analysis, wallet clustering, and on-chain investigation for
  * security analysis and compliance purposes.
- * 
+ *
  * @since 1.1.0
  */
 
@@ -174,48 +174,44 @@ export class ChainAnalyst extends BaseAgent {
       maxRetries: 3,
       timeout: 60000,
     };
-    
+
     super(config, hiveService);
   }
-  
-  protected validateInput(context: AgentContext): z.ZodSchema {
+
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       address: z.string().optional(),
       network: z.string().optional(),
-      options: z.object({
-        txHash: z.string().optional(),
-        depth: z.number().optional(),
-        timeRange: z.enum(['1h', '24h', '7d', '30d', 'all']).optional(),
-        includeTrace: z.boolean().optional(),
-        clusterAnalysis: z.boolean().optional(),
-        followMoney: z.boolean().optional(),
-      }).optional(),
+      options: z
+        .object({
+          txHash: z.string().optional(),
+          depth: z.number().optional(),
+          timeRange: z.enum(['1h', '24h', '7d', '30d', 'all']).optional(),
+          includeTrace: z.boolean().optional(),
+          clusterAnalysis: z.boolean().optional(),
+          followMoney: z.boolean().optional(),
+        })
+        .optional(),
     });
   }
-  
+
   protected async performAnalysis(context: AgentContext): Promise<ChainAnalysisResult> {
     this.logger.info('Starting chain analysis', {
       address: context.address,
       txHash: context.options?.txHash,
       network: context.network || 'ethereum',
     });
-    
-    const [
-      txData,
-      addressData,
-      networkData,
-      flowData,
-      clusterData,
-      behaviorData,
-    ] = await Promise.all([
-      this.getTransactionData(context),
-      this.getAddressData(context),
-      this.getNetworkMetrics(context),
-      this.getFlowAnalysis(context),
-      this.getClusterData(context),
-      this.getBehaviorAnalysis(context),
-    ]);
-    
+
+    const [txData, addressData, networkData, flowData, clusterData, behaviorData] =
+      await Promise.all([
+        this.getTransactionData(context),
+        this.getAddressData(context),
+        this.getNetworkMetrics(context),
+        this.getFlowAnalysis(context),
+        this.getClusterData(context),
+        this.getBehaviorAnalysis(context),
+      ]);
+
     const transactionAnalysis = this.analyzeTransaction(txData, context);
     const addressProfile = this.profileAddress(addressData);
     const networkMetrics = this.processNetworkMetrics(networkData);
@@ -227,15 +223,15 @@ export class ChainAnalyst extends BaseAgent {
       transactionAnalysis,
       addressProfile,
       flowAnalysis,
-      behaviorPatterns
+      behaviorPatterns,
     );
     const recommendation = this.generateRecommendation(
       addressProfile,
       behaviorPatterns,
       anomalies,
-      forensicInsights
+      forensicInsights,
     );
-    
+
     return {
       transactionAnalysis,
       addressProfile,
@@ -249,67 +245,67 @@ export class ChainAnalyst extends BaseAgent {
       timestamp: new Date(),
     };
   }
-  
+
   private async getTransactionData(context: AgentContext): Promise<any> {
     if (!context.options?.txHash) return {};
-    
+
     return this.hiveService.callTool('hive_transaction', {
       txHash: context.options.txHash,
       includeTrace: context.options?.includeTrace,
       network: context.network || 'ethereum',
     });
   }
-  
+
   private async getAddressData(context: AgentContext): Promise<any> {
     if (!context.address) return {};
-    
+
     return this.hiveService.callTool('hive_address', {
       address: context.address,
       timeRange: context.options?.timeRange || '30d',
       network: context.network || 'ethereum',
     });
   }
-  
+
   private async getNetworkMetrics(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_network', {
       network: context.network || 'ethereum',
     });
   }
-  
+
   private async getFlowAnalysis(context: AgentContext): Promise<any> {
     if (!context.options?.followMoney || !context.address) return {};
-    
+
     return this.hiveService.callTool('hive_flow', {
       address: context.address,
       depth: context.options?.depth || 5,
       network: context.network || 'ethereum',
     });
   }
-  
+
   private async getClusterData(context: AgentContext): Promise<any> {
     if (!context.options?.clusterAnalysis || !context.address) return {};
-    
+
     return this.hiveService.callTool('hive_cluster', {
       address: context.address,
       network: context.network || 'ethereum',
     });
   }
-  
+
   private async getBehaviorAnalysis(context: AgentContext): Promise<any> {
     if (!context.address) return {};
-    
+
     return this.hiveService.callTool('hive_behavior', {
       address: context.address,
       timeRange: context.options?.timeRange || '30d',
       network: context.network || 'ethereum',
     });
   }
-  
+
   private analyzeTransaction(txData: any, context: AgentContext): TransactionAnalysis {
     const data = txData.data || {};
-    
+
     return {
-      txHash: context.options?.txHash || '',
+      txHash: (context.options?.txHash as string | undefined) || '',
       type: this.classifyTransaction(data),
       value: data.value || 0,
       gasUsed: data.gasUsed || 0,
@@ -322,7 +318,7 @@ export class ChainAnalyst extends BaseAgent {
       traceAnalysis: this.analyzeTrace(data.trace),
     };
   }
-  
+
   private classifyTransaction(data: any): TransactionAnalysis['type'] {
     if (data.to === null) return 'DEPLOYMENT';
     if (data.tokenTransfers?.length > 0) return 'SWAP';
@@ -330,11 +326,11 @@ export class ChainAnalyst extends BaseAgent {
     if (data.logs?.some((l: any) => l.topics[0]?.includes('bridge'))) return 'BRIDGE';
     return 'CONTRACT_CALL';
   }
-  
+
   private processInternalTransactions(internals: any[]): InternalTransaction[] {
     if (!internals) return [];
-    
-    return internals.map(tx => ({
+
+    return internals.map((tx) => ({
       from: tx.from,
       to: tx.to,
       value: tx.value,
@@ -342,11 +338,11 @@ export class ChainAnalyst extends BaseAgent {
       gasUsed: tx.gasUsed,
     }));
   }
-  
+
   private processTokenTransfers(transfers: any[]): TokenTransfer[] {
     if (!transfers) return [];
-    
-    return transfers.map(t => ({
+
+    return transfers.map((t) => ({
       token: t.token,
       from: t.from,
       to: t.to,
@@ -355,18 +351,18 @@ export class ChainAnalyst extends BaseAgent {
       decimals: t.decimals,
     }));
   }
-  
+
   private processEventLogs(logs: any[]): EventLog[] {
     if (!logs) return [];
-    
-    return logs.map(log => ({
+
+    return logs.map((log) => ({
       address: log.address,
       topics: log.topics,
       data: log.data,
       decoded: log.decoded || {},
     }));
   }
-  
+
   private analyzeTrace(trace: any): TraceResult {
     if (!trace) {
       return {
@@ -376,7 +372,7 @@ export class ChainAnalyst extends BaseAgent {
         gasBreakdown: {},
       };
     }
-    
+
     return {
       callStack: trace.calls?.map((c: any) => c.type) || [],
       storageAccess: trace.storage || [],
@@ -384,10 +380,10 @@ export class ChainAnalyst extends BaseAgent {
       gasBreakdown: trace.gasBreakdown || {},
     };
   }
-  
+
   private profileAddress(addressData: any): AddressProfile {
     const data = addressData.data || {};
-    
+
     return {
       address: data.address || '',
       type: this.classifyAddress(data),
@@ -403,7 +399,7 @@ export class ChainAnalyst extends BaseAgent {
       associatedAddresses: data.associated || [],
     };
   }
-  
+
   private classifyAddress(data: any): AddressProfile['type'] {
     if (data.isContract) {
       if (data.isMultisig) return 'MULTISIG';
@@ -413,21 +409,21 @@ export class ChainAnalyst extends BaseAgent {
     }
     return 'EOA';
   }
-  
+
   private calculateRiskScore(data: any): number {
     let score = 0;
-    
+
     if (data.isMixer) score += 30;
     if (data.blacklisted) score += 40;
     if (data.suspiciousActivity) score += 20;
     if (data.highValueTx) score += 10;
-    
+
     return Math.min(100, score);
   }
-  
+
   private processNetworkMetrics(networkData: any): NetworkMetrics {
     const data = networkData.data || {};
-    
+
     return {
       blockHeight: data.blockHeight || 0,
       networkHashrate: data.hashrate || 0,
@@ -440,10 +436,10 @@ export class ChainAnalyst extends BaseAgent {
       networkUtilization: data.utilization || 0,
     };
   }
-  
+
   private analyzeFlow(flowData: any, context: AgentContext): FlowAnalysis {
     const data = flowData.data || {};
-    
+
     return {
       sourceAddress: context.address || '',
       destinationAddress: data.destination || '',
@@ -457,11 +453,11 @@ export class ChainAnalyst extends BaseAgent {
       hops: data.maxHops || 0,
     };
   }
-  
+
   private processFlowPaths(paths: any[]): FlowPath[] {
     if (!paths) return [];
-    
-    return paths.map(p => ({
+
+    return paths.map((p) => ({
       path: p.addresses || [],
       amount: p.amount || 0,
       timestamp: new Date(p.timestamp || Date.now()),
@@ -469,17 +465,17 @@ export class ChainAnalyst extends BaseAgent {
       type: this.classifyPath(p),
     }));
   }
-  
+
   private classifyPath(path: any): FlowPath['type'] {
     if (path.mixer) return 'MIXED';
     if (path.bridge) return 'BRIDGED';
     if (path.addresses?.length > 2) return 'INDIRECT';
     return 'DIRECT';
   }
-  
-  private identifyClusters(clusterData: any, addressData: any): ClusterAnalysis {
+
+  private identifyClusters(clusterData: any, _addressData: any): ClusterAnalysis {
     const data = clusterData.data || {};
-    
+
     return {
       clusterId: data.clusterId || 'unknown',
       addresses: data.addresses || [],
@@ -490,7 +486,7 @@ export class ChainAnalyst extends BaseAgent {
       activity: this.assessActivity(data),
     };
   }
-  
+
   private classifyCluster(data: any): ClusterAnalysis['clusterType'] {
     if (data.isExchange) return 'EXCHANGE';
     if (data.isProtocol) return 'PROTOCOL';
@@ -498,18 +494,18 @@ export class ChainAnalyst extends BaseAgent {
     if (data.isWallet) return 'WALLET';
     return 'UNKNOWN';
   }
-  
+
   private assessActivity(data: any): 'HIGH' | 'MEDIUM' | 'LOW' {
     const txPerDay = data.dailyTxCount || 0;
     if (txPerDay > 100) return 'HIGH';
     if (txPerDay > 10) return 'MEDIUM';
     return 'LOW';
   }
-  
-  private detectBehaviorPatterns(behaviorData: any, txData: any): BehaviorPattern[] {
+
+  private detectBehaviorPatterns(behaviorData: any, _txData: any): BehaviorPattern[] {
     const patterns: BehaviorPattern[] = [];
     const behaviors = behaviorData.data?.patterns || [];
-    
+
     for (const behavior of behaviors) {
       patterns.push({
         type: behavior.type || 'NORMAL',
@@ -520,19 +516,19 @@ export class ChainAnalyst extends BaseAgent {
         impact: this.assessImpact(behavior),
       });
     }
-    
+
     return patterns;
   }
-  
+
   private assessImpact(behavior: any): 'HIGH' | 'MEDIUM' | 'LOW' {
     if (behavior.type === 'FRONT_RUNNING' || behavior.type === 'SANDWICH') return 'HIGH';
     if (behavior.type === 'WASH_TRADING' || behavior.type === 'SYBIL') return 'MEDIUM';
     return 'LOW';
   }
-  
+
   private detectAnomalies(txData: any, addressData: any, networkData: any): Anomaly[] {
     const anomalies: Anomaly[] = [];
-    
+
     // Gas anomaly
     if (txData.data?.gasUsed > networkData.data?.avgGas * 5) {
       anomalies.push({
@@ -544,7 +540,7 @@ export class ChainAnalyst extends BaseAgent {
         recommendation: 'Investigate for potential inefficiency or attack',
       });
     }
-    
+
     // Value anomaly
     if (addressData.data?.avgTxValue && txData.data?.value > addressData.data.avgTxValue * 10) {
       anomalies.push({
@@ -556,18 +552,18 @@ export class ChainAnalyst extends BaseAgent {
         recommendation: 'Monitor for potential money laundering',
       });
     }
-    
+
     return anomalies;
   }
-  
+
   private generateForensicInsights(
-    tx: TransactionAnalysis,
+    _tx: TransactionAnalysis,
     address: AddressProfile,
     flow: FlowAnalysis,
-    patterns: BehaviorPattern[]
+    patterns: BehaviorPattern[],
   ): ForensicInsight[] {
     const insights: ForensicInsight[] = [];
-    
+
     // Mixer usage insight
     if (flow.mixerUsage) {
       insights.push({
@@ -578,19 +574,19 @@ export class ChainAnalyst extends BaseAgent {
         recommendations: ['Enhanced due diligence', 'Source of funds verification'],
       });
     }
-    
+
     // Suspicious patterns
-    const suspicious = patterns.filter(p => p.type !== 'NORMAL' && p.confidence > 0.7);
+    const suspicious = patterns.filter((p) => p.type !== 'NORMAL' && p.confidence > 0.7);
     if (suspicious.length > 0) {
       insights.push({
         finding: `${suspicious.length} suspicious behavior patterns detected`,
-        confidence: Math.max(...suspicious.map(s => s.confidence)),
-        evidence: suspicious.map(s => s.type),
+        confidence: Math.max(...suspicious.map((s) => s.confidence)),
+        evidence: suspicious.map((s) => s.type),
         implications: ['Potential malicious activity', 'Market manipulation risk'],
         recommendations: ['Immediate investigation', 'Report to authorities if confirmed'],
       });
     }
-    
+
     // High risk address
     if (address.riskScore > 70) {
       insights.push({
@@ -601,23 +597,23 @@ export class ChainAnalyst extends BaseAgent {
         recommendations: ['Block interactions', 'Flag for monitoring'],
       });
     }
-    
+
     return insights;
   }
-  
+
   private generateRecommendation(
     address: AddressProfile,
     patterns: BehaviorPattern[],
     anomalies: Anomaly[],
-    insights: ForensicInsight[]
+    insights: ForensicInsight[],
   ): ChainRecommendation {
-    const highSeverityAnomalies = anomalies.filter(a => a.severity === 'HIGH');
-    const suspiciousPatterns = patterns.filter(p => p.type !== 'NORMAL' && p.impact === 'HIGH');
-    const criticalInsights = insights.filter(i => i.confidence > 0.8);
-    
+    const highSeverityAnomalies = anomalies.filter((a) => a.severity === 'HIGH');
+    const suspiciousPatterns = patterns.filter((p) => p.type !== 'NORMAL' && p.impact === 'HIGH');
+    const criticalInsights = insights.filter((i) => i.confidence > 0.8);
+
     let riskLevel: ChainRecommendation['riskLevel'];
     let confidence = 0.7;
-    
+
     if (address.riskScore > 80 || highSeverityAnomalies.length > 2) {
       riskLevel = 'DANGER';
       confidence = 0.9;
@@ -631,10 +627,10 @@ export class ChainAnalyst extends BaseAgent {
       riskLevel = 'SAFE';
       confidence = 0.85;
     }
-    
+
     const actions: string[] = [];
     const monitoring: string[] = [];
-    
+
     if (riskLevel === 'DANGER') {
       actions.push('Block all interactions immediately');
       actions.push('Report to compliance team');
@@ -646,10 +642,11 @@ export class ChainAnalyst extends BaseAgent {
       actions.push('Standard KYC procedures');
       monitoring.push('Weekly review sufficient');
     }
-    
+
     const reporting = riskLevel === 'DANGER' || criticalInsights.length > 0;
-    const timeline = riskLevel === 'DANGER' ? 'Immediate' : riskLevel === 'WARNING' ? '24 hours' : '1 week';
-    
+    const timeline =
+      riskLevel === 'DANGER' ? 'Immediate' : riskLevel === 'WARNING' ? '24 hours' : '1 week';
+
     return {
       riskLevel,
       confidence,

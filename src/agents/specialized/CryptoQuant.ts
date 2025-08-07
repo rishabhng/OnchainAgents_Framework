@@ -1,9 +1,9 @@
 /**
  * CryptoQuant - Quantitative Analysis Expert
- * 
+ *
  * A financial engineer with 20 years of experience in quantitative analysis,
  * statistical arbitrage, and advanced mathematical modeling for crypto markets.
- * 
+ *
  * Specializes in:
  * - GARCH models for volatility prediction
  * - Statistical arbitrage detection
@@ -11,7 +11,7 @@
  * - Cointegration analysis for pairs trading
  * - Hidden Markov Models for regime detection
  * - Black-Litterman portfolio optimization
- * 
+ *
  * @module agents/specialized/CryptoQuant
  * @implements {BaseAgent}
  */
@@ -426,70 +426,67 @@ interface HedgeRecommendation {
 
 /**
  * CryptoQuant Agent Class
- * 
+ *
  * Implements advanced quantitative analysis for cryptocurrency markets
  * with 20 years of financial engineering experience.
- * 
+ *
  * @class CryptoQuant
  * @extends {BaseAgent}
  */
 export class CryptoQuant extends BaseAgent {
-  private readonly experience = 20; // 20 years of financial engineering experience
-  
+  // private readonly experience = 20; // 20 years of financial engineering experience
+
   constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'CryptoQuant',
-      description: 'Financial data scientist with 20 years experience in quantitative finance and crypto',
+      description:
+        'Financial data scientist with 20 years experience in quantitative finance and crypto',
       version: '1.0.0',
       cacheTTL: 300, // 5 minutes for market data
       maxRetries: 3,
       timeout: 60000, // Complex calculations need more time
     };
-    
+
     super(config, hiveService);
   }
-  
-  protected validateInput(context: AgentContext): z.ZodSchema {
+
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       symbol: z.string().optional(),
       network: z.string().optional(),
-      options: z.object({
-        assets: z.array(z.string()).optional(),
-        timeframe: z.enum(['1m', '5m', '15m', '1h', '4h', '1d', '1w']).optional(),
-        lookback: z.number().optional(), // days
-        models: z.array(z.string()).optional(),
-        riskTolerance: z.number().optional(), // 0-1
-        capital: z.number().optional(),
-        backtestPeriod: z.number().optional(),
-        confidenceLevel: z.number().optional(),
-      }).optional(),
+      options: z
+        .object({
+          assets: z.array(z.string()).optional(),
+          timeframe: z.enum(['1m', '5m', '15m', '1h', '4h', '1d', '1w']).optional(),
+          lookback: z.number().optional(), // days
+          models: z.array(z.string()).optional(),
+          riskTolerance: z.number().optional(), // 0-1
+          capital: z.number().optional(),
+          backtestPeriod: z.number().optional(),
+          confidenceLevel: z.number().optional(),
+        })
+        .optional(),
     });
   }
-  
+
   protected async performAnalysis(context: AgentContext): Promise<QuantAnalysisResult> {
     this.logger.info('Starting quantitative analysis with 20 years of expertise', {
       symbol: context.symbol,
       assets: context.options?.assets,
       timeframe: context.options?.timeframe || '1h',
     });
-    
+
     // Parallel data collection for efficiency
-    const [
-      priceData,
-      volumeData,
-      orderBookData,
-      optionsData,
-      fundamentalData,
-      alternativeData,
-    ] = await Promise.all([
-      this.getPriceData(context),
-      this.getVolumeData(context),
-      this.getOrderBookData(context),
-      this.getOptionsData(context),
-      this.getFundamentalData(context),
-      this.getAlternativeData(context),
-    ]);
-    
+    const [priceData, volumeData, orderBookData, optionsData, fundamentalData, alternativeData] =
+      await Promise.all([
+        this.getPriceData(context),
+        this.getVolumeData(context),
+        this.getOrderBookData(context),
+        this.getOptionsData(context),
+        this.getFundamentalData(context),
+        this.getAlternativeData(context),
+      ]);
+
     // Core quantitative analysis
     const marketRegime = this.identifyMarketRegime(priceData, volumeData);
     const quantModels = this.runQuantitativeModels(priceData, volumeData, orderBookData);
@@ -501,21 +498,21 @@ export class CryptoQuant extends BaseAgent {
       quantModels,
       mlPredictions,
       marketRegime,
-      statisticalArbitrage
+      statisticalArbitrage,
     );
     const portfolioOptimization = this.optimizePortfolio(
-      context.options?.assets || [context.symbol || 'BTC'],
+      (context.options?.assets as string[]) || [context.symbol || 'BTC'],
       riskMetrics,
-      factorAnalysis
+      factorAnalysis,
     );
     const backtestResults = this.backtest(tradingSignals, priceData, context);
     const recommendation = this.generateRecommendation(
       tradingSignals,
       riskMetrics,
       backtestResults,
-      marketRegime
+      marketRegime,
     );
-    
+
     return {
       marketRegime,
       quantModels,
@@ -530,7 +527,7 @@ export class CryptoQuant extends BaseAgent {
       timestamp: new Date(),
     };
   }
-  
+
   private async getPriceData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_price_history', {
       symbol: context.symbol || 'BTC',
@@ -538,46 +535,46 @@ export class CryptoQuant extends BaseAgent {
       lookback: context.options?.lookback || 365,
     });
   }
-  
+
   private async getVolumeData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_volume_analysis', {
       symbol: context.symbol || 'BTC',
       timeframe: context.options?.timeframe || '1h',
     });
   }
-  
+
   private async getOrderBookData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_orderbook_depth', {
       symbol: context.symbol || 'BTC',
       depth: 100,
     });
   }
-  
+
   private async getOptionsData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_options_chain', {
       symbol: context.symbol || 'BTC',
     });
   }
-  
+
   private async getFundamentalData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_fundamentals', {
       symbol: context.symbol || 'BTC',
     });
   }
-  
+
   private async getAlternativeData(context: AgentContext): Promise<any> {
     return this.hiveService.callTool('hive_alternative_data', {
       symbol: context.symbol || 'BTC',
       sources: ['social', 'github', 'google_trends'],
     });
   }
-  
-  private identifyMarketRegime(priceData: any, volumeData: any): MarketRegime {
+
+  private identifyMarketRegime(priceData: any, _volumeData: any): MarketRegime {
     // Hidden Markov Model for regime identification
     const prices = priceData.data?.prices || [];
     const returns = this.calculateReturns(prices);
     const volatility = this.calculateVolatility(returns);
-    
+
     // Simplified regime detection (real implementation would use HMM)
     let regime: MarketRegime['regime'];
     if (volatility > 100 && returns[returns.length - 1] < -0.1) {
@@ -591,7 +588,7 @@ export class CryptoQuant extends BaseAgent {
     } else {
       regime = 'BEAR';
     }
-    
+
     return {
       regime,
       confidence: 0.75,
@@ -603,32 +600,36 @@ export class CryptoQuant extends BaseAgent {
       regimeChangeProbability: 0.15,
     };
   }
-  
-  private runQuantitativeModels(priceData: any, volumeData: any, orderBookData: any): QuantitativeModels {
+
+  private runQuantitativeModels(
+    priceData: any,
+    volumeData: any,
+    _orderBookData: any,
+  ): QuantitativeModels {
     const prices = priceData.data?.prices || [];
     const returns = this.calculateReturns(prices);
-    
+
     // GARCH Model
     const garch = this.fitGARCH(returns);
-    
+
     // Cointegration Analysis
     const cointegration = this.analyzeCointegration(prices);
-    
+
     // Mean Reversion
     const meanReversion = this.fitMeanReversion(prices);
-    
+
     // Momentum Factors
     const momentum = this.calculateMomentumFactors(prices, volumeData.data?.volumes || []);
-    
+
     // Volatility Models
     const volatilityModels = this.analyzeVolatility(returns);
-    
+
     // Correlation Structure
     const correlationStructure = this.calculateCorrelations(returns);
-    
+
     // Copula Model
     const copulaModel = this.fitCopula(returns);
-    
+
     return {
       garch,
       cointegration,
@@ -639,13 +640,13 @@ export class CryptoQuant extends BaseAgent {
       copulaModel,
     };
   }
-  
-  private fitGARCH(returns: number[]): GARCHModel {
+
+  private fitGARCH(_returns: number[]): GARCHModel {
     // Simplified GARCH(1,1) implementation
     const alpha = 0.1;
     const beta = 0.85;
     const omega = 0.000001;
-    
+
     return {
       volatilityForecast: [0.02, 0.021, 0.022, 0.023, 0.024],
       alpha,
@@ -656,8 +657,8 @@ export class CryptoQuant extends BaseAgent {
       vix: 25,
     };
   }
-  
-  private analyzeCointegration(prices: number[]): CointegrationAnalysis {
+
+  private analyzeCointegration(_prices: number[]): CointegrationAnalysis {
     return {
       pairs: [],
       eigenvalues: [0.95, 0.85, 0.7],
@@ -676,11 +677,11 @@ export class CryptoQuant extends BaseAgent {
       errorCorrection: 0.15,
     };
   }
-  
+
   private fitMeanReversion(prices: number[]): MeanReversionModel {
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
     const currentPrice = prices[prices.length - 1];
-    
+
     return {
       ornsteinUhlenbeck: {
         theta: 0.5,
@@ -694,11 +695,11 @@ export class CryptoQuant extends BaseAgent {
       expectedReturn: (mean - currentPrice) / currentPrice,
     };
   }
-  
-  private calculateMomentumFactors(prices: number[], volumes: number[]): MomentumFactors {
+
+  private calculateMomentumFactors(prices: number[], _volumes: number[]): MomentumFactors {
     const returns = this.calculateReturns(prices);
     const momentum = returns.slice(-20).reduce((a, b) => a + b, 0);
-    
+
     return {
       priceMomentum: momentum,
       volumeMomentum: 0.15,
@@ -708,10 +709,10 @@ export class CryptoQuant extends BaseAgent {
       informationRatio: 1.2,
     };
   }
-  
+
   private analyzeVolatility(returns: number[]): VolatilityAnalysis {
     const realized = Math.sqrt(252) * this.calculateVolatility(returns);
-    
+
     return {
       realized,
       implied: realized * 1.1,
@@ -728,11 +729,14 @@ export class CryptoQuant extends BaseAgent {
       termStructure: [realized * 0.9, realized, realized * 1.1, realized * 1.2],
     };
   }
-  
-  private calculateCorrelations(returns: number[]): CorrelationMatrix {
+
+  private calculateCorrelations(_returns: number[]): CorrelationMatrix {
     // Simplified correlation matrix
-    const matrix = [[1, 0.6], [0.6, 1]];
-    
+    const matrix = [
+      [1, 0.6],
+      [0.6, 1],
+    ];
+
     return {
       pearson: matrix,
       spearman: matrix,
@@ -740,11 +744,14 @@ export class CryptoQuant extends BaseAgent {
       rollingCorrelation: [0.5, 0.6, 0.7, 0.65],
       dcc: matrix,
       eigenvalues: [1.6, 0.4],
-      principalComponents: [[0.707, 0.707], [-0.707, 0.707]],
+      principalComponents: [
+        [0.707, 0.707],
+        [-0.707, 0.707],
+      ],
     };
   }
-  
-  private fitCopula(returns: number[]): CopulaAnalysis {
+
+  private fitCopula(_returns: number[]): CopulaAnalysis {
     return {
       type: 'T',
       parameters: [0.6, 5], // correlation, degrees of freedom
@@ -756,8 +763,11 @@ export class CryptoQuant extends BaseAgent {
       likelihood: -1234.5,
     };
   }
-  
-  private findStatisticalArbitrage(priceData: any, models: QuantitativeModels): StatisticalArbitrage {
+
+  private findStatisticalArbitrage(
+    _priceData: any,
+    _models: QuantitativeModels,
+  ): StatisticalArbitrage {
     const opportunities: ArbOpportunity[] = [
       {
         type: 'PAIRS',
@@ -770,7 +780,7 @@ export class CryptoQuant extends BaseAgent {
         riskAdjustedReturn: 0.03,
       },
     ];
-    
+
     return {
       opportunities,
       pairsTrades: [],
@@ -781,8 +791,8 @@ export class CryptoQuant extends BaseAgent {
       winRate: 0.65,
     };
   }
-  
-  private performFactorAnalysis(priceData: any, fundamentalData: any): FactorAnalysis {
+
+  private performFactorAnalysis(_priceData: any, _fundamentalData: any): FactorAnalysis {
     return {
       factors: [
         {
@@ -804,7 +814,10 @@ export class CryptoQuant extends BaseAgent {
           informationCoefficient: 0.08,
         },
       ],
-      factorLoadings: [[0.8, 0.3], [0.6, 0.5]],
+      factorLoadings: [
+        [0.8, 0.3],
+        [0.6, 0.5],
+      ],
       factorReturns: [0.02, 0.01],
       rSquared: 0.65,
       specificRisk: [0.1, 0.12],
@@ -812,8 +825,12 @@ export class CryptoQuant extends BaseAgent {
       idiosyncraticRisk: 0.08,
     };
   }
-  
-  private calculateAdvancedRiskMetrics(priceData: any, optionsData: any, models: QuantitativeModels): AdvancedRiskMetrics {
+
+  private calculateAdvancedRiskMetrics(
+    _priceData: any,
+    _optionsData: any,
+    _models: QuantitativeModels,
+  ): AdvancedRiskMetrics {
     return {
       var: {
         parametric: 0.05,
@@ -870,8 +887,12 @@ export class CryptoQuant extends BaseAgent {
       riskParity: [0.25, 0.25, 0.25, 0.25],
     };
   }
-  
-  private runMachineLearning(priceData: any, volumeData: any, alternativeData: any): MachineLearningPredictions {
+
+  private runMachineLearning(
+    _priceData: any,
+    _volumeData: any,
+    _alternativeData: any,
+  ): MachineLearningPredictions {
     return {
       priceDirection: {
         model: 'LSTM',
@@ -923,15 +944,15 @@ export class CryptoQuant extends BaseAgent {
       },
     };
   }
-  
+
   private generateQuantSignals(
     models: QuantitativeModels,
     ml: MachineLearningPredictions,
-    regime: MarketRegime,
-    arb: StatisticalArbitrage
+    _regime: MarketRegime,
+    arb: StatisticalArbitrage,
   ): QuantSignal[] {
     const signals: QuantSignal[] = [];
-    
+
     // Mean reversion signal
     if (models.meanReversion.deviationFromMean > 0.1) {
       signals.push({
@@ -947,7 +968,7 @@ export class CryptoQuant extends BaseAgent {
         confidence: 0.7,
       });
     }
-    
+
     // ML signal
     if (ml.ensembleModel.confidence > 0.75) {
       signals.push({
@@ -963,7 +984,7 @@ export class CryptoQuant extends BaseAgent {
         confidence: ml.ensembleModel.confidence,
       });
     }
-    
+
     // Arbitrage signal
     if (arb.opportunities.length > 0) {
       const opp = arb.opportunities[0];
@@ -980,14 +1001,18 @@ export class CryptoQuant extends BaseAgent {
         confidence: opp.probability,
       });
     }
-    
+
     return signals;
   }
-  
-  private optimizePortfolio(assets: string[], risk: AdvancedRiskMetrics, factors: FactorAnalysis): PortfolioOptimization {
+
+  private optimizePortfolio(
+    assets: string[],
+    _risk: AdvancedRiskMetrics,
+    _factors: FactorAnalysis,
+  ): PortfolioOptimization {
     const n = assets.length;
     const equalWeights = new Array(n).fill(1 / n);
-    
+
     return {
       weights: equalWeights,
       expectedReturn: 0.15,
@@ -1006,15 +1031,22 @@ export class CryptoQuant extends BaseAgent {
         views: [[1, -1, 0, 0]],
         confidence: [0.8],
         posteriorReturns: [0.11, 0.11, 0.08, 0.15],
-        posteriorCovariance: [[0.04, 0.02], [0.02, 0.04]],
+        posteriorCovariance: [
+          [0.04, 0.02],
+          [0.02, 0.04],
+        ],
         optimizedWeights: [0.3, 0.3, 0.2, 0.2],
       },
       riskBudget: equalWeights,
       diversificationRatio: 1.5,
     };
   }
-  
-  private backtest(signals: QuantSignal[], priceData: any, context: AgentContext): BacktestMetrics {
+
+  private backtest(
+    _signals: QuantSignal[],
+    _priceData: any,
+    _context: AgentContext,
+  ): BacktestMetrics {
     // Simplified backtest
     return {
       totalReturn: 0.45,
@@ -1035,17 +1067,17 @@ export class CryptoQuant extends BaseAgent {
       consecutiveLosses: 3,
     };
   }
-  
+
   private generateRecommendation(
     signals: QuantSignal[],
     risk: AdvancedRiskMetrics,
     backtest: BacktestMetrics,
-    regime: MarketRegime
+    regime: MarketRegime,
   ): QuantRecommendation {
-    const strongSignals = signals.filter(s => s.strength > 7);
+    const strongSignals = signals.filter((s) => s.strength > 7);
     let action: QuantRecommendation['action'];
     let confidence = 70;
-    
+
     if (strongSignals.length > 2 && backtest.sharpeRatio > 0.7) {
       action = strongSignals[0].direction === 'LONG' ? 'STRONG_BUY' : 'STRONG_SELL';
       confidence = 85;
@@ -1056,10 +1088,10 @@ export class CryptoQuant extends BaseAgent {
       action = 'NEUTRAL';
       confidence = 60;
     }
-    
+
     const positions: PositionRecommendation[] = signals
-      .filter(s => s.type === 'ENTRY')
-      .map(s => ({
+      .filter((s) => s.type === 'ENTRY')
+      .map((s) => ({
         asset: s.asset,
         direction: s.direction,
         size: s.size,
@@ -1069,7 +1101,7 @@ export class CryptoQuant extends BaseAgent {
         expectedReturn: s.expectedReturn,
         probability: s.confidence,
       }));
-    
+
     const hedges: HedgeRecommendation[] = [
       {
         instrument: 'BTC Put Option',
@@ -1078,7 +1110,7 @@ export class CryptoQuant extends BaseAgent {
         effectiveness: 0.8,
       },
     ];
-    
+
     const reasoning = [
       `Market regime: ${regime.regime} with ${regime.confidence * 100}% confidence`,
       `Backtest Sharpe Ratio: ${backtest.sharpeRatio.toFixed(2)}`,
@@ -1086,7 +1118,7 @@ export class CryptoQuant extends BaseAgent {
       `Risk-adjusted return optimization suggests ${action}`,
       'Based on 20 years of quantitative finance experience',
     ];
-    
+
     const models = [
       'GARCH Volatility Model',
       'Mean Reversion (Ornstein-Uhlenbeck)',
@@ -1094,7 +1126,7 @@ export class CryptoQuant extends BaseAgent {
       'Statistical Arbitrage',
       'Black-Litterman Portfolio Optimization',
     ];
-    
+
     const riskWarnings: string[] = [];
     if (risk.var.parametric > 0.1) {
       riskWarnings.push('High VaR detected - position sizing adjusted');
@@ -1102,7 +1134,7 @@ export class CryptoQuant extends BaseAgent {
     if (regime.regime === 'VOLATILE' || regime.regime === 'CRASH') {
       riskWarnings.push(`${regime.regime} market conditions - increased caution advised`);
     }
-    
+
     return {
       action,
       confidence,
@@ -1114,7 +1146,7 @@ export class CryptoQuant extends BaseAgent {
       riskWarnings,
     };
   }
-  
+
   private calculateReturns(prices: number[]): number[] {
     const returns: number[] = [];
     for (let i = 1; i < prices.length; i++) {
@@ -1122,7 +1154,7 @@ export class CryptoQuant extends BaseAgent {
     }
     return returns;
   }
-  
+
   private calculateVolatility(returns: number[]): number {
     const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
     const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;

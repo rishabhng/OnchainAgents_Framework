@@ -12,13 +12,13 @@ import * as path from 'path';
 async function main() {
   console.log('🚀 OnChainAgents Performance Testing Suite');
   console.log('==========================================\n');
-  
+
   const tester = new LoadTester();
-  
+
   try {
     // Initialize testing environment
     await tester.initialize();
-    
+
     // Add progress listener
     let requestCount = 0;
     tester.on('request', (metric) => {
@@ -27,32 +27,34 @@ async function main() {
         console.log(`   Processed ${requestCount} requests...`);
       }
     });
-    
+
     // Run comprehensive test suite
     console.log('Starting comprehensive load test suite...\n');
     const results = await tester.runComprehensiveSuite();
-    
+
     // Generate report
     const report = tester.generateReport(results);
-    
+
     // Save report to file
     const reportPath = path.join(
       process.cwd(),
-      'performance-report-' + new Date().toISOString().replace(/:/g, '-') + '.md'
+      'performance-report-' + new Date().toISOString().replace(/:/g, '-') + '.md',
     );
     fs.writeFileSync(reportPath, report);
-    
+
     console.log('\n==========================================');
     console.log('📊 Performance Test Complete!');
     console.log(`📄 Report saved to: ${reportPath}`);
-    
+
     // Print summary
     console.log('\n📈 Quick Summary:');
     for (const [name, result] of results) {
       const status = result.errorRate < 1 && result.p99ResponseTime < 3000 ? '✅' : '❌';
-      console.log(`${status} ${name}: ${result.totalRequests} requests, ${result.errorRate.toFixed(2)}% errors, ${result.p99ResponseTime.toFixed(0)}ms P99`);
+      console.log(
+        `${status} ${name}: ${result.totalRequests} requests, ${result.errorRate.toFixed(2)}% errors, ${result.p99ResponseTime.toFixed(0)}ms P99`,
+      );
     }
-    
+
     // Exit code based on production readiness
     let exitCode = 0;
     for (const [_, result] of results) {
@@ -61,17 +63,16 @@ async function main() {
         break;
       }
     }
-    
+
     if (exitCode === 0) {
       console.log('\n✅ System is PRODUCTION READY!');
     } else {
       console.log('\n❌ System needs optimization before production deployment.');
     }
-    
+
     // Cleanup
     tester.cleanup();
     process.exit(exitCode);
-    
   } catch (error) {
     console.error('❌ Load test failed:', error);
     tester.cleanup();

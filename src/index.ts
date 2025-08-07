@@ -44,17 +44,18 @@ export class OnChainAgents {
   private readonly hiveService: IHiveService;
   private readonly agents: Map<string, BaseAgent>;
   private readonly config: OnChainAgentsConfig;
-  
+
   constructor(config?: OnChainAgentsConfig) {
     this.config = {
-      mcpServerUrl: config?.mcpServerUrl || process.env.HIVE_MCP_URL || 'https://hiveintelligence.xyz/mcp',
+      mcpServerUrl:
+        config?.mcpServerUrl || process.env.HIVE_MCP_URL || 'https://hiveintelligence.xyz/mcp',
       cacheTTL: config?.cacheTTL || 3600,
       maxRetries: config?.maxRetries || 3,
       timeout: config?.timeout || 30000,
       logLevel: config?.logLevel || process.env.LOG_LEVEL || 'info',
       ...config,
     };
-    
+
     // Initialize Hive MCP Client
     this.hiveMCP = new HiveMCPClient({
       mcpServerUrl: this.config.mcpServerUrl,
@@ -62,15 +63,15 @@ export class OnChainAgents {
       timeout: this.config.timeout,
       logLevel: this.config.logLevel,
     });
-    
+
     // Create adapter for unified interface
     this.hiveService = new HiveServiceAdapter(this.hiveMCP);
-    
+
     // Initialize agents
     this.agents = new Map();
     this.initializeAgents();
   }
-  
+
   /**
    * Initialize all available agents
    */
@@ -78,22 +79,22 @@ export class OnChainAgents {
     // Security agents
     this.agents.set('rugDetector', new RugDetector(this.hiveService));
     this.agents.set('riskAnalyzer', new RiskAnalyzer(this.hiveService));
-    
+
     // Market intelligence agents
     this.agents.set('alphaHunter', new AlphaHunter(this.hiveService));
     this.agents.set('whaleTracker', new WhaleTracker(this.hiveService));
     this.agents.set('sentimentAnalyzer', new SentimentAnalyzer(this.hiveService));
-    
+
     // Research agents
     this.agents.set('tokenResearcher', new TokenResearcher(this.hiveService));
     this.agents.set('defiAnalyzer', new DeFiAnalyzer(this.hiveService));
     this.agents.set('portfolioTracker', new PortfolioTracker(this.hiveService));
-    
+
     // Specialized agents
     this.agents.set('crossChainNavigator', new CrossChainNavigator(this.hiveService));
     this.agents.set('marketStructureAnalyst', new MarketStructureAnalyst(this.hiveService));
   }
-  
+
   /**
    * Main analyze command - Routes to appropriate agents
    */
@@ -103,7 +104,7 @@ export class OnChainAgents {
     options?: Record<string, any>,
   ): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       // Determine network and address
       const context: AgentContext = {
@@ -112,20 +113,20 @@ export class OnChainAgents {
         symbol: !this.isAddress(addressOrSymbol) ? addressOrSymbol : undefined,
         options,
       };
-      
+
       // Run security agents
       const securityResults = await this.runSecurityAgents(context);
-      
-      // Run market agents  
+
+      // Run market agents
       const marketResults = await this.runMarketAgents(context);
-      
+
       // Compile results
       const data = {
         security: securityResults,
         market: marketResults,
         summary: this.generateSummary(securityResults, marketResults),
       };
-      
+
       return {
         success: true,
         command: 'analyze',
@@ -144,39 +145,36 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Research command - Deep token analysis
    */
-  public async research(
-    tokenSymbol: string,
-    options?: { deep?: boolean },
-  ): Promise<CommandResult> {
+  public async research(tokenSymbol: string, options?: { deep?: boolean }): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       const tokenResearcher = this.agents.get('tokenResearcher');
       const defiAnalyzer = this.agents.get('defiAnalyzer');
-      
+
       const context: AgentContext = {
         token: tokenSymbol,
         options: {
           depth: options?.deep ? 'comprehensive' : 'standard',
         },
       };
-      
+
       const [researchResults, defiResults] = await Promise.all([
         tokenResearcher ? tokenResearcher.analyze(context) : null,
         defiAnalyzer ? defiAnalyzer.analyze(context) : null,
       ]);
-      
+
       const data = {
         token: tokenSymbol,
         research: researchResults?.data,
         defi: defiResults?.data,
         summary: this.generateResearchSummary(researchResults, defiResults),
       };
-      
+
       return {
         success: true,
         command: 'research',
@@ -195,7 +193,7 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Security command - Security-focused analysis
    */
@@ -204,16 +202,16 @@ export class OnChainAgents {
     options?: { network?: string },
   ): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       const context: AgentContext = {
         network: options?.network || 'ethereum',
         address: tokenAddress,
         options,
       };
-      
+
       const results = await this.runSecurityAgents(context);
-      
+
       return {
         success: true,
         command: 'security',
@@ -232,7 +230,7 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Hunt command - Find alpha opportunities
    */
@@ -241,11 +239,11 @@ export class OnChainAgents {
     risk?: 'low' | 'medium' | 'high';
   }): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       const alphaHunter = this.agents.get('alphaHunter');
       const marketAnalyst = this.agents.get('marketStructureAnalyst');
-      
+
       const context: AgentContext = {
         options: {
           categories: options?.category ? [options.category] : undefined,
@@ -253,19 +251,19 @@ export class OnChainAgents {
           includeDerivatives: true,
         },
       };
-      
+
       const [huntResults, marketResults] = await Promise.all([
         alphaHunter ? alphaHunter.analyze(context) : null,
         marketAnalyst ? marketAnalyst.analyze(context) : null,
       ]);
-      
+
       const data = {
         opportunities: (huntResults?.data as any)?.opportunities || [],
         marketStructure: marketResults?.data,
         filters: options,
         recommendations: this.generateHuntRecommendations(huntResults, marketResults),
       };
-      
+
       return {
         success: true,
         command: 'hunt',
@@ -284,7 +282,7 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Track command - Whale and wallet tracking
    */
@@ -293,11 +291,11 @@ export class OnChainAgents {
     options?: { alerts?: boolean },
   ): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       const whaleTracker = this.agents.get('whaleTracker');
       const portfolioTracker = this.agents.get('portfolioTracker');
-      
+
       const context: AgentContext = {
         address: walletAddress,
         options: {
@@ -306,12 +304,12 @@ export class OnChainAgents {
           includeDeFi: true,
         },
       };
-      
+
       const [whaleResults, portfolioResults] = await Promise.all([
         whaleTracker ? whaleTracker.analyze(context) : null,
         portfolioTracker ? portfolioTracker.analyze(context) : null,
       ]);
-      
+
       const data = {
         wallet: walletAddress,
         whaleActivity: whaleResults?.data,
@@ -319,7 +317,7 @@ export class OnChainAgents {
         alerts: options?.alerts || false,
         insights: this.generateTrackingInsights(whaleResults, portfolioResults),
       };
-      
+
       return {
         success: true,
         command: 'track',
@@ -338,29 +336,28 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Sentiment command - Social sentiment analysis
    */
-  public async sentiment(
-    token: string,
-    options?: { sources?: string },
-  ): Promise<CommandResult> {
+  public async sentiment(token: string, options?: { sources?: string }): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       const sentimentAnalyzer = this.agents.get('sentimentAnalyzer');
-      
+
       const context: AgentContext = {
         token,
         options: {
-          sources: options?.sources ? options.sources.split(',') : ['twitter', 'telegram', 'discord', 'reddit'],
+          sources: options?.sources
+            ? options.sources.split(',')
+            : ['twitter', 'telegram', 'discord', 'reddit'],
           depth: 'comprehensive',
         },
       };
-      
+
       const sentimentResults = await sentimentAnalyzer?.analyze(context);
-      
+
       const data = {
         token,
         sentiment: (sentimentResults?.data as any)?.overallSentiment || 'neutral',
@@ -368,7 +365,7 @@ export class OnChainAgents {
         sources: options?.sources || 'all',
         analysis: sentimentResults?.data,
       };
-      
+
       return {
         success: true,
         command: 'sentiment',
@@ -387,76 +384,76 @@ export class OnChainAgents {
       };
     }
   }
-  
+
   /**
    * Get a specific agent
    */
   public getAgent(name: string): BaseAgent | undefined {
     return this.agents.get(name);
   }
-  
+
   /**
    * List all available agents
    */
   public listAgents(): string[] {
     return Array.from(this.agents.keys());
   }
-  
+
   /**
    * Health check
    */
   public async healthCheck(): Promise<boolean> {
     return this.hiveMCP.healthCheck();
   }
-  
+
   // Helper methods
-  
+
   private isAddress(value: string): boolean {
     return /^0x[a-fA-F0-9]{40}$/.test(value);
   }
-  
+
   private async runSecurityAgents(context: AgentContext): Promise<any> {
     const rugDetector = this.agents.get('rugDetector');
     const riskAnalyzer = this.agents.get('riskAnalyzer');
-    
+
     const [rugResults, riskResults] = await Promise.all([
       rugDetector ? rugDetector.analyze(context) : null,
       riskAnalyzer ? riskAnalyzer.analyze(context) : null,
     ]);
-    
+
     return {
       rugDetection: rugResults,
       riskAnalysis: riskResults,
     };
   }
-  
+
   private async runMarketAgents(context: AgentContext): Promise<any> {
     const alphaHunter = this.agents.get('alphaHunter');
     const sentimentAnalyzer = this.agents.get('sentimentAnalyzer');
-    
+
     const [alphaResults, sentimentResults] = await Promise.all([
       alphaHunter ? alphaHunter.analyze(context) : null,
       sentimentAnalyzer ? sentimentAnalyzer.analyze(context) : null,
     ]);
-    
+
     return {
       opportunities: alphaResults,
       sentiment: sentimentResults,
     };
   }
-  
+
   private generateResearchSummary(research: any, defi: any): any {
     const recommendations: string[] = [];
     let verdict = 'NEUTRAL';
-    
+
     if (research?.data?.investmentThesis?.conviction) {
       verdict = research.data.investmentThesis.conviction;
     }
-    
+
     if (defi?.data?.opportunities?.length > 0) {
       recommendations.push(`${defi.data.opportunities.length} DeFi opportunities identified`);
     }
-    
+
     return {
       verdict,
       recommendations,
@@ -464,48 +461,48 @@ export class OnChainAgents {
       defiScore: defi?.data?.overallScore || 0,
     };
   }
-  
+
   private generateHuntRecommendations(hunt: any, market: any): string[] {
     const recommendations: string[] = [];
-    
+
     if (hunt?.data?.opportunities?.length > 0) {
       recommendations.push(`Found ${hunt.data.opportunities.length} alpha opportunities`);
     }
-    
+
     if (market?.data?.tradingSignals?.length > 0) {
       recommendations.push(`${market.data.tradingSignals.length} trading signals detected`);
     }
-    
+
     return recommendations;
   }
-  
+
   private generateTrackingInsights(whale: any, portfolio: any): any {
     const insights: string[] = [];
-    
+
     if (whale?.data?.isWhale) {
       insights.push('This is a whale wallet');
     }
-    
+
     if (portfolio?.data?.portfolio?.totalValue > 1000000) {
       insights.push('Portfolio value exceeds $1M');
     }
-    
+
     if (whale?.data?.recentMoves?.length > 0) {
       insights.push(`${whale.data.recentMoves.length} recent significant moves`);
     }
-    
+
     return {
       insights,
       whaleStatus: whale?.data?.isWhale || false,
       portfolioValue: portfolio?.data?.portfolio?.totalValue || 0,
     };
   }
-  
+
   private generateSummary(security: any, market: any): any {
     let score = 50; // Base score
     let verdict = 'NEUTRAL';
     const recommendations: string[] = [];
-    
+
     // Adjust based on security results
     if (security?.rugDetection?.success) {
       const rugScore = security.rugDetection.data?.riskScore || 0;
@@ -518,7 +515,7 @@ export class OnChainAgents {
         recommendations.push('Moderate rug risk - proceed with caution');
       }
     }
-    
+
     // Adjust based on market results
     if (market?.sentiment?.success) {
       const sentimentScore = market.sentiment.data?.sentimentScore || 0;
@@ -530,13 +527,13 @@ export class OnChainAgents {
         recommendations.push('Negative sentiment - monitor closely');
       }
     }
-    
+
     // Final verdict
     if (score >= 70) verdict = 'SAFE';
     else if (score >= 50) verdict = 'MODERATE';
     else if (score >= 30) verdict = 'RISKY';
     else verdict = 'HIGH_RISK';
-    
+
     return {
       verdict,
       score,
@@ -546,14 +543,7 @@ export class OnChainAgents {
 }
 
 // Export types and interfaces
-export {
-  HiveMCPClient,
-  HiveMCPConfig,
-  BaseAgent,
-  AgentConfig,
-  AgentContext,
-  AnalysisResult,
-};
+export { HiveMCPClient, HiveMCPConfig, BaseAgent, AgentConfig, AgentContext, AnalysisResult };
 
 // Export main class as default
 export default OnChainAgents;
