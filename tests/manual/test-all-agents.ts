@@ -5,23 +5,23 @@
  * Tests all 12 specialized agents to ensure they work correctly
  */
 
-import { HiveBridge } from './src/bridges/hive-bridge';
-import { AlphaHunter } from './src/agents/market/AlphaHunter';
-import { WhaleTracker } from './src/agents/market/WhaleTracker';
-import { SentimentAnalyzer } from './src/agents/market/SentimentAnalyzer';
-import { MarketMaker } from './src/agents/market/MarketMaker';
-import { TokenResearcher } from './src/agents/research/TokenResearcher';
-import { DeFiAnalyzer } from './src/agents/research/DeFiAnalyzer';
-import { PortfolioTracker } from './src/agents/research/PortfolioTracker';
-import { YieldOptimizer } from './src/agents/research/YieldOptimizer';
-import { RugDetector } from './src/agents/security/RugDetector';
-import { RiskAnalyzer } from './src/agents/security/RiskAnalyzer';
-import { CrossChainNavigator } from './src/agents/specialized/CrossChainNavigator';
-import { MarketStructureAnalyst } from './src/agents/specialized/MarketStructureAnalyst';
-import { NFTValuator } from './src/agents/specialized/NFTValuator';
-import { GovernanceAdvisor } from './src/agents/specialized/GovernanceAdvisor';
-import { ChainAnalyst } from './src/agents/specialized/ChainAnalyst';
-import { CryptoQuant } from './src/agents/specialized/CryptoQuant';
+import { HiveBridge } from '../../src/bridges/hive-bridge';
+import { AlphaHunter } from '../../src/agents/market/AlphaHunter';
+import { WhaleTracker } from '../../src/agents/market/WhaleTracker';
+import { SentimentAnalyzer } from '../../src/agents/market/SentimentAnalyzer';
+import { MarketMaker } from '../../src/agents/market/MarketMaker';
+import { TokenResearcher } from '../../src/agents/research/TokenResearcher';
+import { DeFiAnalyzer } from '../../src/agents/research/DeFiAnalyzer';
+import { PortfolioTracker } from '../../src/agents/research/PortfolioTracker';
+import { YieldOptimizer } from '../../src/agents/research/YieldOptimizer';
+import { RugDetector } from '../../src/agents/security/RugDetector';
+import { RiskAnalyzer } from '../../src/agents/security/RiskAnalyzer';
+import { CrossChainNavigator } from '../../src/agents/specialized/CrossChainNavigator';
+import { MarketStructureAnalyst } from '../../src/agents/specialized/MarketStructureAnalyst';
+import { NFTValuator } from '../../src/agents/specialized/NFTValuator';
+import { GovernanceAdvisor } from '../../src/agents/specialized/GovernanceAdvisor';
+import { ChainAnalyst } from '../../src/agents/specialized/ChainAnalyst';
+import { CryptoQuant } from '../../src/agents/specialized/CryptoQuant';
 
 // Test result tracking
 interface TestResult {

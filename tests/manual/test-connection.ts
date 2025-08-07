@@ -6,7 +6,7 @@
 
 import dotenv from 'dotenv';
 import chalk from 'chalk';
-import { HiveMCPRemoteClient } from './src/mcp/HiveMCPRemoteClient';
+import { HiveMCPRemoteClient } from '../../src/mcp/HiveMCPRemoteClient';
 
 // Load environment variables
 dotenv.config();

@@ -1,15 +1,31 @@
-# Hive Intelligence MCP Setup Guide
+# MCP Setup Guide - OnChainAgents & Hive Intelligence
 
 ## Overview
 
-Hive Intelligence provides blockchain data and crypto intelligence through the Model Context Protocol (MCP). This guide explains how to properly connect to Hive Intelligence from different environments.
+This guide covers setting up OnChainAgents with Claude Code and other MCP-compatible clients. OnChainAgents provides blockchain data and crypto intelligence through the Model Context Protocol (MCP), powered by Hive Intelligence.
+
+## 🚀 Claude Code Setup (Recommended)
+
+### Quick Setup
+```bash
+# Install OnChainAgents globally
+npm install -g @onchainagents/core
+
+# Run automatic setup
+npx @onchainagents/core setup-claude
+
+# Test in Claude Code with:
+# "Use oca_analyze to check ethereum USDC"
+```
+
+**Full Claude Code Guide**: [CLAUDE_CODE_SETUP.md](../CLAUDE_CODE_SETUP.md)
 
 ## Important Notes
 
-⚠️ **There is NO CLI command for adding MCP servers to Claude Desktop**
-- The command `claude mcp add --transport http` **does not exist**
-- MCP servers must be configured through the Claude Desktop GUI
-- For programmatic access, use the Node.js clients provided in this library
+⚠️ **Claude Desktop vs Claude Code**
+- **Claude Code**: Has CLI commands for MCP configuration
+- **Claude Desktop**: Must be configured through GUI (no CLI commands)
+- Both support the same MCP protocol and tools
 
 ## Setup Methods
 
@@ -28,9 +44,26 @@ Hive Intelligence provides blockchain data and crypto intelligence through the M
 - No API key required for basic access
 - Tools will appear in Claude's available actions
 
-### Method 2: Programmatic Access (Node.js)
+### Method 2: Claude Code (CLI Configuration)
 
-For integrating Hive Intelligence into your applications:
+**Automatic Setup:**
+```bash
+# Install and configure
+npm install -g @onchainagents/core
+npx @onchainagents/core setup-claude
+```
+
+**Manual Setup:**
+```bash
+# Edit Claude Code config
+nano ~/.config/claude/claude_code_config.json
+```
+
+Add the OnChainAgents MCP server configuration (see Method 3 below).
+
+### Method 3: Programmatic Access (Node.js)
+
+For integrating OnChainAgents into your applications:
 
 ```typescript
 import { HiveMCPRemoteClient } from '@onchainagents/core';
@@ -48,11 +81,12 @@ const result = await client.callTool('hive_token_data', {
 });
 ```
 
-### Method 3: Manual Configuration File
+### Method 4: Manual Configuration File
 
 If you prefer to manually edit configuration files:
 
-**Location:** `~/.config/claude/claude_desktop_config.json`
+**For Claude Code:** `~/.config/claude/claude_code_config.json`
+**For Claude Desktop:** `~/.config/claude/claude_desktop_config.json`
 
 ```json
 {
@@ -86,8 +120,21 @@ HIVE_FALLBACK_MODE=true
 
 ## Available Tools
 
-Once connected, you'll have access to these Hive Intelligence tools:
+Once connected, you'll have access to these OnChainAgents tools:
 
+### In Claude Code:
+- **oca_analyze** - Comprehensive token analysis
+- **oca_security** - Security and rug detection
+- **oca_hunt** - Find alpha opportunities
+- **oca_track** - Track whale wallets
+- **oca_sentiment** - Social sentiment analysis
+- **oca_research** - Deep token research
+- **oca_defi** - DeFi protocol analysis
+- **oca_bridge** - Cross-chain routing
+- **oca_portfolio** - Portfolio analysis
+- **oca_market** - Market structure analysis
+
+### Direct Hive Intelligence Tools:
 - **hive_token_data** - Get comprehensive token information
 - **hive_security_scan** - Perform security analysis and rug detection
 - **hive_whale_tracker** - Track whale wallet activity

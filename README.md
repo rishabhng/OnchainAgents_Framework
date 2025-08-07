@@ -96,17 +96,48 @@ const security = await oca.security('0x...');
 const alpha = await oca.alpha('ethereum');
 ```
 
-## 🤖 MCP Integration
+## 🤖 Claude Code Integration
 
-### Connect to Hive Intelligence
+### Quick Setup (2 minutes)
 
-#### For Claude Code CLI:
 ```bash
-# Add Hive Intelligence MCP server
-claude mcp add --transport http hive https://hiveintelligence.xyz/mcp
+# Install globally
+npm install -g @onchainagents/core
+
+# Configure Claude Code
+npx @onchainagents/core setup-claude
+
+# Test it works - in Claude Code, try:
+# "Use oca_analyze to check ethereum USDC"
 ```
 
-#### For Claude Desktop:
+**That's it!** OnChainAgents is now available in Claude Code. 
+
+📚 **Full Setup Guide**: [CLAUDE_CODE_SETUP.md](./CLAUDE_CODE_SETUP.md)
+
+### Available in Claude Code
+
+Once configured, you can use these tools directly in Claude Code:
+- `oca_analyze` - Comprehensive token analysis
+- `oca_security` - Security and rug detection
+- `oca_hunt` - Find alpha opportunities
+- `oca_track` - Track whale wallets
+- `oca_sentiment` - Social sentiment analysis
+- [View all 10 tools](./.claude/tools.md)
+
+### Example Claude Code Prompts
+
+```
+"Use oca_analyze to analyze Ethereum USDC and tell me if it's safe"
+"Find alpha opportunities on BSC using oca_hunt"
+"Check if 0x... is a rug pull with oca_security"
+```
+
+[See more examples](./.claude/prompts.md)
+
+## 🖥️ Claude Desktop & Other MCP Clients
+
+### For Claude Desktop:
 1. Go to Settings → Manage Connectors
 2. Click "Add Connector"
 3. Enter URL: `https://hiveintelligence.xyz/mcp`
@@ -125,8 +156,8 @@ Configure your AI tool to connect to:
 {
   "mcpServers": {
     "onchainagents": {
-      "command": "node",
-      "args": ["dist/orchestrator/mcp-server.js"],
+      "command": "npx",
+      "args": ["@onchainagents/core", "oca-mcp"],
       "env": {
         "HIVE_API_KEY": "your-api-key"
       }

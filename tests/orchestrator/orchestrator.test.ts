@@ -7,6 +7,8 @@ import { Orchestrator } from '../../src/orchestrator';
 import { HiveBridge } from '../../src/bridges/hive-bridge';
 import { CommandManager } from '../../src/commands';
 import { PersonaType } from '../../src/personas';
+import { CryptoDomain, OperationType } from '../../src/orchestrator/detection-engine';
+import { ResourceZone } from '../../src/orchestrator/resource-zones';
 
 // Mock HiveBridge
 jest.mock('../../src/bridges/hive-bridge');
@@ -128,13 +130,13 @@ describe('Orchestrator Integration', () => {
       const waveEngine = (orchestrator as any).waveEngine;
       const shouldUseWave = waveEngine.shouldUseWaveMode({
         operation: 'complex-analysis',
-        domains: ['DEFI', 'SECURITY'],
-        operations: ['ANALYSIS', 'OPTIMIZATION'],
+        domains: [CryptoDomain.DEFI, CryptoDomain.SECURITY],
+        operations: [OperationType.ANALYSIS, OperationType.OPTIMIZATION],
         complexity: 0.8,
         fileCount: 25,
         operationTypes: 3,
         riskLevel: 0.6,
-        resourceZone: 'GREEN',
+        resourceZone: ResourceZone.GREEN,
         tokens: { used: 0, budget: 100000 },
       });
       
@@ -145,13 +147,13 @@ describe('Orchestrator Integration', () => {
       const waveEngine = (orchestrator as any).waveEngine;
       const shouldUseWave = waveEngine.shouldUseWaveMode({
         operation: 'simple-query',
-        domains: ['MARKET'],
-        operations: ['QUERY'],
+        domains: [CryptoDomain.MARKET],
+        operations: [OperationType.ANALYSIS],
         complexity: 0.3,
         fileCount: 5,
         operationTypes: 1,
         riskLevel: 0.2,
-        resourceZone: 'GREEN',
+        resourceZone: ResourceZone.GREEN,
         tokens: { used: 0, budget: 100000 },
       });
       
@@ -162,13 +164,13 @@ describe('Orchestrator Integration', () => {
       const waveEngine = (orchestrator as any).waveEngine;
       const context = {
         operation: 'comprehensive-audit',
-        domains: ['SECURITY'],
-        operations: ['SCANNING', 'VALIDATION'],
+        domains: [CryptoDomain.SECURITY],
+        operations: [OperationType.SCANNING, OperationType.VALIDATION],
         complexity: 0.9,
         fileCount: 30,
         operationTypes: 4,
         riskLevel: 0.8,
-        resourceZone: 'GREEN',
+        resourceZone: ResourceZone.GREEN,
         tokens: { used: 0, budget: 100000 },
       };
       
@@ -186,8 +188,8 @@ describe('Orchestrator Integration', () => {
     it('should activate whale hunter persona for whale tracking', async () => {
       const activationEngine = (orchestrator as any).personaActivationEngine;
       const persona = await activationEngine.activateBestPersona({
-        domains: ['WHALE'],
-        operations: ['TRACKING'],
+        domains: [CryptoDomain.WHALE],
+        operations: [OperationType.TRACKING],
         keywords: ['whale', 'track', 'movement'],
         complexity: 0.6,
         riskLevel: 0.3,
@@ -201,8 +203,8 @@ describe('Orchestrator Integration', () => {
     it('should activate security auditor for audit operations', async () => {
       const activationEngine = (orchestrator as any).personaActivationEngine;
       const persona = await activationEngine.activateBestPersona({
-        domains: ['SECURITY'],
-        operations: ['SCANNING', 'VALIDATION'],
+        domains: [CryptoDomain.SECURITY],
+        operations: [OperationType.SCANNING, OperationType.VALIDATION],
         keywords: ['audit', 'security', 'vulnerability'],
         complexity: 0.8,
         riskLevel: 0.8,
@@ -216,8 +218,8 @@ describe('Orchestrator Integration', () => {
     it('should activate alpha seeker for opportunity discovery', async () => {
       const activationEngine = (orchestrator as any).personaActivationEngine;
       const persona = await activationEngine.activateBestPersona({
-        domains: ['ALPHA'],
-        operations: ['DISCOVERY'],
+        domains: [CryptoDomain.ALPHA],
+        operations: [OperationType.DISCOVERY],
         keywords: ['alpha', 'opportunity', 'gem'],
         complexity: 0.7,
         riskLevel: 0.6,
@@ -231,8 +233,8 @@ describe('Orchestrator Integration', () => {
     it('should provide alternative personas when confidence is lower', async () => {
       const activationEngine = (orchestrator as any).personaActivationEngine;
       const result = await activationEngine.determinePersona({
-        domains: ['MARKET', 'DEFI'],
-        operations: ['ANALYSIS'],
+        domains: [CryptoDomain.MARKET, CryptoDomain.DEFI],
+        operations: [OperationType.ANALYSIS],
         keywords: ['general', 'analysis'],
         complexity: 0.5,
         riskLevel: 0.5,
@@ -269,7 +271,7 @@ describe('Orchestrator Integration', () => {
       const flags = flagManager.parseFlags('--think');
       const activated = await flagManager.activateFlags(flags, {
         complexity: 0.6,
-        domains: ['DEFI'],
+        domains: [CryptoDomain.DEFI],
       });
       
       // --think implies --seq
@@ -292,7 +294,7 @@ describe('Orchestrator Integration', () => {
       const activated = await flagManager.activateFlags(flags, {
         complexity: 0.9,
         resourceUsage: 0.8,
-        domains: ['SECURITY'],
+        domains: [CryptoDomain.SECURITY],
       });
       
       // High complexity and resource usage should activate compression
