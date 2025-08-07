@@ -226,7 +226,7 @@ export class WhaleHunterPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     // Whale-specific decision logic
     if (operation === 'track_wallet') {
       // Prioritize wallets by size and activity
@@ -254,7 +254,7 @@ export class WhaleHunterPersona extends BasePersona {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.whaleCount > 10) {
@@ -320,7 +320,7 @@ export class DeFiArchitectPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'select_pool') {
       // Evaluate pools based on risk-adjusted returns
       return options.sort((a, b) => {
@@ -353,7 +353,7 @@ export class DeFiArchitectPersona extends BasePersona {
     return ['Aave v3', 'Compound v3', 'Yearn v3'];
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.tvlGrowth > 0.5) {
@@ -420,7 +420,7 @@ export class SecurityAuditorPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'assess_risk') {
       const vulnerabilities = context?.vulnerabilities || [];
       const severity = this.calculateSeverity(vulnerabilities);
@@ -452,7 +452,7 @@ export class SecurityAuditorPersona extends BasePersona {
     return maxSeverity * 0.7 + avgSeverity * 0.3;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     
     if (!context.audited) {
@@ -523,7 +523,7 @@ export class SentimentAnalystPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'analyze_sentiment') {
       const score = (context?.positive || 0) - (context?.negative || 0);
       return {
@@ -535,7 +535,7 @@ export class SentimentAnalystPersona extends BasePersona {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     if (context.sentimentShift > 0.5) {
       recommendations.push('Major sentiment shift detected - potential trend reversal');
@@ -590,7 +590,7 @@ export class AlphaSeekerPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'evaluate_opportunity') {
       const score = this.calculateAlphaScore(context);
       
@@ -631,7 +631,7 @@ export class AlphaSeekerPersona extends BasePersona {
     return Math.min(1.0, score);
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.momentumScore > 0.8) {
@@ -696,11 +696,11 @@ export class NFTValuatorPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -741,11 +741,11 @@ export class MarketMakerPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -786,11 +786,11 @@ export class GovernanceAdvisorPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -831,11 +831,11 @@ export class YieldOptimizerPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -876,11 +876,11 @@ export class RiskManagerPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -921,11 +921,11 @@ export class ChainAnalystPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     return [];
   }
   
@@ -968,7 +968,7 @@ export class CryptoQuantPersona extends BasePersona {
     });
   }
   
-  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
     if (operation === 'model_selection') {
       // Apply 20 years of financial engineering experience
       return {
@@ -980,7 +980,7 @@ export class CryptoQuantPersona extends BasePersona {
     return null;
   }
   
-  getRecommendations(_context: any): string[] {
+  getRecommendations(context: any): string[] {
     const recommendations: string[] = [];
     if (context.volatilityRegime === 'high') {
       recommendations.push('High volatility regime detected - reduce position sizes by 40%');

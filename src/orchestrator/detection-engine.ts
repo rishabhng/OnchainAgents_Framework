@@ -411,6 +411,8 @@ export class DetectionEngine extends EventEmitter {
       [CryptoDomain.YIELD]: 'YieldAgent',
       [CryptoDomain.ALPHA]: 'AlphaAgent',
       [CryptoDomain.RISK]: 'RiskAgent',
+      [CryptoDomain.ONCHAIN]: 'ChainAnalyst',
+      [CryptoDomain.QUANT]: 'CryptoQuant',
     };
     
     for (const domain of domains) {

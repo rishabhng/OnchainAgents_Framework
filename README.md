@@ -96,6 +96,30 @@ const analysis = await oca.analyze('ethereum', '0x...');
 console.log(analysis); // probably saved you from a rugpull
 ```
 
+## 🔌 Hive Intelligence Integration
+
+OnChainAgents is powered by **Hive Intelligence**, providing real-time crypto data, security analysis, and market intelligence.
+
+### Quick Setup
+```bash
+# Set your Hive API key (optional - works in fallback mode without it)
+export HIVE_API_KEY=your-api-key-here
+
+# Run with real Hive data
+USE_REAL_HIVE=true npm run test:agents
+```
+
+### Features
+- 🔍 **Real-time token analysis** via Hive Intelligence API
+- 🛡️ **Security scanning** with contract verification
+- 🐋 **Whale tracking** and wallet analysis
+- 📊 **Sentiment analysis** across social platforms
+- 🎯 **Alpha discovery** with risk assessment
+- 💾 **Smart caching** to optimize API usage
+- 🔄 **Automatic fallback** when API is unavailable
+
+See [HIVE_INTEGRATION.md](./HIVE_INTEGRATION.md) for detailed configuration.
+
 ### Connection Methods
 
 **For Programmatic Access (Node.js):**

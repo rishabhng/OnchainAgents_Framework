@@ -762,6 +762,8 @@ export class DelegationEngine extends EventEmitter {
       [CryptoDomain.SENTIMENT]: SubAgentType.SENTIMENT_ANALYZER,
       [CryptoDomain.GOVERNANCE]: SubAgentType.GOVERNANCE_TRACKER,
       [CryptoDomain.BRIDGE]: SubAgentType.BRIDGE_MONITOR,
+      [CryptoDomain.ONCHAIN]: SubAgentType.CHAIN_EXPLORER,
+      [CryptoDomain.QUANT]: SubAgentType.CHAIN_EXPLORER, // Using CHAIN_EXPLORER as default for QUANT
     };
     
     return domainAgentMap[domain] || SubAgentType.CHAIN_EXPLORER;

@@ -70,7 +70,7 @@ export class WhaleTracker extends BaseAgent {
     super(config, hiveService);
   }
   
-  protected validateInput(context: AgentContext): z.ZodSchema {
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       token: z.string().optional(),
       network: z.string().optional(),
@@ -197,7 +197,7 @@ export class WhaleTracker extends BaseAgent {
   private processWhaleMovements(
     transactions: any[],
     whales: any[],
-    exchangeFlows: any,
+    _exchangeFlows: any,
     smartMoney: any[],
     patterns: any[]
   ): WhaleMovement[] {
@@ -423,7 +423,7 @@ export class WhaleTracker extends BaseAgent {
     };
   }
   
-  private predictTimeframe(netFlow: number, sentiment: string): string {
+  private predictTimeframe(netFlow: number, _sentiment: string): string {
     const absFlow = Math.abs(netFlow);
     
     if (absFlow > 10000000) {

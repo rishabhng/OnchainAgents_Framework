@@ -4,14 +4,21 @@
  * This bridge allows our local MCP server to fetch data from Hive
  */
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import {
-  CallToolResult,
-  ListToolsResult,
-  Tool,
-} from '@modelcontextprotocol/sdk/types.js';
+// MCP SDK imports - these will be used when properly configured
+// import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+// import { WebSocketTransport } from '@modelcontextprotocol/sdk/transport/websocket.js';
+// import { StdioClientTransport } from '@modelcontextprotocol/sdk/transport/stdio.js';
+
 import NodeCache from 'node-cache';
 import winston from 'winston';
+import axios, { AxiosInstance } from 'axios';
+
+// Define Tool interface locally until MCP SDK is properly configured
+export interface Tool {
+  name: string;
+  description: string;
+  inputSchema?: any;
+}
 
 export interface HiveBridgeConfig {
   hiveUrl?: string;
@@ -41,10 +48,8 @@ export class HiveBridge {
   private logger: winston.Logger;
   private isInitialized: boolean = false;
   private availableTools: Tool[] = [];
-  
-  // In a real implementation, this would connect to Hive's actual MCP
-  // For now, we'll simulate the connection
-  private mockHiveTools: Map<string, any>;
+  private mcpClient?: any; // Will be Client type when MCP SDK is configured
+  private axiosClient: AxiosInstance;
   
   constructor(config?: HiveBridgeConfig) {
     this.config = {
@@ -81,9 +86,15 @@ export class HiveBridge {
       ],
     });
     
-    // Initialize mock tools (for development/fallback)
-    this.mockHiveTools = new Map();
-    this.initializeMockTools();
+    // Initialize axios client for direct API calls
+    this.axiosClient = axios.create({
+      baseURL: this.config.hiveUrl,
+      timeout: this.config.timeout,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.config.apiKey ? { 'Authorization': `Bearer ${this.config.apiKey}` } : {}),
+      },
+    });
   }
   
   /**
@@ -97,9 +108,10 @@ export class HiveBridge {
       });
       
       if (!this.config.fallbackMode) {
-        // In production, this would establish actual MCP connection
-        // For now, we'll simulate it
-        this.logger.warn('Real Hive MCP connection not yet implemented, using fallback mode');
+        // Try to connect to Hive MCP server
+        await this.connectToHiveMCP();
+      } else {
+        this.logger.info('Running in fallback mode - using direct API calls');
       }
       
       // List available tools from Hive
@@ -126,10 +138,39 @@ export class HiveBridge {
   /**
    * Discover available tools from Hive MCP
    */
-  private async discoverTools(): Promise<void> {
-    // In production, this would query Hive's MCP for available tools
-    // For now, we'll define expected Hive tools
+  /**
+   * Connect to Hive MCP server
+   * Currently using direct API calls until MCP SDK is fully configured
+   */
+  private async connectToHiveMCP(): Promise<void> {
+    // MCP connection will be implemented when SDK is properly configured
+    // For now, we'll use direct API calls
+    this.logger.info('Using direct API connection to Hive Intelligence');
+    this.mcpClient = undefined;
     
+    // TODO: Implement actual MCP connection when SDK is available
+    // This would involve:
+    // 1. WebSocket connection to Hive MCP server
+    // 2. Stdio connection as fallback
+    // 3. Tool discovery and registration
+  }
+  
+  private async discoverTools(): Promise<void> {
+    // Try to get tools from MCP server
+    if (this.mcpClient) {
+      try {
+        const tools = await this.mcpClient.listTools();
+        if (tools && tools.tools) {
+          this.availableTools = tools.tools;
+          this.logger.info(`Discovered ${this.availableTools.length} tools from Hive MCP`);
+          return;
+        }
+      } catch (error) {
+        this.logger.warn('Failed to list tools from MCP', { error });
+      }
+    }
+    
+    // Fallback to known Hive tools
     this.availableTools = [
       {
         name: 'hive_token_data',
@@ -223,14 +264,18 @@ export class HiveBridge {
       
       let result: any;
       
-      if (this.config.fallbackMode) {
-        // Use mock data in fallback mode
-        result = await this.mockToolCall(name, args);
+      // Try MCP client first
+      if (this.mcpClient) {
+        try {
+          const response = await this.mcpClient.callTool({ name, arguments: args });
+          result = response.content;
+        } catch (error) {
+          this.logger.warn('MCP tool call failed, trying direct API', { tool: name, error });
+          result = await this.callHiveAPI(name, args);
+        }
       } else {
-        // In production, this would make actual MCP call to Hive
-        // For now, fall back to mock
-        this.logger.warn('Real Hive MCP call not implemented, using mock data');
-        result = await this.mockToolCall(name, args);
+        // Use direct API calls as fallback
+        result = await this.callHiveAPI(name, args);
       }
       
       // Cache the result
@@ -325,6 +370,20 @@ export class HiveBridge {
       return false;
     }
   }
+
+  /**
+   * Execute a tool call (alias for callTool for IHiveService compatibility)
+   */
+  public async execute(tool: string, params?: Record<string, any>): Promise<HiveResponse> {
+    return this.callTool(tool, params || {});
+  }
+
+  /**
+   * Make a request (alias for callTool for IHiveService compatibility)
+   */
+  public async request(endpoint: string, params?: Record<string, any>): Promise<HiveResponse> {
+    return this.callTool(endpoint, params || {});
+  }
   
   // Private methods
   
@@ -332,100 +391,116 @@ export class HiveBridge {
     return `hive:${tool}:${JSON.stringify(args)}`;
   }
   
-  private initializeMockTools(): void {
-    // Initialize mock responses for development/testing
-    this.mockHiveTools.set('hive_token_data', {
-      name: 'Mock Token',
-      symbol: 'MOCK',
-      address: '0x...',
-      price: 1.23,
-      marketCap: 1000000,
-      volume24h: 500000,
-      holders: 1234,
-      liquidity: 2000000,
-    });
+  /**
+   * Call Hive API directly (fallback when MCP is not available)
+   */
+  private async callHiveAPI(tool: string, args: Record<string, any>): Promise<any> {
+    // Map tool names to API endpoints
+    const toolEndpointMap: Record<string, string> = {
+      'hive_token_data': '/api/v1/token',
+      'hive_security_scan': '/api/v1/security',
+      'hive_whale_activity': '/api/v1/whale',
+      'hive_social_sentiment': '/api/v1/sentiment',
+      'hive_alpha_signals': '/api/v1/alpha',
+      'hive_defi_opportunities': '/api/v1/defi',
+      'hive_nft_analysis': '/api/v1/nft',
+      'hive_market_structure': '/api/v1/market',
+      'hive_cross_chain': '/api/v1/bridge',
+      'hive_governance': '/api/v1/governance',
+    };
     
-    this.mockHiveTools.set('hive_security_scan', {
-      score: 75,
-      verdict: 'SAFE',
-      risks: [],
-      contractVerified: true,
-      liquidityLocked: true,
-      ownershipRenounced: false,
-      recommendations: ['Consider renouncing ownership'],
-    });
+    const endpoint = toolEndpointMap[tool];
+    if (!endpoint) {
+      throw new Error(`Unknown Hive tool: ${tool}`);
+    }
     
-    this.mockHiveTools.set('hive_whale_activity', {
-      isWhale: true,
-      balance: 10000000,
-      recentTransactions: [
-        {
-          type: 'buy',
-          amount: 100000,
-          timestamp: Date.now() - 3600000,
-          token: 'MOCK',
-        },
-      ],
-      walletType: 'institutional',
-    });
-    
-    this.mockHiveTools.set('hive_social_sentiment', {
-      overall: 'positive',
-      score: 0.75,
-      platforms: {
-        twitter: { sentiment: 'positive', mentions: 1234 },
-        telegram: { sentiment: 'neutral', mentions: 567 },
-        reddit: { sentiment: 'positive', mentions: 890 },
-      },
-      trending: true,
-    });
-    
-    this.mockHiveTools.set('hive_alpha_signals', {
-      opportunities: [
-        {
-          token: 'ALPHA1',
-          score: 85,
-          signals: ['whale_accumulation', 'social_buzz', 'technical_breakout'],
-          risk: 'medium',
-          potential: '5x',
-        },
-        {
-          token: 'ALPHA2',
-          score: 78,
-          signals: ['dev_activity', 'partnership_rumors'],
-          risk: 'high',
-          potential: '10x',
-        },
-      ],
-    });
+    try {
+      const response = await this.axiosClient.post(endpoint, args);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // If API is not available, return structured fallback data
+        if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+          this.logger.warn('Hive API not reachable, returning minimal fallback data');
+          return this.getMinimalFallbackData(tool, args);
+        }
+        throw new Error(`Hive API error: ${error.message}`);
+      }
+      throw error;
+    }
   }
   
-  private async mockToolCall(name: string, args: Record<string, any>): Promise<any> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
-    
-    // Return mock data
-    const mockData = this.mockHiveTools.get(name);
-    
-    if (!mockData) {
-      throw new Error(`Unknown Hive tool: ${name}`);
+  /**
+   * Get minimal fallback data when Hive is completely unavailable
+   * This ensures the system can still function for testing
+   */
+  private getMinimalFallbackData(tool: string, args: Record<string, any>): any {
+    // Return minimal valid structures that agents expect
+    switch (tool) {
+      case 'hive_token_data':
+        return {
+          address: args.address,
+          network: args.network,
+          symbol: 'UNKNOWN',
+          name: 'Unknown Token',
+          price: 0,
+          marketCap: 0,
+          volume24h: 0,
+          holders: 0,
+          liquidity: 0,
+          error: 'Hive API unavailable',
+        };
+      
+      case 'hive_security_scan':
+        return {
+          address: args.address,
+          network: args.network,
+          score: 0,
+          verdict: 'UNKNOWN',
+          risks: ['API unavailable'],
+          contractVerified: false,
+          liquidityLocked: false,
+          ownershipRenounced: false,
+          recommendations: ['Unable to analyze - Hive API unavailable'],
+          error: 'Hive API unavailable',
+        };
+      
+      case 'hive_whale_activity':
+        return {
+          wallet: args.wallet,
+          isWhale: false,
+          balance: 0,
+          recentTransactions: [],
+          walletType: 'unknown',
+          whaleActivity: 0,
+          error: 'Hive API unavailable',
+        };
+      
+      case 'hive_social_sentiment':
+        return {
+          symbol: args.symbol,
+          overall: 'neutral',
+          score: 0,
+          sentimentScore: 0,
+          platforms: {},
+          trending: false,
+          error: 'Hive API unavailable',
+        };
+      
+      case 'hive_alpha_signals':
+        return {
+          opportunities: [],
+          category: args.category,
+          risk: args.risk,
+          error: 'Hive API unavailable',
+        };
+      
+      default:
+        return {
+          error: 'Hive API unavailable',
+          tool: tool,
+          args: args,
+        };
     }
-    
-    // Add some variation to make it seem more real
-    if (typeof mockData === 'object' && mockData !== null) {
-      const varied = { ...mockData };
-      
-      if (varied.price) {
-        varied.price *= (0.95 + Math.random() * 0.1);
-      }
-      
-      if (varied.score) {
-        varied.score = Math.min(100, Math.max(0, varied.score + (Math.random() - 0.5) * 10));
-      }
-      
-      return varied;
-    }
-    
-    return mockData;
   }
 }
