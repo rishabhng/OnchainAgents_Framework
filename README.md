@@ -2,14 +2,22 @@
 
 <div align="center">
   
+  [![npm version](https://img.shields.io/npm/v/@onchainagents/core.svg)](https://www.npmjs.com/package/@onchainagents/core)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Build Status](https://github.com/onchainagents/onchainagents.fun/workflows/CI/badge.svg)](https://github.com/onchainagents/onchainagents.fun/actions)
+  [![codecov](https://codecov.io/gh/onchainagents/onchainagents.fun/branch/main/graph/badge.svg)](https://codecov.io/gh/onchainagents/onchainagents.fun)
+  
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
   [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
-  [![Test Coverage](https://img.shields.io/badge/Coverage-80%25-brightgreen)](https://github.com/onchainagents/onchainagents.fun)
-  [![SuperClaude](https://img.shields.io/badge/SuperClaude-v1.0-purple)](https://github.com/onchainagents/onchainagents.fun)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/onchainagents/onchainagents.fun/pulls)
+  [![npm downloads](https://img.shields.io/npm/dm/@onchainagents/core.svg)](https://www.npmjs.com/package/@onchainagents/core)
+  [![GitHub stars](https://img.shields.io/github/stars/onchainagents/onchainagents.fun?style=social)](https://github.com/onchainagents/onchainagents.fun)
   
-  **imagine having 11 crypto experts working for you 24/7... for free**
+  [![SuperClaude](https://img.shields.io/badge/SuperClaude-v1.1-purple)](https://github.com/onchainagents/onchainagents.fun)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/onchainagents/onchainagents.fun/pulls)
+  [![Discord](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/onchainagents)
+  [![Twitter Follow](https://img.shields.io/twitter/follow/onchainagents?style=social)](https://twitter.com/onchainagents)
+  
+  **imagine having 12 crypto experts working for you 24/7... for free**
   
   [🌐 Website](https://onchainagents.fun) • [📖 Docs](https://docs.onchainagents.fun) • [💬 Discord](https://discord.gg/onchainagents) • [🐦 Twitter](https://twitter.com/onchainagents)
 
@@ -17,13 +25,13 @@
 
 ---
 
-## 🎉 v1.0 - Full SuperClaude Parity Achieved!
+## 🎉 v1.1 - Enhanced with 12 Specialized Personas!
 
-**OnChainAgents now has complete feature parity with Anthropic's SuperClaude Framework**, adapted specifically for crypto/blockchain operations. 20 core components, 11 specialized personas, enterprise-grade orchestration.
+**OnChainAgents now has complete feature parity with Anthropic's SuperClaude Framework**, adapted specifically for crypto/blockchain operations. 20 core components, 12 specialized personas (including new CryptoQuant), enterprise-grade orchestration.
 
-### What's New in v1.0:
+### What's New in v1.1:
 - ✅ **Wave Orchestration**: Multi-stage execution with compound intelligence
-- ✅ **11 Crypto Personas**: WhaleHunter, DeFiArchitect, SecurityAuditor, and more
+- ✅ **12 Crypto Personas**: Including new CryptoQuant with 20 years financial engineering experience
 - ✅ **Intelligent Routing**: Master routing table with confidence scoring
 - ✅ **Circuit Breakers**: 3-state resilience with automatic recovery
 - ✅ **Evidence Generation**: On-chain proofs with merkle tree aggregation
@@ -65,12 +73,12 @@ npm install && npm run build
 
 1. **Create a `.env` file:**
 ```env
-# Contact Hive Intelligence for API access: https://t.me/hiveintelligence
-HIVE_MCP_URL=https://hiveintelligence.xyz/mcp
-HIVE_API_KEY=your_api_key_here  # Optional - get from Hive Intelligence
+# Hive Intelligence MCP Configuration
+HIVE_MCP_URL=https://hiveintelligence.xyz/mcp  # Default endpoint
+HIVE_API_KEY=your_api_key_here  # Optional - Contact Hive Intelligence: https://t.me/hiveintelligence
 
-# Enable fallback mode for testing (uses simulated data)
-HIVE_FALLBACK_MODE=true
+# Enable fallback mode for testing (uses simulated data when API is unavailable)
+HIVE_FALLBACK_MODE=true  # Set to false when you have API access
 ```
 
 2. **Start analyzing:**
@@ -79,7 +87,8 @@ import { OnChainAgents } from '@onchainagents/core';
 
 // boom. you now have institutional-grade crypto intel
 const oca = new OnChainAgents({
-  fallbackMode: true, // Use simulated data for testing
+  mcpServerUrl: 'https://hiveintelligence.xyz/mcp',  // Hive Intelligence endpoint
+  // apiKey: process.env.HIVE_API_KEY,  // Uncomment when you have API access
 });
 
 // is this token gonna rug you? let's find out
@@ -87,16 +96,31 @@ const analysis = await oca.analyze('ethereum', '0x...');
 console.log(analysis); // probably saved you from a rugpull
 ```
 
+### Connection Methods
+
+**For Programmatic Access (Node.js):**
+- Use `HiveMCPRemoteClient` for direct HTTP connections to Hive Intelligence
+- Supports caching, retries, and fallback mode
+- Works with or without API key (limited access without key)
+
+**For Claude Desktop:**
+- Add MCP server through Settings → Manage Connectors
+- No CLI commands needed - GUI configuration only
+
 ## 🤖 Claude Desktop Integration (MCP)
 
-### Automatic Setup
-```bash
-# Run our setup script
-./setup-claude.sh
-```
+### Setting up Hive Intelligence MCP
 
-### Manual Setup
-Add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json`):
+**For Claude Desktop:**
+1. Open Claude Desktop
+2. Go to **Settings → Manage Connectors**
+3. Add Connector URL: `https://hiveintelligence.xyz/mcp`
+4. The MCP server will be available in Claude Desktop
+
+**Note:** There is no CLI command for adding MCP servers. The `claude mcp add` command does not exist. MCP servers are configured through the Claude Desktop GUI.
+
+### Manual Setup (Alternative)
+If you want to configure MCP servers manually, add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
@@ -128,7 +152,7 @@ look, we're tired of:
 
 **so we built this. completely free. open source. no bs.**
 
-## 🧠 meet your new crypto brain trust (11 SuperClaude Personas)
+## 🧠 meet your new crypto brain trust (12 SuperClaude Personas)
 
 ### 🐋 Market Intelligence
 **WhaleHunter** → tracks and analyzes large crypto holders
@@ -181,6 +205,12 @@ look, we're tired of:
 - Block exploration
 - Pattern detection
 - Cross-chain tracking
+
+**CryptoQuant** → quantitative analysis with 20 years experience
+- GARCH models for volatility prediction
+- Statistical arbitrage detection
+- Cointegration analysis for pairs trading
+- Hidden Markov Models for regime detection
 
 **BridgeGuardian** → cross-chain security
 - Bridge vulnerability assessment

@@ -1,6 +1,17 @@
+/**
+ * @fileoverview RiskAnalyzer - Portfolio Risk Assessment and Hedging Expert
+ * @module agents/security/RiskAnalyzer
+ * 
+ * Comprehensive risk analysis agent that evaluates portfolio exposure,
+ * concentration risks, correlation matrices, and provides hedging strategies
+ * for crypto portfolios.
+ * 
+ * @since 1.1.0
+ */
+
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface RiskAnalyzerResult {
   portfolioRiskScore: number; // 0-10 risk scale
@@ -36,7 +47,7 @@ interface VolatilityMetrics {
 }
 
 export class RiskAnalyzer extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'RiskAnalyzer',
       description: 'Analyzes portfolio risk through concentration, correlation, and volatility metrics',
@@ -46,7 +57,7 @@ export class RiskAnalyzer extends BaseAgent {
       timeout: 30000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -123,7 +134,7 @@ export class RiskAnalyzer extends BaseAgent {
     
     if (context.address) {
       // Fetch wallet holdings
-      const response = await this.hiveClient.request('/wallet/holdings', {
+      const response = await this.hiveService.request('/wallet/holdings', {
         address: context.address,
         network: context.network || 'ethereum',
       });
@@ -181,7 +192,7 @@ export class RiskAnalyzer extends BaseAgent {
     
     // Fetch correlation data
     const symbols = portfolio.map((asset: any) => asset.symbol);
-    const response = await this.hiveClient.request('/market/correlations', {
+    const response = await this.hiveService.request('/market/correlations', {
       symbols,
       timeframe: context.options?.timeframe || '30d',
     });
@@ -223,7 +234,7 @@ export class RiskAnalyzer extends BaseAgent {
     const timeframe = context.options?.timeframe || '30d';
     
     // Fetch historical data for volatility calculation
-    const response = await this.hiveClient.request('/portfolio/metrics', {
+    const response = await this.hiveService.request('/portfolio/metrics', {
       portfolio: portfolio.map((asset: any) => ({
         symbol: asset.symbol,
         weight: asset.value,
@@ -244,7 +255,7 @@ export class RiskAnalyzer extends BaseAgent {
   
   private async getHistoricalData(portfolio: any, context: AgentContext): Promise<any> {
     // Fetch historical performance data
-    return this.hiveClient.request('/portfolio/historical', {
+    return this.hiveService.request('/portfolio/historical', {
       portfolio: portfolio.map((asset: any) => asset.symbol),
       timeframe: context.options?.timeframe || '30d',
     });

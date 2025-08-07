@@ -2,7 +2,7 @@
  * Tests for Flag System
  */
 
-import { FlagManager, FlagCategory, FlagPriority } from './index';
+import { FlagManager, FlagCategory } from './index';
 import { ResourceZone } from '../orchestrator/resource-zones';
 import { CryptoDomain, OperationType } from '../orchestrator/detection-engine';
 import { PersonaType } from '../personas';

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface WhaleTrackerResult {
   whaleActivity: WhaleMovement[];
@@ -57,7 +57,7 @@ interface WhaleStatistics {
 }
 
 export class WhaleTracker extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'WhaleTracker',
       description: 'Monitors large holder activity for market signals',
@@ -67,7 +67,7 @@ export class WhaleTracker extends BaseAgent {
       timeout: 45000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -137,7 +137,7 @@ export class WhaleTracker extends BaseAgent {
   private async getLargeTransactions(context: AgentContext): Promise<any[]> {
     const minValue = context.options?.minTransactionUSD || 100000;
     
-    const response = await this.hiveClient.request('/transactions/large', {
+    const response = await this.hiveService.request('/transactions/large', {
       token: context.token,
       minValueUSD: minValue,
       timeframe: context.options?.timeframe || '24h',
@@ -148,7 +148,7 @@ export class WhaleTracker extends BaseAgent {
   }
   
   private async identifyWhaleWallets(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/wallets/whales', {
+    const response = await this.hiveService.request('/wallets/whales', {
       token: context.token,
       minHoldingUSD: 1000000,
       network: context.network,
@@ -162,7 +162,7 @@ export class WhaleTracker extends BaseAgent {
       return { inflow: 0, outflow: 0, net: 0 };
     }
     
-    const response = await this.hiveClient.request('/exchanges/flows', {
+    const response = await this.hiveService.request('/exchanges/flows', {
       token: context.token,
       timeframe: context.options?.timeframe || '24h',
     });
@@ -171,7 +171,7 @@ export class WhaleTracker extends BaseAgent {
   }
   
   private async trackSmartMoney(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/wallets/smart-money', {
+    const response = await this.hiveService.request('/wallets/smart-money', {
       token: context.token,
       timeframe: context.options?.timeframe || '24h',
       minProfitability: 2.0, // 2x minimum
@@ -185,7 +185,7 @@ export class WhaleTracker extends BaseAgent {
       return [];
     }
     
-    const response = await this.hiveClient.request('/patterns/accumulation', {
+    const response = await this.hiveService.request('/patterns/accumulation', {
       token: context.token,
       timeframe: context.options?.timeframe || '7d',
       sensitivity: 'high',

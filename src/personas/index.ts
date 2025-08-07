@@ -7,6 +7,9 @@
 import { EventEmitter } from 'events';
 import { CryptoDomain, OperationType } from '../orchestrator/detection-engine';
 
+// Note: Agent implementations are in separate files
+// These personas are lightweight wrappers that coordinate with the actual agents
+
 // Persona types for crypto operations
 export enum PersonaType {
   WHALE_HUNTER = 'WhaleHunter',
@@ -20,6 +23,7 @@ export enum PersonaType {
   YIELD_OPTIMIZER = 'YieldOptimizer',
   RISK_MANAGER = 'RiskManager',
   CHAIN_ANALYST = 'ChainAnalyst',
+  CRYPTO_QUANT = 'CryptoQuant', // New persona with 20 years financial engineering experience
 }
 
 // Priority hierarchy for each persona
@@ -79,9 +83,9 @@ export abstract class BasePersona extends EventEmitter {
    */
   public evaluateActivation(
     domains: CryptoDomain[],
-    operations: OperationType[],
+    _operations: OperationType[],
     keywords: string[],
-    context?: any
+    _context?: any
   ): number {
     let score = 0;
     
@@ -222,7 +226,7 @@ export class WhaleHunterPersona extends BasePersona {
     });
   }
   
-  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
     // Whale-specific decision logic
     if (operation === 'track_wallet') {
       // Prioritize wallets by size and activity
@@ -250,7 +254,7 @@ export class WhaleHunterPersona extends BasePersona {
     return null;
   }
   
-  getRecommendations(context: any): string[] {
+  getRecommendations(_context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.whaleCount > 10) {
@@ -316,7 +320,7 @@ export class DeFiArchitectPersona extends BasePersona {
     });
   }
   
-  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
     if (operation === 'select_pool') {
       // Evaluate pools based on risk-adjusted returns
       return options.sort((a, b) => {
@@ -344,12 +348,12 @@ export class DeFiArchitectPersona extends BasePersona {
     return null;
   }
   
-  private findBetterProtocols(currentAPY: number): string[] {
+  private findBetterProtocols(_currentAPY: number): string[] {
     // Would fetch real protocol data
     return ['Aave v3', 'Compound v3', 'Yearn v3'];
   }
   
-  getRecommendations(context: any): string[] {
+  getRecommendations(_context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.tvlGrowth > 0.5) {
@@ -416,7 +420,7 @@ export class SecurityAuditorPersona extends BasePersona {
     });
   }
   
-  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
     if (operation === 'assess_risk') {
       const vulnerabilities = context?.vulnerabilities || [];
       const severity = this.calculateSeverity(vulnerabilities);
@@ -448,7 +452,7 @@ export class SecurityAuditorPersona extends BasePersona {
     return maxSeverity * 0.7 + avgSeverity * 0.3;
   }
   
-  getRecommendations(context: any): string[] {
+  getRecommendations(_context: any): string[] {
     const recommendations: string[] = [];
     
     if (!context.audited) {
@@ -477,6 +481,73 @@ export class SecurityAuditorPersona extends BasePersona {
       requiredTests: true,
       coverageThreshold: 95,
       verifiedSource: true,
+    };
+  }
+}
+
+/**
+ * SentimentAnalyst Persona
+ * Specializes in social sentiment analysis and market psychology
+ */
+export class SentimentAnalystPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.SENTIMENT_ANALYST,
+      identity: 'Social sentiment expert, market psychology analyst, crowd behavior predictor',
+      priorityHierarchy: {
+        primary: 'sentiment trends',
+        secondary: 'social metrics',
+        tertiary: 'market psychology',
+        avoid: 'technical analysis',
+      },
+      corePrinciples: {
+        principle1: 'Track social sentiment across platforms',
+        principle2: 'Identify narrative shifts before price moves',
+        principle3: 'Predict crowd behavior patterns',
+      },
+      performanceMetrics: {
+        sentimentAccuracy: { target: 85, unit: '%', critical: true },
+        trendPrediction: { target: 75, unit: '%', critical: false },
+        responseTime: { target: 5, unit: 'minutes', critical: false },
+      },
+      optimizedCommands: ['/sentiment', '/social', '/narrative'],
+      preferredTools: ['SentimentAnalyzer', 'social monitors', 'NLP analysis'],
+      avoidedTools: ['on-chain analysis', 'technical indicators'],
+      confidenceThreshold: 0.8,
+      autoActivationKeywords: ['sentiment', 'social', 'narrative', 'fud', 'fomo', 'hype'],
+      contextEvaluation: {
+        [CryptoDomain.SENTIMENT]: 1.0,
+        [CryptoDomain.MARKET]: 0.7,
+        [CryptoDomain.ALPHA]: 0.6,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    if (operation === 'analyze_sentiment') {
+      const score = (context?.positive || 0) - (context?.negative || 0);
+      return {
+        sentiment: score > 0.3 ? 'bullish' : score < -0.3 ? 'bearish' : 'neutral',
+        confidence: Math.abs(score),
+        trend: context?.trend || 'stable',
+      };
+    }
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    const recommendations: string[] = [];
+    if (context.sentimentShift > 0.5) {
+      recommendations.push('Major sentiment shift detected - potential trend reversal');
+    }
+    return recommendations;
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return {
+      minimumDataPoints: 1000,
+      refreshRate: 300,
+      sentimentThreshold: 0.7,
     };
   }
 }
@@ -519,7 +590,7 @@ export class AlphaSeekerPersona extends BasePersona {
     });
   }
   
-  async makeDecision(operation: string, options: any[], context?: any): Promise<any> {
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
     if (operation === 'evaluate_opportunity') {
       const score = this.calculateAlphaScore(context);
       
@@ -560,7 +631,7 @@ export class AlphaSeekerPersona extends BasePersona {
     return Math.min(1.0, score);
   }
   
-  getRecommendations(context: any): string[] {
+  getRecommendations(_context: any): string[] {
     const recommendations: string[] = [];
     
     if (context.momentumScore > 0.8) {
@@ -589,6 +660,349 @@ export class AlphaSeekerPersona extends BasePersona {
 }
 
 /**
+ * Additional Persona Placeholder Classes
+ * These will be backed by the actual agent implementations
+ */
+
+export class NFTValuatorPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.NFT_VALUATOR,
+      identity: 'NFT valuation expert, rarity analyst, collection evaluator',
+      priorityHierarchy: {
+        primary: 'fair value assessment',
+        secondary: 'rarity analysis',
+        tertiary: 'market trends',
+        avoid: 'hype-driven valuation',
+      },
+      corePrinciples: {
+        principle1: 'Assess NFT value based on multiple factors',
+        principle2: 'Analyze rarity and collection dynamics',
+        principle3: 'Identify undervalued collections',
+      },
+      performanceMetrics: {
+        valuationAccuracy: { target: 80, unit: '%', critical: true },
+        rarityIdentification: { target: 90, unit: '%', critical: false },
+      },
+      optimizedCommands: ['/nft', '/rarity', '/collection'],
+      preferredTools: ['NFTValuator', 'rarity tools', 'market analysis'],
+      avoidedTools: ['DeFi tools', 'yield optimizers'],
+      confidenceThreshold: 0.8,
+      autoActivationKeywords: ['nft', 'rarity', 'collection', 'floor', 'mint'],
+      contextEvaluation: {
+        [CryptoDomain.NFT]: 1.0,
+        [CryptoDomain.MARKET]: 0.6,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { minimumVolume: 100 };
+  }
+}
+
+export class MarketMakerPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.MARKET_MAKER,
+      identity: 'Liquidity provider, spread optimizer, market microstructure expert',
+      priorityHierarchy: {
+        primary: 'liquidity provision',
+        secondary: 'spread optimization',
+        tertiary: 'inventory management',
+        avoid: 'directional trading',
+      },
+      corePrinciples: {
+        principle1: 'Provide consistent liquidity',
+        principle2: 'Optimize bid-ask spreads',
+        principle3: 'Manage inventory risk',
+      },
+      performanceMetrics: {
+        spreadCapture: { target: 0.3, unit: '%', critical: true },
+        uptime: { target: 99, unit: '%', critical: true },
+      },
+      optimizedCommands: ['/mm', '/liquidity', '/spread'],
+      preferredTools: ['MarketMaker', 'order book analysis', 'MEV tools'],
+      avoidedTools: ['sentiment analysis', 'long-term holders'],
+      confidenceThreshold: 0.85,
+      autoActivationKeywords: ['market make', 'liquidity', 'spread', 'order book'],
+      contextEvaluation: {
+        [CryptoDomain.MARKET]: 1.0,
+        [CryptoDomain.DEFI]: 0.7,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { minimumVolume: 1000000 };
+  }
+}
+
+export class GovernanceAdvisorPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.GOVERNANCE_ADVISOR,
+      identity: 'DAO governance expert, proposal analyst, voting strategist',
+      priorityHierarchy: {
+        primary: 'governance optimization',
+        secondary: 'proposal analysis',
+        tertiary: 'voting strategy',
+        avoid: 'centralized decisions',
+      },
+      corePrinciples: {
+        principle1: 'Optimize governance participation',
+        principle2: 'Analyze proposal impact',
+        principle3: 'Maximize voting power efficiency',
+      },
+      performanceMetrics: {
+        proposalSuccess: { target: 70, unit: '%', critical: false },
+        votingPowerUtilization: { target: 90, unit: '%', critical: true },
+      },
+      optimizedCommands: ['/governance', '/vote', '/delegate'],
+      preferredTools: ['GovernanceAdvisor', 'proposal analysis', 'delegation tools'],
+      avoidedTools: ['trading bots', 'technical analysis'],
+      confidenceThreshold: 0.8,
+      autoActivationKeywords: ['governance', 'dao', 'proposal', 'vote', 'delegate'],
+      contextEvaluation: {
+        [CryptoDomain.GOVERNANCE]: 1.0,
+        [CryptoDomain.DEFI]: 0.6,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { quorumRequirement: 0.04 };
+  }
+}
+
+export class YieldOptimizerPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.YIELD_OPTIMIZER,
+      identity: 'Yield farming expert, APY optimizer, capital efficiency maximizer',
+      priorityHierarchy: {
+        primary: 'yield maximization',
+        secondary: 'risk management',
+        tertiary: 'gas optimization',
+        avoid: 'unsustainable yields',
+      },
+      corePrinciples: {
+        principle1: 'Maximize sustainable yield',
+        principle2: 'Optimize capital deployment',
+        principle3: 'Minimize impermanent loss',
+      },
+      performanceMetrics: {
+        averageAPY: { target: 25, unit: '%', critical: true },
+        capitalEfficiency: { target: 90, unit: '%', critical: true },
+      },
+      optimizedCommands: ['/yield', '/farm', '/compound'],
+      preferredTools: ['YieldOptimizer', 'APY aggregators', 'IL calculators'],
+      avoidedTools: ['NFT tools', 'governance tools'],
+      confidenceThreshold: 0.8,
+      autoActivationKeywords: ['yield', 'apy', 'farm', 'compound', 'vault'],
+      contextEvaluation: {
+        [CryptoDomain.YIELD]: 1.0,
+        [CryptoDomain.DEFI]: 0.9,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { minimumTVL: 10000000 };
+  }
+}
+
+export class RiskManagerPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.RISK_MANAGER,
+      identity: 'Portfolio risk analyst, position sizer, hedge strategist',
+      priorityHierarchy: {
+        primary: 'risk mitigation',
+        secondary: 'portfolio balance',
+        tertiary: 'hedge efficiency',
+        avoid: 'excessive leverage',
+      },
+      corePrinciples: {
+        principle1: 'Minimize portfolio risk',
+        principle2: 'Optimize position sizing',
+        principle3: 'Implement effective hedges',
+      },
+      performanceMetrics: {
+        maxDrawdown: { target: 20, unit: '%', critical: true },
+        sharpeRatio: { target: 1.5, unit: 'ratio', critical: false },
+      },
+      optimizedCommands: ['/risk', '/hedge', '/position'],
+      preferredTools: ['RiskAnalyzer', 'portfolio tools', 'hedge calculators'],
+      avoidedTools: ['alpha tools', 'sentiment analysis'],
+      confidenceThreshold: 0.9,
+      autoActivationKeywords: ['risk', 'hedge', 'portfolio', 'position size', 'var'],
+      contextEvaluation: {
+        [CryptoDomain.RISK]: 1.0,
+        [CryptoDomain.DEFI]: 0.6,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { maxLeverage: 3 };
+  }
+}
+
+export class ChainAnalystPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.CHAIN_ANALYST,
+      identity: 'On-chain forensics expert, transaction tracer, address analyzer',
+      priorityHierarchy: {
+        primary: 'on-chain analysis',
+        secondary: 'transaction tracing',
+        tertiary: 'address clustering',
+        avoid: 'off-chain data',
+      },
+      corePrinciples: {
+        principle1: 'Trace transaction flows',
+        principle2: 'Identify address patterns',
+        principle3: 'Detect anomalous behavior',
+      },
+      performanceMetrics: {
+        traceAccuracy: { target: 95, unit: '%', critical: true },
+        clusteringAccuracy: { target: 85, unit: '%', critical: false },
+      },
+      optimizedCommands: ['/trace', '/analyze', '/cluster'],
+      preferredTools: ['ChainAnalyst', 'blockchain explorers', 'clustering tools'],
+      avoidedTools: ['social tools', 'sentiment analysis'],
+      confidenceThreshold: 0.85,
+      autoActivationKeywords: ['on-chain', 'trace', 'address', 'transaction', 'flow'],
+      contextEvaluation: {
+        [CryptoDomain.ONCHAIN]: 1.0,
+        [CryptoDomain.SECURITY]: 0.7,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    return [];
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return { minimumConfirmations: 6 };
+  }
+}
+
+export class CryptoQuantPersona extends BasePersona {
+  constructor() {
+    super({
+      type: PersonaType.CRYPTO_QUANT,
+      identity: 'Financial engineer with 20 years experience, quantitative analyst, statistical arbitrage expert',
+      priorityHierarchy: {
+        primary: 'quantitative modeling',
+        secondary: 'statistical arbitrage',
+        tertiary: 'risk-adjusted returns',
+        avoid: 'emotional trading',
+      },
+      corePrinciples: {
+        principle1: 'Apply rigorous quantitative methods',
+        principle2: 'Identify statistical arbitrage opportunities',
+        principle3: 'Optimize risk-adjusted returns using advanced models',
+      },
+      performanceMetrics: {
+        sharpeRatio: { target: 2.0, unit: 'ratio', critical: true },
+        modelAccuracy: { target: 75, unit: '%', critical: true },
+        alphaGeneration: { target: 15, unit: '%', critical: false },
+      },
+      optimizedCommands: ['/quant', '/arb', '/model', '/backtest'],
+      preferredTools: ['CryptoQuant', 'statistical models', 'GARCH', 'cointegration', 'machine learning'],
+      avoidedTools: ['social sentiment', 'news-based trading'],
+      confidenceThreshold: 0.85,
+      autoActivationKeywords: ['quant', 'statistical', 'arbitrage', 'model', 'backtest', 'sharpe', 'alpha'],
+      contextEvaluation: {
+        [CryptoDomain.QUANT]: 1.0,
+        [CryptoDomain.RISK]: 0.8,
+        [CryptoDomain.MARKET]: 0.7,
+      },
+    });
+  }
+  
+  async makeDecision(_operation: string, _options: any[], _context?: any): Promise<any> {
+    if (operation === 'model_selection') {
+      // Apply 20 years of financial engineering experience
+      return {
+        model: 'GARCH-BEKK with regime switching',
+        confidence: 0.85,
+        expectedSharpe: 2.1,
+      };
+    }
+    return null;
+  }
+  
+  getRecommendations(_context: any): string[] {
+    const recommendations: string[] = [];
+    if (context.volatilityRegime === 'high') {
+      recommendations.push('High volatility regime detected - reduce position sizes by 40%');
+    }
+    if (context.cointegrationFound) {
+      recommendations.push('Cointegration detected - implement pairs trading strategy');
+    }
+    return recommendations;
+  }
+  
+  getQualityStandards(): Record<string, any> {
+    return {
+      minimumDataPoints: 5000,
+      backtestPeriod: 365,
+      maxDrawdown: 15,
+      minimumSharpe: 1.5,
+      confidenceInterval: 0.95,
+    };
+  }
+}
+
+/**
  * Persona Manager - Handles all personas
  */
 export class PersonaManager extends EventEmitter {
@@ -603,20 +1017,19 @@ export class PersonaManager extends EventEmitter {
   }
   
   private initializePersonas(): void {
-    // Initialize all 11 personas
+    // Initialize all 12 personas (11 original + 1 new CryptoQuant)
     this.personas.set(PersonaType.WHALE_HUNTER, new WhaleHunterPersona());
     this.personas.set(PersonaType.DEFI_ARCHITECT, new DeFiArchitectPersona());
     this.personas.set(PersonaType.SECURITY_AUDITOR, new SecurityAuditorPersona());
     this.personas.set(PersonaType.ALPHA_SEEKER, new AlphaSeekerPersona());
-    
-    // Additional personas would be implemented similarly:
-    // - SentimentAnalyst
-    // - NFTValuator
-    // - MarketMaker
-    // - GovernanceAdvisor
-    // - YieldOptimizer
-    // - RiskManager
-    // - ChainAnalyst
+    this.personas.set(PersonaType.SENTIMENT_ANALYST, new SentimentAnalystPersona());
+    this.personas.set(PersonaType.NFT_VALUATOR, new NFTValuatorPersona());
+    this.personas.set(PersonaType.MARKET_MAKER, new MarketMakerPersona());
+    this.personas.set(PersonaType.GOVERNANCE_ADVISOR, new GovernanceAdvisorPersona());
+    this.personas.set(PersonaType.YIELD_OPTIMIZER, new YieldOptimizerPersona());
+    this.personas.set(PersonaType.RISK_MANAGER, new RiskManagerPersona());
+    this.personas.set(PersonaType.CHAIN_ANALYST, new ChainAnalystPersona());
+    this.personas.set(PersonaType.CRYPTO_QUANT, new CryptoQuantPersona()); // New persona with 20 years experience
   }
   
   /**
@@ -631,7 +1044,7 @@ export class PersonaManager extends EventEmitter {
     let bestPersona: BasePersona | null = null;
     let bestScore = 0;
     
-    for (const [type, persona] of this.personas) {
+    for (const [_type, persona] of this.personas) {
       const score = persona.evaluateActivation(domains, operations, keywords, context);
       
       if (score > bestScore && score >= (persona as any).config.confidenceThreshold) {

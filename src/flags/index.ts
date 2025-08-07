@@ -89,7 +89,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 20,
     performanceImpact: 0.3,
     autoActivation: {
-      condition: (ctx) => ctx.complexity > 0.5 && ctx.domains?.includes(CryptoDomain.DEFI),
+      condition: (ctx: any) => ctx.complexity > 0.5 && ctx.domains?.includes(CryptoDomain.DEFI),
       confidence: 0.8,
     },
   }],
@@ -105,7 +105,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 40,
     performanceImpact: 0.5,
     autoActivation: {
-      condition: (ctx) => ctx.complexity > 0.7 && ctx.operations?.includes(OperationType.SCANNING),
+      condition: (ctx: any) => ctx.complexity > 0.7 && ctx.operations?.includes(OperationType.SCANNING),
       confidence: 0.85,
     },
   }],
@@ -121,7 +121,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     performanceImpact: 0.8,
     requiresDomain: [CryptoDomain.SECURITY],
     autoActivation: {
-      condition: (ctx) => ctx.riskLevel > 0.8 || ctx.operation === 'security-audit',
+      condition: (ctx: any) => ctx.riskLevel > 0.8 || ctx.operation === 'security-audit',
       confidence: 0.95,
     },
   }],
@@ -136,7 +136,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: -40,
     performanceImpact: -0.2,
     autoActivation: {
-      condition: (ctx) => ctx.resourceZone === ResourceZone.ORANGE || ctx.tokenUsage > 0.75,
+      condition: (ctx: any) => ctx.resourceZone === ResourceZone.ORANGE || ctx.tokenUsage > 0.75,
       confidence: 0.9,
     },
   }],
@@ -171,7 +171,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 10,
     performanceImpact: 0.1,
     autoActivation: {
-      condition: (ctx) => ctx.domains?.includes(CryptoDomain.WHALE) || ctx.domains?.includes(CryptoDomain.ALPHA),
+      condition: (ctx: any) => ctx.domains?.includes(CryptoDomain.WHALE) || ctx.domains?.includes(CryptoDomain.ALPHA),
       confidence: 0.85,
     },
   }],
@@ -185,7 +185,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 15,
     performanceImpact: 0.2,
     autoActivation: {
-      condition: (ctx) => ctx.complexity > 0.6,
+      condition: (ctx: any) => ctx.complexity > 0.6,
       confidence: 0.8,
     },
   }],
@@ -199,7 +199,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 30,
     performanceImpact: 0.4,
     autoActivation: {
-      condition: (ctx) => ctx.complexity > 0.8 && ctx.domains?.length > 2,
+      condition: (ctx: any) => ctx.complexity > 0.8 && ctx.domains?.length > 2,
       confidence: 0.75,
     },
   }],
@@ -224,7 +224,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: -10,
     performanceImpact: -0.4,
     autoActivation: {
-      condition: (ctx) => ctx.fileCount > 50 || ctx.operations?.length > 5,
+      condition: (ctx: any) => ctx.fileCount > 50 || ctx.operations?.length > 5,
       confidence: 0.9,
     },
   }],
@@ -248,7 +248,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 20,
     performanceImpact: 0.3,
     autoActivation: {
-      condition: (ctx) => ctx.complexity >= 0.7 && ctx.fileCount > 20 && ctx.operationTypes > 2,
+      condition: (ctx: any) => ctx.complexity >= 0.7 && ctx.fileCount > 20 && ctx.operationTypes > 2,
       confidence: 0.85,
     },
   }],
@@ -312,7 +312,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 30,
     performanceImpact: 0.4,
     autoActivation: {
-      condition: (ctx) => ctx.networks?.length > 1,
+      condition: (ctx: any) => ctx.networks?.length > 1,
       confidence: 0.95,
     },
   }],
@@ -328,7 +328,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 15,
     performanceImpact: 0.2,
     autoActivation: {
-      condition: (ctx) => ctx.riskLevel > 0.6 || ctx.value > 10000,
+      condition: (ctx: any) => ctx.riskLevel > 0.6 || ctx.value > 10000,
       confidence: 0.9,
     },
   }],
@@ -341,7 +341,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 10,
     performanceImpact: 0.15,
     autoActivation: {
-      condition: (ctx) => ctx.riskScore > 0.7 || ctx.resourceUsage > 0.75,
+      condition: (ctx: any) => ctx.riskScore > 0.7 || ctx.resourceUsage > 0.75,
       confidence: 0.95,
     },
   }],
@@ -356,7 +356,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 20,
     performanceImpact: 0.3,
     autoActivation: {
-      condition: (ctx) => ctx.resourceUsage > 0.85 || ctx.environment === 'production',
+      condition: (ctx: any) => ctx.resourceUsage > 0.85 || ctx.environment === 'production',
       confidence: 0.98,
     },
   }],
@@ -390,7 +390,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: -25,
     performanceImpact: -0.3,
     autoActivation: {
-      condition: (ctx) => ctx.repetitiveOperations > 3,
+      condition: (ctx: any) => ctx.repetitiveOperations > 3,
       confidence: 0.85,
     },
   }],
@@ -456,7 +456,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 25,
     performanceImpact: 0.2,
     autoActivation: {
-      condition: (ctx) => ctx.debugMode || ctx.complexity > 0.9,
+      condition: (ctx: any) => ctx.debugMode || ctx.complexity > 0.9,
       confidence: 0.7,
     },
   }],
@@ -470,7 +470,7 @@ const FLAG_DEFINITIONS: Map<string, FlagConfig> = new Map([
     tokenImpact: 30,
     performanceImpact: 0.4,
     autoActivation: {
-      condition: (ctx) => ctx.keywords?.includes('improve') || ctx.keywords?.includes('refine'),
+      condition: (ctx: any) => ctx.keywords?.includes('improve') || ctx.keywords?.includes('refine'),
       confidence: 0.8,
     },
   }],
@@ -586,7 +586,7 @@ export class FlagManager extends EventEmitter {
     source: 'explicit' | 'auto' | 'implied',
     context?: any
   ): Promise<void> {
-    const config = FLAG_DEFINITIONS.get(flag);
+    let config = FLAG_DEFINITIONS.get(flag);
     if (!config) {
       // Check aliases
       for (const [name, cfg] of FLAG_DEFINITIONS) {

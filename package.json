@@ -1,7 +1,7 @@
 {
   "name": "@onchainagents/core",
   "version": "1.0.0",
-  "description": "🤖 Free, open-source crypto intelligence platform with 10 specialized AI agents powered by Hive Intelligence",
+  "description": "🤖 Free, open-source crypto intelligence platform with 12 specialized AI personas (SuperClaude parity) powered by Hive Intelligence",
   "main": "dist/index-minimal.js",
   "types": "dist/index-minimal.d.ts",
   "scripts": {
@@ -11,6 +11,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:hive-mcp": "ts-node test-hive-mcp.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",

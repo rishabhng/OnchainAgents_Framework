@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface TokenResearcherResult {
   researchScore: number; // 0-100
@@ -126,7 +126,7 @@ interface PriceTargets {
 }
 
 export class TokenResearcher extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'TokenResearcher',
       description: 'Automates comprehensive fundamental analysis',
@@ -136,7 +136,7 @@ export class TokenResearcher extends BaseAgent {
       timeout: 60000, // 60 seconds for deep research
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -250,7 +250,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getTokenData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/token/metadata', {
+    const response = await this.hiveService.request('/token/metadata', {
       token: context.token,
       includeAll: true,
     });
@@ -259,7 +259,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getMarketData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/data', {
+    const response = await this.hiveService.request('/market/data', {
       token: context.token,
       metrics: ['price', 'volume', 'marketCap', 'volatility'],
       timeframe: '90d',
@@ -269,7 +269,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getOnChainData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/onchain/metrics', {
+    const response = await this.hiveService.request('/onchain/metrics', {
       token: context.token,
       metrics: ['tvl', 'holders', 'transactions', 'activeUsers'],
       timeframe: '90d',
@@ -279,7 +279,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getSocialData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/social/metrics', {
+    const response = await this.hiveService.request('/social/metrics', {
       token: context.token,
       platforms: ['twitter', 'telegram', 'discord', 'github'],
       includeTeam: true,
@@ -289,7 +289,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getDeveloperData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/developer/activity', {
+    const response = await this.hiveService.request('/developer/activity', {
       token: context.token,
       metrics: ['commits', 'contributors', 'stars', 'forks'],
       timeframe: '90d',
@@ -303,7 +303,7 @@ export class TokenResearcher extends BaseAgent {
     
     if (compareWith.length === 0) {
       // Auto-detect competitors
-      const response = await this.hiveClient.request('/market/similar', {
+      const response = await this.hiveService.request('/market/similar', {
         token: context.token,
         limit: 5,
       });
@@ -314,7 +314,7 @@ export class TokenResearcher extends BaseAgent {
     // Get specific competitor data
     const competitors = await Promise.all(
       compareWith.map(comp => 
-        this.hiveClient.request('/token/metadata', { token: comp })
+        this.hiveService.request('/token/metadata', { token: comp })
       )
     );
     
@@ -322,7 +322,7 @@ export class TokenResearcher extends BaseAgent {
   }
   
   private async getHistoricalData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/historical', {
+    const response = await this.hiveService.request('/market/historical', {
       token: context.token,
       metrics: ['price', 'volume', 'marketCap'],
       timeframe: '365d',

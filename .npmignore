@@ -1,0 +1,60 @@
+# Source files
+src/
+tests/
+examples/
+
+# Configuration files
+.eslintrc.js
+.prettierrc
+jest.config.js
+tsconfig.json
+tsconfig.minimal.json
+commitlint.config.js
+
+# Development files
+.env
+.env.*
+*.log
+*.tmp
+*.temp
+
+# Documentation and meta files
+docs/
+coverage/
+.github/
+.husky/
+.vscode/
+.idea/
+
+# Build and test artifacts
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+test-*.ts
+test-*.js
+
+# Git and CI
+.git/
+.gitignore
+.gitattributes
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude specific
+.claude/
+claude-config.json
+
+# Scripts and setup
+scripts/
+setup-claude.sh
+install.sh
+
+# Keep these
+!dist/
+!README.md
+!LICENSE
+!CHANGELOG.md
+!package.json

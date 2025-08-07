@@ -1,6 +1,17 @@
+/**
+ * @fileoverview SentimentAnalyzer - Social Sentiment and Market Psychology Expert
+ * @module agents/market/SentimentAnalyzer
+ * 
+ * Specialized agent for analyzing crypto market sentiment across social platforms,
+ * news sources, and on-chain activity. Provides comprehensive sentiment scoring
+ * and trend prediction based on crowd psychology and market dynamics.
+ * 
+ * @since 1.1.0
+ */
+
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface SentimentAnalyzerResult {
   sentimentScore: number; // -100 to +100
@@ -69,8 +80,21 @@ interface TradingImplication {
   timeframe: string;
 }
 
+/**
+ * SentimentAnalyzer - Market sentiment and social signal analysis expert
+ * 
+ * Analyzes sentiment across multiple data sources including:
+ * - Social media platforms (Twitter, Reddit, Discord)
+ * - News sentiment and media coverage
+ * - On-chain activity patterns
+ * - Community engagement metrics
+ * - Fear & Greed indicators
+ * 
+ * @class SentimentAnalyzer
+ * @extends {BaseAgent}
+ */
 export class SentimentAnalyzer extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'SentimentAnalyzer',
       description: 'Quantifies market psychology for contrarian opportunities',
@@ -80,7 +104,7 @@ export class SentimentAnalyzer extends BaseAgent {
       timeout: 40000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -183,7 +207,7 @@ export class SentimentAnalyzer extends BaseAgent {
   private async getSocialSentiment(context: AgentContext): Promise<any> {
     const platforms = context.options?.platforms || ['twitter', 'reddit', 'discord'];
     
-    const response = await this.hiveClient.request('/social/sentiment', {
+    const response = await this.hiveService.request('/social/sentiment', {
       token: context.token,
       platforms,
       timeframe: context.options?.timeframe || '24h',
@@ -193,7 +217,7 @@ export class SentimentAnalyzer extends BaseAgent {
   }
   
   private async getNewsSentiment(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/news/sentiment', {
+    const response = await this.hiveService.request('/news/sentiment', {
       token: context.token,
       timeframe: context.options?.timeframe || '24h',
       sources: 'all',
@@ -207,7 +231,7 @@ export class SentimentAnalyzer extends BaseAgent {
       return { influencers: [], averageSentiment: 0 };
     }
     
-    const response = await this.hiveClient.request('/influencers/sentiment', {
+    const response = await this.hiveService.request('/influencers/sentiment', {
       token: context.token,
       minFollowers: 10000,
       timeframe: context.options?.timeframe || '24h',
@@ -217,7 +241,7 @@ export class SentimentAnalyzer extends BaseAgent {
   }
   
   private async getOnChainSentiment(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/onchain/sentiment', {
+    const response = await this.hiveService.request('/onchain/sentiment', {
       token: context.token,
       metrics: ['holder_behavior', 'transaction_patterns', 'dex_activity'],
       timeframe: context.options?.timeframe || '24h',
@@ -231,7 +255,7 @@ export class SentimentAnalyzer extends BaseAgent {
       return { history: [], patterns: [] };
     }
     
-    const response = await this.hiveClient.request('/sentiment/historical', {
+    const response = await this.hiveService.request('/sentiment/historical', {
       token: context.token,
       periods: 30, // 30 periods back
       timeframe: context.options?.timeframe || '24h',
@@ -241,7 +265,7 @@ export class SentimentAnalyzer extends BaseAgent {
   }
   
   private async getMarketData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/data', {
+    const response = await this.hiveService.request('/market/data', {
       token: context.token,
       metrics: ['price', 'volume', 'volatility', 'momentum'],
       timeframe: context.options?.timeframe || '24h',

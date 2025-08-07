@@ -1,16 +1,23 @@
 import { OnChainAgents } from '../src/index';
-import { HiveClient } from '../src/mcp/HiveClient';
 
-jest.mock('../src/mcp/HiveClient');
+// Mock the HiveMCPClient
+jest.mock('../src/mcp/HiveMCPClient', () => ({
+  HiveMCPClient: jest.fn().mockImplementation(() => ({
+    call: jest.fn().mockResolvedValue({ success: true, data: {} }),
+    execute: jest.fn().mockResolvedValue({ success: true, data: {} }),
+    initialize: jest.fn().mockResolvedValue(true),
+    disconnect: jest.fn().mockResolvedValue(true),
+    healthCheck: jest.fn().mockResolvedValue(true),
+  })),
+}));
 
 describe('OnChainAgents', () => {
   let oca: OnChainAgents;
-  let mockHiveClient: jest.Mocked<HiveClient>;
 
   beforeEach(() => {
     process.env.HIVE_API_KEY = 'test-key';
     oca = new OnChainAgents({
-      hiveApiKey: 'test-key',
+      mcpServerUrl: 'https://test.mcp.server',
     });
   });
 
@@ -24,10 +31,9 @@ describe('OnChainAgents', () => {
       expect(oca.healthCheck).toBeDefined();
     });
 
-    it('should throw error without API key', () => {
-      expect(() => {
-        new OnChainAgents({} as any);
-      }).toThrow('HIVE_API_KEY is required');
+    it('should initialize with default config', () => {
+      const defaultOca = new OnChainAgents();
+      expect(defaultOca).toBeDefined();
     });
   });
 
@@ -44,7 +50,7 @@ describe('OnChainAgents', () => {
       const result = await oca.analyze('invalid', 'INVALID');
       
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.errors).toBeDefined();
     });
   });
 
@@ -178,15 +184,15 @@ describe('OnChainAgents', () => {
       const result = await oca.analyze('ethereum', 'TEST');
       
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.error.message).toContain('Network error');
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.[0]).toContain('Network error');
     });
 
     it('should validate input parameters', async () => {
       const result = await oca.security('invalid-address');
       
       expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Invalid');
+      expect(result.errors?.[0]).toContain('Invalid');
     });
 
     it('should handle timeout errors', async () => {

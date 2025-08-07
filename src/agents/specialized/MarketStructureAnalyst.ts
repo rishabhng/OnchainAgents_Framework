@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface MarketStructureAnalystResult {
   marketProfile: MarketProfile;
@@ -322,7 +322,7 @@ interface TradingSignal {
 }
 
 export class MarketStructureAnalyst extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'MarketStructureAnalyst',
       description: 'Dissects market microstructure for alpha extraction',
@@ -332,7 +332,7 @@ export class MarketStructureAnalyst extends BaseAgent {
       timeout: 30000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -438,7 +438,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   }
   
   private async getOrderBookData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/orderbook', {
+    const response = await this.hiveService.request('/market/orderbook', {
       asset: context.asset,
       exchange: context.exchange,
       depth: 1000,
@@ -449,7 +449,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   }
   
   private async getTradeData(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/market/trades', {
+    const response = await this.hiveService.request('/market/trades', {
       asset: context.asset,
       exchange: context.exchange,
       limit: 10000,
@@ -460,7 +460,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   }
   
   private async getVolumeData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/volume', {
+    const response = await this.hiveService.request('/market/volume', {
       asset: context.asset,
       includeProfile: true,
       timeframe: context.options?.timeframe || '1h',
@@ -470,7 +470,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   }
   
   private async getLiquidationData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/liquidations', {
+    const response = await this.hiveService.request('/market/liquidations', {
       asset: context.asset,
       includePredicted: true,
     });
@@ -481,7 +481,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   private async getWhaleData(context: AgentContext): Promise<any[]> {
     if (!context.options?.includeWhales) return [];
     
-    const response = await this.hiveClient.request('/whales/activity', {
+    const response = await this.hiveService.request('/whales/activity', {
       asset: context.asset,
       includeOrderFlow: true,
       timeframe: '24h',
@@ -491,7 +491,7 @@ export class MarketStructureAnalyst extends BaseAgent {
   }
   
   private async getHistoricalData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/market/historical', {
+    const response = await this.hiveService.request('/market/historical', {
       asset: context.asset,
       metrics: ['price', 'volume', 'volatility', 'spread'],
       timeframe: '30d',

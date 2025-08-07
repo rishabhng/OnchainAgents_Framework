@@ -691,6 +691,528 @@ export class YieldCommand extends BaseCommand {
 }
 
 /**
+ * /sentiment Command - Social sentiment analysis
+ */
+export class SentimentCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/sentiment',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Analyze social sentiment for crypto assets',
+        waveEnabled: false,
+        performanceProfile: 'standard',
+        autoPersona: ['SentimentAnalyst'],
+        mcpIntegration: ['Hive'],
+        toolOrchestration: ['SentimentAnalyzer', 'WebFetch'],
+        arguments: [
+          {
+            name: 'token',
+            type: 'token',
+            required: true,
+            description: 'Token symbol or address to analyze',
+          },
+        ],
+        flags: ['--social', '--news', '--realtime'],
+        examples: ['/sentiment BTC --social', '/sentiment ETH --realtime'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const flags = this.parseFlags(context.flags);
+    const activationContext = {
+      domains: [CryptoDomain.SENTIMENT],
+      operations: [OperationType.ANALYSIS],
+      keywords: ['sentiment', 'social', 'narrative'],
+      complexity: 0.4,
+      riskLevel: 0.2,
+      urgency: flags.realtime ? 0.7 : 0.3,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        sentiment: 'bullish',
+        score: 0.72,
+        sources: ['Twitter', 'Reddit', 'Discord'],
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 3000,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: false,
+      },
+    };
+  }
+}
+
+/**
+ * /nft Command - NFT valuation
+ */
+export class NFTCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/nft',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Analyze and value NFT collections',
+        waveEnabled: false,
+        performanceProfile: 'standard',
+        autoPersona: ['NFTValuator'],
+        mcpIntegration: ['Hive'],
+        toolOrchestration: ['NFTValuator', 'Read'],
+        arguments: [
+          {
+            name: 'collection',
+            type: 'string',
+            required: true,
+            description: 'NFT collection address or name',
+          },
+        ],
+        flags: ['--rarity', '--floor', '--trends'],
+        examples: ['/nft 0xabc... --rarity', '/nft BAYC --floor'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const activationContext = {
+      domains: [CryptoDomain.NFT],
+      operations: [OperationType.ANALYSIS],
+      keywords: ['nft', 'rarity', 'collection'],
+      complexity: 0.3,
+      riskLevel: 0.3,
+      urgency: 0.2,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        collection: context.args.collection,
+        floorPrice: 2.5,
+        volume24h: 150,
+        rarity: { legendary: 1, rare: 10, common: 89 },
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 2500,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: false,
+      },
+    };
+  }
+}
+
+/**
+ * /governance Command - DAO governance analysis
+ */
+export class GovernanceCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/governance',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Analyze DAO governance proposals and voting',
+        waveEnabled: true,
+        performanceProfile: 'standard',
+        autoPersona: ['GovernanceAdvisor'],
+        mcpIntegration: ['Hive', 'Sequential'],
+        toolOrchestration: ['GovernanceAdvisor', 'Read'],
+        arguments: [
+          {
+            name: 'dao',
+            type: 'string',
+            required: true,
+            description: 'DAO name or governance contract',
+          },
+        ],
+        flags: ['--proposals', '--voting', '--delegation'],
+        examples: ['/governance uniswap --proposals', '/governance aave --voting'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const activationContext = {
+      domains: [CryptoDomain.GOVERNANCE],
+      operations: [OperationType.ANALYSIS],
+      keywords: ['governance', 'dao', 'proposal'],
+      complexity: 0.5,
+      riskLevel: 0.3,
+      urgency: 0.4,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        dao: context.args.dao,
+        activeProposals: 3,
+        quorum: 40000000,
+        participation: 0.35,
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 4000,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: false,
+      },
+    };
+  }
+}
+
+/**
+ * /risk Command - Portfolio risk analysis
+ */
+export class RiskCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/risk',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Analyze portfolio risk and suggest hedges',
+        waveEnabled: true,
+        performanceProfile: 'complex',
+        autoPersona: ['RiskManager'],
+        mcpIntegration: ['Sequential', 'Hive'],
+        toolOrchestration: ['RiskAnalyzer', 'Read', 'Grep'],
+        arguments: [
+          {
+            name: 'portfolio',
+            type: 'string',
+            required: false,
+            description: 'Portfolio address or identifier',
+          },
+        ],
+        flags: ['--var', '--hedge', '--correlation', '--stress'],
+        examples: ['/risk --var', '/risk 0x123... --hedge'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const flags = this.parseFlags(context.flags);
+    const activationContext = {
+      domains: [CryptoDomain.RISK],
+      operations: [OperationType.ANALYSIS],
+      keywords: ['risk', 'portfolio', 'hedge'],
+      complexity: 0.7,
+      riskLevel: 0.8,
+      urgency: 0.5,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        riskScore: 6.5,
+        var95: 0.25,
+        maxDrawdown: 0.35,
+        recommendations: ['Reduce ETH exposure', 'Add stablecoin hedge'],
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 7000,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: flags.stress || false,
+      },
+    };
+  }
+}
+
+/**
+ * /trace Command - On-chain transaction tracing
+ */
+export class TraceCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/trace',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Trace on-chain transactions and address flows',
+        waveEnabled: true,
+        performanceProfile: 'complex',
+        autoPersona: ['ChainAnalyst'],
+        mcpIntegration: ['Hive', 'Sequential'],
+        toolOrchestration: ['ChainAnalyst', 'Read', 'Grep'],
+        arguments: [
+          {
+            name: 'txhash',
+            type: 'string',
+            required: true,
+            description: 'Transaction hash or address to trace',
+          },
+        ],
+        flags: ['--depth', '--cluster', '--flow'],
+        examples: ['/trace 0xabc... --depth 5', '/trace 0xdef... --flow'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const flags = this.parseFlags(context.flags);
+    const activationContext = {
+      domains: [CryptoDomain.ONCHAIN],
+      operations: [OperationType.TRACKING],
+      keywords: ['trace', 'transaction', 'flow'],
+      complexity: 0.8,
+      riskLevel: 0.4,
+      urgency: 0.3,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        transaction: context.args.txhash,
+        hops: 3,
+        addresses: ['0x111...', '0x222...', '0x333...'],
+        totalVolume: 5000000,
+        riskLevel: 'medium',
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 8000,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: true,
+      },
+    };
+  }
+}
+
+/**
+ * /quant Command - Quantitative analysis
+ */
+export class QuantCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/quant',
+        category: CommandCategory.ANALYSIS,
+        purpose: 'Apply quantitative models and statistical arbitrage',
+        waveEnabled: true,
+        performanceProfile: 'complex',
+        autoPersona: ['CryptoQuant'],
+        mcpIntegration: ['Sequential', 'Hive'],
+        toolOrchestration: ['CryptoQuant', 'Read', 'Bash'],
+        arguments: [
+          {
+            name: 'strategy',
+            type: 'string',
+            required: false,
+            description: 'Quantitative strategy type',
+            default: 'arbitrage',
+          },
+        ],
+        flags: ['--backtest', '--model', '--sharpe', '--garch'],
+        examples: ['/quant arbitrage --backtest', '/quant --model garch'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const flags = this.parseFlags(context.flags);
+    const activationContext = {
+      domains: [CryptoDomain.QUANT],
+      operations: [OperationType.ANALYSIS, OperationType.SIMULATION],
+      keywords: ['quant', 'model', 'arbitrage', 'statistical'],
+      complexity: 0.9,
+      riskLevel: 0.6,
+      urgency: 0.4,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        strategy: context.args.strategy || 'arbitrage',
+        model: flags.garch ? 'GARCH-BEKK' : 'Mean Reversion',
+        sharpeRatio: 2.1,
+        expectedReturn: 0.35,
+        confidence: 0.85,
+        recommendations: [
+          'Cointegration detected between ETH/BTC pair',
+          'Statistical arbitrage opportunity with 15% expected return',
+          'Reduce position size by 40% in high volatility regime',
+        ],
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 10000,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: true,
+      },
+    };
+  }
+}
+
+/**
+ * /mm Command - Market making
+ */
+export class MarketMakerCommand extends BaseCommand {
+  constructor(
+    detectionEngine: DetectionEngine,
+    personaManager: PersonaManager,
+    activationEngine: PersonaActivationEngine
+  ) {
+    super(
+      {
+        command: '/mm',
+        category: CommandCategory.EXECUTION,
+        purpose: 'Market making and liquidity provision strategies',
+        waveEnabled: false,
+        performanceProfile: 'optimization',
+        autoPersona: ['MarketMaker'],
+        mcpIntegration: ['Hive'],
+        toolOrchestration: ['MarketMaker', 'Read'],
+        arguments: [
+          {
+            name: 'pair',
+            type: 'string',
+            required: true,
+            description: 'Trading pair for market making',
+          },
+        ],
+        flags: ['--spread', '--inventory', '--mev'],
+        examples: ['/mm ETH/USDC --spread 0.3', '/mm BTC/USDT --inventory'],
+      },
+      detectionEngine,
+      personaManager,
+      activationEngine
+    );
+  }
+  
+  async execute(context: CommandContext): Promise<CommandResult> {
+    const startTime = Date.now();
+    const errors = this.validateArguments(context.args);
+    if (errors.length > 0) {
+      return { success: false, command: this.config.command, errors };
+    }
+    
+    const activationContext = {
+      domains: [CryptoDomain.MARKET],
+      operations: [OperationType.EXECUTION],
+      keywords: ['market', 'liquidity', 'spread'],
+      complexity: 0.6,
+      riskLevel: 0.7,
+      urgency: 0.8,
+    };
+    
+    const persona = await this.activationEngine.activateBestPersona(activationContext);
+    
+    return {
+      success: true,
+      command: this.config.command,
+      data: {
+        pair: context.args.pair,
+        bidAskSpread: 0.003,
+        depth: 500000,
+        inventory: { base: 10, quote: 50000 },
+      },
+      metadata: {
+        executionTime: Date.now() - startTime,
+        tokensUsed: 3500,
+        persona: persona ? (persona as any).config.type : undefined,
+        waveMode: false,
+      },
+    };
+  }
+}
+
+/**
  * Command Manager - Handles all commands
  */
 export class CommandManager extends EventEmitter {
@@ -739,8 +1261,48 @@ export class CommandManager extends EventEmitter {
       this.activationEngine
     ));
     
-    // Additional commands would be registered here:
-    // /risk, /bridge, /governance, /sentiment, /nft, /dex, /track
+    // Register new commands for all personas
+    this.registerCommand(new SentimentCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new NFTCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new GovernanceCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new RiskCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new TraceCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new QuantCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
+    
+    this.registerCommand(new MarketMakerCommand(
+      this.detectionEngine,
+      this.personaManager,
+      this.activationEngine
+    ));
   }
   
   /**

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveBridge } from '../../bridges/hive-bridge';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface RugDetectorResult {
   score: number; // 0-100 safety score
@@ -59,7 +59,7 @@ interface OwnershipAnalysis {
 }
 
 export class RugDetector extends BaseAgent {
-  constructor(hiveBridge: HiveBridge) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'RugDetector',
       description: 'Identifies potential scams, rugpulls, and honeypots in crypto tokens',
@@ -69,10 +69,10 @@ export class RugDetector extends BaseAgent {
       timeout: 30000,
     };
     
-    super(config, hiveBridge);
+    super(config, hiveService);
   }
   
-  protected validateInput(context: AgentContext): z.ZodSchema {
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       network: z.string().min(1),
       address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
@@ -95,8 +95,8 @@ export class RugDetector extends BaseAgent {
       contractData,
       liquidityData,
       ownershipData,
-      securityData,
-      holderData,
+      // securityData,
+      // holderData,
     ] = await Promise.all([
       this.analyzeContract(context),
       this.analyzeLiquidity(context),
@@ -125,7 +125,7 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeContract(context: AgentContext): Promise<ContractAnalysis> {
-    const response = await this.hiveBridge.callTool('hive_security_scan', {
+    const response = await this.hiveService.callTool('hive_security_scan', {
       network: context.network,
       address: context.address,
       depth: 'comprehensive',
@@ -152,7 +152,7 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeLiquidity(context: AgentContext): Promise<LiquidityAnalysis> {
-    const response = await this.hiveBridge.callTool('hive_token_data', {
+    const response = await this.hiveService.callTool('hive_token_data', {
       network: context.network,
       address: context.address,
     });
@@ -175,7 +175,7 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeOwnership(context: AgentContext): Promise<OwnershipAnalysis> {
-    const response = await this.hiveBridge.callTool('hive_token_data', {
+    const response = await this.hiveService.callTool('hive_token_data', {
       network: context.network,
       address: context.address,
     });
@@ -201,7 +201,7 @@ export class RugDetector extends BaseAgent {
   }
   
   private async getSecurityAnalysis(context: AgentContext): Promise<any> {
-    const response = await this.hiveBridge.callTool('hive_security_scan', {
+    const response = await this.hiveService.callTool('hive_security_scan', {
       network: context.network!,
       address: context.address!,
       depth: 'comprehensive',
@@ -211,7 +211,7 @@ export class RugDetector extends BaseAgent {
   }
   
   private async analyzeHolders(context: AgentContext): Promise<any> {
-    const response = await this.hiveBridge.callTool('hive_token_data', {
+    const response = await this.hiveService.callTool('hive_token_data', {
       network: context.network,
       address: context.address,
     });
@@ -317,7 +317,7 @@ export class RugDetector extends BaseAgent {
   private generateWarnings(
     contract: ContractAnalysis,
     liquidity: LiquidityAnalysis,
-    ownership: OwnershipAnalysis,
+    _ownership: OwnershipAnalysis,
   ): Warning[] {
     const warnings: Warning[] = [];
     
@@ -396,7 +396,7 @@ export class RugDetector extends BaseAgent {
   
   private generateRecommendations(
     risks: Risk[],
-    warnings: Warning[],
+    _warnings: Warning[],
     score: number,
   ): string[] {
     const recommendations: string[] = [];

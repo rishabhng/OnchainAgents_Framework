@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface DeFiAnalyzerResult {
   protocols: ProtocolAnalysis[];
@@ -116,7 +116,7 @@ interface GasStrategy {
 }
 
 export class DeFiAnalyzer extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'DeFiAnalyzer',
       description: 'Navigates DeFi complexity with risk-adjusted analysis',
@@ -126,7 +126,7 @@ export class DeFiAnalyzer extends BaseAgent {
       timeout: 45000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -221,7 +221,7 @@ export class DeFiAnalyzer extends BaseAgent {
   private async getProtocolData(context: AgentContext): Promise<any[]> {
     const protocols = context.options?.protocols || [];
     
-    const response = await this.hiveClient.request('/defi/protocols', {
+    const response = await this.hiveService.request('/defi/protocols', {
       protocols: protocols.length > 0 ? protocols : undefined,
       includeMetrics: true,
       chains: context.options?.chains,
@@ -233,7 +233,7 @@ export class DeFiAnalyzer extends BaseAgent {
   private async getYieldOpportunities(context: AgentContext): Promise<any[]> {
     const minAPY = context.options?.minAPY || 0;
     
-    const response = await this.hiveClient.request('/defi/yields', {
+    const response = await this.hiveService.request('/defi/yields', {
       asset: context.asset,
       minAPY,
       chains: context.options?.chains,
@@ -244,7 +244,7 @@ export class DeFiAnalyzer extends BaseAgent {
   }
   
   private async getAuditInformation(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/defi/audits', {
+    const response = await this.hiveService.request('/defi/audits', {
       protocols: context.options?.protocols,
       includeHistory: true,
     });
@@ -253,7 +253,7 @@ export class DeFiAnalyzer extends BaseAgent {
   }
   
   private async getLiquidityMetrics(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/defi/liquidity', {
+    const response = await this.hiveService.request('/defi/liquidity', {
       asset: context.asset,
       protocols: context.options?.protocols,
       timeframe: '30d',
@@ -263,7 +263,7 @@ export class DeFiAnalyzer extends BaseAgent {
   }
   
   private async getHistoricalPerformance(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/defi/historical', {
+    const response = await this.hiveService.request('/defi/historical', {
       protocols: context.options?.protocols,
       metrics: ['apy', 'tvl', 'incidents'],
       timeframe: '90d',
@@ -275,7 +275,7 @@ export class DeFiAnalyzer extends BaseAgent {
   private async getGasMetrics(context: AgentContext): Promise<any> {
     const chains = context.options?.chains || ['ethereum', 'arbitrum', 'polygon'];
     
-    const response = await this.hiveClient.request('/gas/metrics', {
+    const response = await this.hiveService.request('/gas/metrics', {
       chains,
       operations: ['deposit', 'withdraw', 'claim', 'compound'],
     });

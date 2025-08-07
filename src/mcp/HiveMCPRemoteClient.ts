@@ -29,7 +29,7 @@ interface MCPRequest {
   method: string;
   params: {
     name: string;
-    arguments: Record<string, unknown>;
+    arguments?: Record<string, unknown>;
   };
 }
 
@@ -37,11 +37,18 @@ interface MCPResponse {
   jsonrpc: '2.0';
   id: string | number;
   result?: {
-    content: Array<{
+    content?: Array<{
       type: string;
       text?: string;
       data?: any;
     }>;
+    tools?: Array<{
+      name: string;
+      description?: string;
+      inputSchema?: any;
+    }>;
+    isError?: boolean;
+    error?: string;
   };
   error?: {
     code: number;
@@ -77,8 +84,10 @@ export class HiveMCPRemoteClient {
       timeout: this.config.timeout,
       headers: {
         'Content-Type': 'application/json',
-        ...(this.config.apiKey ? { 'Authorization': `Bearer ${this.config.apiKey}` } : {}),
+        'Accept': 'application/json',
+        ...(this.config.apiKey ? { 'X-API-Key': this.config.apiKey } : {}),
       },
+      validateStatus: (status) => status < 500, // Don't throw on 4xx errors
     });
     
     // Initialize logger
@@ -140,13 +149,16 @@ export class HiveMCPRemoteClient {
       };
     }
     
-    // Prepare MCP request
+    // Map tool names to Hive-specific format if needed
+    const mappedToolName = this.mapToolName(toolName);
+    
+    // Prepare MCP request according to MCP protocol spec
     const request: MCPRequest = {
       jsonrpc: '2.0',
       id: ++this.requestId,
       method: 'tools/call',
       params: {
-        name: toolName,
+        name: mappedToolName,
         arguments: parameters,
       },
     };
@@ -156,7 +168,13 @@ export class HiveMCPRemoteClient {
       
       // Make the request with retry logic
       const response = await this.executeWithRetry(async () => {
-        const res = await this.httpClient.post<MCPResponse>('', request);
+        const res = await this.httpClient.post<MCPResponse>('/rpc', request);
+        
+        // Handle non-200 status codes
+        if (res.status !== 200) {
+          throw new Error(`MCP server returned status ${res.status}: ${res.statusText}`);
+        }
+        
         return res.data;
       });
       
@@ -214,32 +232,58 @@ export class HiveMCPRemoteClient {
   }
   
   /**
+   * Map tool names to Hive-specific format
+   */
+  private mapToolName(toolName: string): string {
+    // Map common names to Hive-specific tool names
+    const toolMap: Record<string, string> = {
+      'get_token_info': 'hive_token_data',
+      'get_security_analysis': 'hive_security_scan',
+      'get_whale_activity': 'hive_whale_tracker',
+      'get_sentiment_analysis': 'hive_sentiment_analysis',
+      'find_alpha_opportunities': 'hive_alpha_signals',
+      'get_portfolio_analysis': 'hive_portfolio_analyzer',
+      'get_defi_analysis': 'hive_defi_monitor',
+      'get_cross_chain_info': 'hive_cross_chain_bridge',
+    };
+    
+    return toolMap[toolName] || toolName;
+  }
+  
+  /**
    * Extract result from MCP response format
    */
   private extractResultFromMCPResponse(response: MCPResponse): any {
-    if (!response.result?.content) {
-      return null;
+    // Check for error in result
+    if (response.result?.isError) {
+      throw new Error(response.result.error || 'Unknown MCP error');
     }
     
-    // Find the first content item with data
-    const dataContent = response.result.content.find(c => c.data);
-    if (dataContent?.data) {
-      return dataContent.data;
-    }
-    
-    // Fall back to text content
-    const textContent = response.result.content.find(c => c.text);
-    if (textContent?.text) {
-      try {
-        // Try to parse as JSON
-        return JSON.parse(textContent.text);
-      } catch {
-        // Return as plain text if not JSON
-        return textContent.text;
+    // Handle content array format
+    if (response.result?.content && Array.isArray(response.result.content)) {
+      // Find the first content item with data
+      const dataContent = response.result.content.find(c => c.data);
+      if (dataContent?.data) {
+        return dataContent.data;
       }
+      
+      // Fall back to text content
+      const textContent = response.result.content.find(c => c.text);
+      if (textContent?.text) {
+        try {
+          // Try to parse as JSON
+          return JSON.parse(textContent.text);
+        } catch {
+          // Return as plain text if not JSON
+          return textContent.text;
+        }
+      }
+      
+      return response.result.content;
     }
     
-    return response.result.content;
+    // Return the entire result if it's not in content format
+    return response.result;
   }
   
   /**
@@ -379,15 +423,47 @@ export class HiveMCPRemoteClient {
   }
   
   /**
-   * List available tools (hardcoded for Hive Intelligence)
+   * List available tools from the MCP server
+   */
+  public async listTools(): Promise<string[]> {
+    try {
+      const request: MCPRequest = {
+        jsonrpc: '2.0',
+        id: ++this.requestId,
+        method: 'tools/list',
+        params: {
+          name: '',
+        },
+      };
+      
+      const response = await this.httpClient.post<MCPResponse>('/rpc', request);
+      
+      if (response.data.error) {
+        throw new Error(`Failed to list tools: ${response.data.error.message}`);
+      }
+      
+      if (response.data.result?.tools) {
+        return response.data.result.tools.map(t => t.name);
+      }
+      
+      // Fallback to known tools
+      return this.getAvailableTools();
+    } catch (error) {
+      this.logger.warn('Failed to list tools from server, using defaults', { error });
+      return this.getAvailableTools();
+    }
+  }
+  
+  /**
+   * Get available tools (fallback list for Hive Intelligence)
    */
   public getAvailableTools(): string[] {
     return [
-      'hive_get_token_info',
+      'hive_token_data',
       'hive_security_scan',
       'hive_whale_tracker',
       'hive_sentiment_analysis',
-      'hive_alpha_scanner',
+      'hive_alpha_signals',
       'hive_portfolio_analyzer',
       'hive_defi_monitor',
       'hive_cross_chain_bridge',
@@ -415,23 +491,9 @@ export class HiveMCPRemoteClient {
    */
   public async healthCheck(): Promise<boolean> {
     try {
-      // Try to call the MCP server's health endpoint or a simple tool
-      const response = await this.httpClient.get('/health').catch(() => null);
-      
-      if (response?.status === 200) {
-        return true;
-      }
-      
-      // Try a simple MCP call as fallback health check
-      const testRequest: MCPRequest = {
-        jsonrpc: '2.0',
-        id: 'health-check',
-        method: 'tools/list',
-        params: { name: '', arguments: {} },
-      };
-      
-      const mcpResponse = await this.httpClient.post<MCPResponse>('', testRequest);
-      return !mcpResponse.data.error;
+      // Try to list tools as a health check
+      const tools = await this.listTools();
+      return tools.length > 0;
     } catch (error) {
       this.logger.warn('Health check failed', { error });
       

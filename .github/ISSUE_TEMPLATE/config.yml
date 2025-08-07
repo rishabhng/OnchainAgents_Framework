@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord Community
+    url: https://discord.gg/onchainagents
+    about: Get help from the community
+  - name: Documentation
+    url: https://docs.onchainagents.fun
+    about: Check our documentation first
+  - name: Security Issue
+    url: mailto:security@onchainagents.fun
+    about: Please report security vulnerabilities privately

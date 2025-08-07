@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface PortfolioTrackerResult {
   portfolio: PortfolioOverview;
@@ -107,7 +107,7 @@ interface PortfolioRecommendation {
 }
 
 export class PortfolioTracker extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'PortfolioTracker',
       description: 'Your AI portfolio manager that never sleeps',
@@ -117,7 +117,7 @@ export class PortfolioTracker extends BaseAgent {
       timeout: 30000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -224,7 +224,7 @@ export class PortfolioTracker extends BaseAgent {
     ];
     
     const balancePromises = chains.map(chain =>
-      this.hiveClient.request('/wallet/balances', {
+      this.hiveService.request('/wallet/balances', {
         address: context.address,
         chain,
         includeSmallBalances: false,
@@ -238,7 +238,7 @@ export class PortfolioTracker extends BaseAgent {
   private async getTransactions(context: AgentContext): Promise<any[]> {
     const timeframe = context.options?.timeframe || '30d';
     
-    const response = await this.hiveClient.request('/wallet/transactions', {
+    const response = await this.hiveService.request('/wallet/transactions', {
       address: context.address,
       timeframe,
       chains: context.options?.chains,
@@ -249,7 +249,7 @@ export class PortfolioTracker extends BaseAgent {
   }
   
   private async getCurrentPrices(context: AgentContext): Promise<Map<string, number>> {
-    const response = await this.hiveClient.request('/market/prices', {
+    const response = await this.hiveService.request('/market/prices', {
       includeAll: true,
     });
     
@@ -267,7 +267,7 @@ export class PortfolioTracker extends BaseAgent {
   private async getStakingPositions(context: AgentContext): Promise<any[]> {
     if (!context.options?.includeStaking) return [];
     
-    const response = await this.hiveClient.request('/staking/positions', {
+    const response = await this.hiveService.request('/staking/positions', {
       address: context.address,
       chains: context.options?.chains,
     });
@@ -278,7 +278,7 @@ export class PortfolioTracker extends BaseAgent {
   private async getDeFiPositions(context: AgentContext): Promise<any[]> {
     if (!context.options?.includeDeFi) return [];
     
-    const response = await this.hiveClient.request('/defi/positions', {
+    const response = await this.hiveService.request('/defi/positions', {
       address: context.address,
       chains: context.options?.chains,
     });
@@ -287,7 +287,7 @@ export class PortfolioTracker extends BaseAgent {
   }
   
   private async getHistoricalData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/wallet/historical', {
+    const response = await this.hiveService.request('/wallet/historical', {
       address: context.address,
       metrics: ['value', 'pnl'],
       timeframe: context.options?.timeframe || '30d',

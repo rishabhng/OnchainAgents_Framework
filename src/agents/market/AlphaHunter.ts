@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveBridge } from '../../bridges/hive-bridge';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface AlphaHunterResult {
   opportunities: Opportunity[];
@@ -50,7 +50,7 @@ interface RiskAssessment {
 }
 
 export class AlphaHunter extends BaseAgent {
-  constructor(hiveBridge: HiveBridge) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'AlphaHunter',
       description: 'Discovers early opportunities before they become mainstream',
@@ -60,10 +60,10 @@ export class AlphaHunter extends BaseAgent {
       timeout: 45000,
     };
     
-    super(config, hiveBridge);
+    super(config, hiveService);
   }
   
-  protected validateInput(context: AgentContext): z.ZodSchema {
+  protected validateInput(_context: AgentContext): z.ZodSchema {
     return z.object({
       category: z.string().optional(),
       options: z.object({
@@ -86,7 +86,7 @@ export class AlphaHunter extends BaseAgent {
     });
     
     // Use the centralized MCP call for alpha opportunities
-    const response = await this.hiveBridge.callTool('hive_alpha_signals', {
+    const response = await this.hiveService.callTool('hive_alpha_signals', {
       networks: context.options?.networks || ['ethereum', 'bsc', 'polygon'],
       market_cap_min: context.options?.marketCapMin,
       market_cap_max: context.options?.marketCapMax,
@@ -121,7 +121,7 @@ export class AlphaHunter extends BaseAgent {
   }
   
   
-  private async scoreOpportunities(opportunities: any[], context: AgentContext): Promise<Opportunity[]> {
+  private async scoreOpportunities(opportunities: any[], _context: AgentContext): Promise<Opportunity[]> {
     const scoredOpps: Opportunity[] = [];
     
     for (const opp of opportunities) {

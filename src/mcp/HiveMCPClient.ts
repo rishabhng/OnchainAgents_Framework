@@ -1,4 +1,5 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { 
   ClientCapabilities, 
   ListToolsResult, 
@@ -7,6 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import winston from 'winston';
 import NodeCache from 'node-cache';
+import { spawn } from 'child_process';
 
 export interface HiveMCPConfig {
   mcpServerUrl?: string;
@@ -14,6 +16,7 @@ export interface HiveMCPConfig {
   timeout?: number;
   maxRetries?: number;
   logLevel?: string;
+  apiKey?: string;
 }
 
 export interface HiveMCPResponse<T = unknown> {
@@ -28,8 +31,18 @@ export interface HiveMCPResponse<T = unknown> {
   };
 }
 
+/**
+ * MCP Client for Hive Intelligence
+ * This client connects to Hive Intelligence through the Model Context Protocol
+ * 
+ * Note: For Claude Desktop integration, users should add the MCP server through:
+ * Settings → Manage Connectors → Add Connector URL: https://hiveintelligence.xyz/mcp
+ * 
+ * This client is for programmatic access from Node.js applications
+ */
 export class HiveMCPClient {
-  private client: Client;
+  private client: Client | null = null;
+  private transport: StdioClientTransport | null = null;
   private readonly cache: NodeCache;
   private readonly logger: winston.Logger;
   private readonly config: Required<HiveMCPConfig>;
@@ -43,6 +56,7 @@ export class HiveMCPClient {
       timeout: config?.timeout || 30000,
       maxRetries: config?.maxRetries || 3,
       logLevel: config?.logLevel || process.env.LOG_LEVEL || 'info',
+      apiKey: config?.apiKey || process.env.HIVE_API_KEY || '',
     };
     
     // Initialize logger
@@ -71,17 +85,6 @@ export class HiveMCPClient {
       useClones: false,
     });
     
-    // Initialize MCP client
-    this.client = new Client(
-      {
-        name: 'OnChainAgents',
-        version: '1.0.0',
-      },
-      {
-        capabilities: {} as ClientCapabilities,
-      }
-    );
-    
     this.logger.info('HiveMCPClient initialized', {
       mcpServerUrl: this.config.mcpServerUrl,
     });
@@ -89,19 +92,23 @@ export class HiveMCPClient {
   
   /**
    * Connect to Hive Intelligence MCP server
+   * For remote HTTP MCP servers, we use the HiveMCPRemoteClient instead
    */
   public async connect(): Promise<void> {
     try {
       this.logger.info('Connecting to Hive Intelligence MCP server');
       
-      // For remote MCP servers, we need to establish connection
-      // This would typically involve WebSocket or HTTP transport
-      // For now, we'll simulate the connection and list tools
+      // For HTTP-based MCP servers, we should use HiveMCPRemoteClient
+      // This class is for stdio-based MCP servers
+      this.logger.warn('HiveMCPClient is for stdio-based MCP servers. For Hive Intelligence HTTP endpoint, use HiveMCPRemoteClient instead.');
       
-      await this.listAndCacheTools();
+      // Mark as connected for compatibility
       this.isConnected = true;
       
-      this.logger.info('Successfully connected to Hive Intelligence MCP server', {
+      // Load available tools
+      await this.loadAvailableTools();
+      
+      this.logger.info('MCP client ready', {
         toolCount: this.availableTools.length,
       });
     } catch (error) {
@@ -111,143 +118,138 @@ export class HiveMCPClient {
   }
   
   /**
-   * List available tools from Hive Intelligence MCP server
+   * Load available tools
    */
-  private async listAndCacheTools(): Promise<void> {
-    try {
-      // In a real implementation, this would use the MCP protocol
-      // For now, we'll define the expected Hive Intelligence tools
-      this.availableTools = [
-        {
-          name: 'get_token_info',
-          description: 'Get comprehensive token information including price, market cap, and metadata',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              network: { type: 'string', description: 'Blockchain network (ethereum, bsc, polygon, etc.)' },
-              address: { type: 'string', description: 'Token contract address' },
-            },
-            required: ['network', 'address'],
+  private async loadAvailableTools(): Promise<void> {
+    // Define Hive Intelligence tools
+    this.availableTools = [
+      {
+        name: 'hive_token_data',
+        description: 'Get comprehensive token information including price, market cap, and metadata',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            network: { type: 'string', description: 'Blockchain network (ethereum, bsc, polygon, etc.)' },
+            address: { type: 'string', description: 'Token contract address' },
           },
+          required: ['network', 'address'],
         },
-        {
-          name: 'get_security_analysis',
-          description: 'Perform security analysis and rug detection for a token',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              network: { type: 'string', description: 'Blockchain network' },
-              address: { type: 'string', description: 'Token contract address' },
-              depth: { type: 'string', enum: ['basic', 'comprehensive'], description: 'Analysis depth' },
-            },
-            required: ['network', 'address'],
+      },
+      {
+        name: 'hive_security_scan',
+        description: 'Perform security analysis and rug detection for a token',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            network: { type: 'string', description: 'Blockchain network' },
+            address: { type: 'string', description: 'Token contract address' },
+            depth: { type: 'string', enum: ['basic', 'comprehensive'], description: 'Analysis depth' },
           },
+          required: ['network', 'address'],
         },
-        {
-          name: 'get_whale_activity',
-          description: 'Track whale wallet activity and large transactions',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              address: { type: 'string', description: 'Wallet address to track' },
-              timeframe: { type: 'string', description: 'Time period (1h, 24h, 7d, 30d)' },
-              min_value: { type: 'number', description: 'Minimum transaction value in USD' },
-            },
-            required: ['address'],
+      },
+      {
+        name: 'hive_whale_tracker',
+        description: 'Track whale wallet activity and large transactions',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            address: { type: 'string', description: 'Wallet address to track' },
+            timeframe: { type: 'string', description: 'Time period (1h, 24h, 7d, 30d)' },
+            min_value: { type: 'number', description: 'Minimum transaction value in USD' },
           },
+          required: ['address'],
         },
-        {
-          name: 'get_sentiment_analysis',
-          description: 'Analyze social sentiment for a token across platforms',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              symbol: { type: 'string', description: 'Token symbol' },
-              timeframe: { type: 'string', description: 'Time period for sentiment analysis' },
-              sources: { 
-                type: 'array', 
-                items: { type: 'string' },
-                description: 'Social media sources to analyze'
-              },
+      },
+      {
+        name: 'hive_sentiment_analysis',
+        description: 'Analyze social sentiment for a token across platforms',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            symbol: { type: 'string', description: 'Token symbol' },
+            timeframe: { type: 'string', description: 'Time period for sentiment analysis' },
+            sources: { 
+              type: 'array', 
+              items: { type: 'string' },
+              description: 'Social media sources to analyze'
             },
-            required: ['symbol'],
           },
+          required: ['symbol'],
         },
-        {
-          name: 'find_alpha_opportunities',
-          description: 'Discover emerging opportunities and alpha signals',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networks: { 
-                type: 'array',
-                items: { type: 'string' },
-                description: 'Blockchain networks to scan'
-              },
-              market_cap_min: { type: 'number', description: 'Minimum market cap' },
-              market_cap_max: { type: 'number', description: 'Maximum market cap' },
-              risk_level: { type: 'string', enum: ['low', 'medium', 'high'] },
+      },
+      {
+        name: 'hive_alpha_signals',
+        description: 'Discover emerging opportunities and alpha signals',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            networks: { 
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Blockchain networks to scan'
             },
-            required: [],
+            market_cap_min: { type: 'number', description: 'Minimum market cap' },
+            market_cap_max: { type: 'number', description: 'Maximum market cap' },
+            risk_level: { type: 'string', enum: ['low', 'medium', 'high'] },
           },
+          required: [],
         },
-        {
-          name: 'get_portfolio_analysis',
-          description: 'Analyze portfolio holdings and performance',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              address: { type: 'string', description: 'Wallet address to analyze' },
-              networks: { 
-                type: 'array',
-                items: { type: 'string' },
-                description: 'Networks to include in analysis'
-              },
+      },
+      {
+        name: 'hive_portfolio_analyzer',
+        description: 'Analyze portfolio holdings and performance',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            address: { type: 'string', description: 'Wallet address to analyze' },
+            networks: { 
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Networks to include in analysis'
             },
-            required: ['address'],
           },
+          required: ['address'],
         },
-        {
-          name: 'get_defi_analysis',
-          description: 'Analyze DeFi protocols and yield opportunities',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              protocol: { type: 'string', description: 'Protocol name or token symbol' },
-              category: { type: 'string', description: 'DeFi category (lending, dex, yield, etc.)' },
-              network: { type: 'string', description: 'Blockchain network' },
-            },
-            required: [],
+      },
+      {
+        name: 'hive_defi_monitor',
+        description: 'Analyze DeFi protocols and yield opportunities',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            protocol: { type: 'string', description: 'Protocol name or token symbol' },
+            category: { type: 'string', description: 'DeFi category (lending, dex, yield, etc.)' },
+            network: { type: 'string', description: 'Blockchain network' },
           },
+          required: [],
         },
-        {
-          name: 'get_cross_chain_info',
-          description: 'Get cross-chain bridge information and routing',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              from_network: { type: 'string', description: 'Source blockchain network' },
-              to_network: { type: 'string', description: 'Destination blockchain network' },
-              token: { type: 'string', description: 'Token to bridge' },
-              amount: { type: 'number', description: 'Amount to bridge' },
-            },
-            required: ['from_network', 'to_network'],
+      },
+      {
+        name: 'hive_cross_chain_bridge',
+        description: 'Get cross-chain bridge information and routing',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            from_network: { type: 'string', description: 'Source blockchain network' },
+            to_network: { type: 'string', description: 'Destination blockchain network' },
+            token: { type: 'string', description: 'Token to bridge' },
+            amount: { type: 'number', description: 'Amount to bridge' },
           },
+          required: ['from_network', 'to_network'],
         },
-      ];
-      
-      this.logger.debug('Tools cached', { 
-        toolCount: this.availableTools.length,
-        tools: this.availableTools.map(t => t.name),
-      });
-    } catch (error) {
-      this.logger.error('Failed to list MCP tools', { error });
-      throw error;
-    }
+      },
+    ];
+    
+    this.logger.debug('Tools loaded', { 
+      toolCount: this.availableTools.length,
+      tools: this.availableTools.map(t => t.name),
+    });
   }
   
   /**
    * Call a specific MCP tool
+   * Note: For actual Hive Intelligence calls, use HiveMCPRemoteClient
    */
   public async callTool(
     toolName: string,
@@ -286,23 +288,13 @@ export class HiveMCPClient {
       
       this.logger.info('Calling MCP tool', { toolName, parameters });
       
-      // In a real implementation, this would call the actual MCP server
-      // For now, we'll simulate the response based on the tool name
-      const result = await this.simulateToolCall(toolName, parameters);
+      // For HTTP-based Hive Intelligence, delegate to HiveMCPRemoteClient
+      // This is a placeholder - in production, use HiveMCPRemoteClient
+      this.logger.warn('For actual Hive Intelligence calls, use HiveMCPRemoteClient');
       
-      // Cache the result
-      this.cache.set(cacheKey, result);
+      // Return error indicating to use the remote client
+      throw new Error('Please use HiveMCPRemoteClient for HTTP-based Hive Intelligence MCP server');
       
-      return {
-        success: true,
-        data: result,
-        metadata: {
-          timestamp: Date.now(),
-          latency: Date.now() - startTime,
-          cached: false,
-          source: 'hive-mcp',
-        },
-      };
     } catch (error) {
       this.logger.error('MCP tool call failed', { toolName, error });
       
@@ -320,99 +312,29 @@ export class HiveMCPClient {
   }
   
   /**
-   * Simulate tool calls for development/testing
-   * In production, this would be replaced with actual MCP protocol calls
+   * Map legacy tool names to Hive-specific names
    */
-  private async simulateToolCall(
-    toolName: string,
-    parameters: Record<string, unknown>
-  ): Promise<any> {
-    // Add realistic delay
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 800));
+  private mapToolName(toolName: string): string {
+    const toolMap: Record<string, string> = {
+      'get_token_info': 'hive_token_data',
+      'get_security_analysis': 'hive_security_scan',
+      'get_whale_activity': 'hive_whale_tracker',
+      'get_sentiment_analysis': 'hive_sentiment_analysis',
+      'find_alpha_opportunities': 'hive_alpha_signals',
+      'get_portfolio_analysis': 'hive_portfolio_analyzer',
+      'get_defi_analysis': 'hive_defi_monitor',
+      'get_cross_chain_info': 'hive_cross_chain_bridge',
+    };
     
-    switch (toolName) {
-      case 'get_token_info':
-        return {
-          address: parameters.address,
-          network: parameters.network,
-          name: 'Example Token',
-          symbol: 'EXAMPLE',
-          decimals: 18,
-          totalSupply: '1000000000000000000000000',
-          price: 1.23,
-          marketCap: 1230000,
-          volume24h: 500000,
-          holders: 15420,
-          verified: true,
-        };
-        
-      case 'get_security_analysis':
-        return {
-          riskScore: 25,
-          verdict: 'SAFE',
-          flags: [],
-          contractVerified: true,
-          honeypot: false,
-          mintable: false,
-          liquidityLocked: true,
-          ownershipRenounced: true,
-        };
-        
-      case 'get_whale_activity':
-        return {
-          isWhale: true,
-          walletType: 'institutional',
-          balance: 50000000,
-          recentTransactions: [
-            {
-              hash: '0xabc123...',
-              value: 1000000,
-              timestamp: Date.now() - 3600000,
-              type: 'buy',
-            },
-          ],
-        };
-        
-      case 'get_sentiment_analysis':
-        return {
-          overallSentiment: 'positive',
-          sentimentScore: 0.75,
-          sources: {
-            twitter: { sentiment: 'positive', mentions: 1250 },
-            reddit: { sentiment: 'neutral', mentions: 340 },
-            telegram: { sentiment: 'positive', mentions: 890 },
-          },
-        };
-        
-      case 'find_alpha_opportunities':
-        return {
-          opportunities: [
-            {
-              symbol: 'ALPHA1',
-              address: '0x123...',
-              network: 'ethereum',
-              score: 85,
-              signals: ['whale_accumulation', 'social_buzz'],
-              marketCap: 5000000,
-            },
-            {
-              symbol: 'ALPHA2',
-              address: '0x456...',
-              network: 'bsc',
-              score: 78,
-              signals: ['technical_breakout', 'dev_activity'],
-              marketCap: 12000000,
-            },
-          ],
-        };
-        
-      default:
-        return {
-          message: `Tool ${toolName} executed successfully`,
-          parameters,
-          timestamp: Date.now(),
-        };
-    }
+    return toolMap[toolName] || toolName;
+  }
+  
+  /**
+   * Execute a tool call - delegates to HiveMCPRemoteClient for HTTP
+   */
+  public async execute(tool: string, params?: Record<string, any>): Promise<HiveMCPResponse> {
+    const mappedTool = this.mapToolName(tool);
+    return this.callTool(mappedTool, params || {});
   }
   
   /**
@@ -460,12 +382,24 @@ export class HiveMCPClient {
   }
   
   /**
+   * Initialize (alias for connect)
+   */
+  public async initialize(): Promise<void> {
+    return this.connect();
+  }
+  
+  /**
    * Disconnect from MCP server
    */
   public async disconnect(): Promise<void> {
     try {
+      if (this.transport) {
+        await this.transport.close();
+        this.transport = null;
+      }
+      this.client = null;
       this.isConnected = false;
-      this.logger.info('Disconnected from Hive Intelligence MCP server');
+      this.logger.info('Disconnected from MCP server');
     } catch (error) {
       this.logger.error('Error during disconnect', { error });
     }

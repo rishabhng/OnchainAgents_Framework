@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseAgent, AgentContext, AgentConfig } from '../base/BaseAgent';
-import { HiveClient } from '../../mcp/HiveClient';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 interface CrossChainNavigatorResult {
   routes: BridgeRoute[];
@@ -136,7 +136,7 @@ interface InsuranceOption {
 }
 
 export class CrossChainNavigator extends BaseAgent {
-  constructor(hiveClient: HiveClient) {
+  constructor(hiveService: IHiveService) {
     const config: AgentConfig = {
       name: 'CrossChainNavigator',
       description: 'Maps the multi-chain landscape for optimal routing',
@@ -146,7 +146,7 @@ export class CrossChainNavigator extends BaseAgent {
       timeout: 45000,
     };
     
-    super(config, hiveClient);
+    super(config, hiveService);
   }
   
   protected validateInput(context: AgentContext): z.ZodSchema {
@@ -248,7 +248,7 @@ export class CrossChainNavigator extends BaseAgent {
   }
   
   private async getBridgeData(context: AgentContext): Promise<any[]> {
-    const response = await this.hiveClient.request('/bridges/routes', {
+    const response = await this.hiveService.request('/bridges/routes', {
       fromChain: context.fromChain,
       toChain: context.toChain,
       asset: context.asset,
@@ -264,7 +264,7 @@ export class CrossChainNavigator extends BaseAgent {
       : ['ethereum', 'bsc', 'polygon', 'arbitrum', 'optimism', 'avalanche', 'base'];
     
     const chainPromises = chains.map(chain =>
-      this.hiveClient.request('/chain/metrics', {
+      this.hiveService.request('/chain/metrics', {
         chain,
         includeEcosystem: true,
       })
@@ -275,7 +275,7 @@ export class CrossChainNavigator extends BaseAgent {
   }
   
   private async getGasData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/gas/prices', {
+    const response = await this.hiveService.request('/gas/prices', {
       chains: ['ethereum', 'bsc', 'polygon', 'arbitrum', 'optimism', 'avalanche', 'base'],
       includeHistory: true,
     });
@@ -284,7 +284,7 @@ export class CrossChainNavigator extends BaseAgent {
   }
   
   private async getLiquidityData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/liquidity/cross-chain', {
+    const response = await this.hiveService.request('/liquidity/cross-chain', {
       asset: context.asset,
       includeDepth: true,
     });
@@ -293,7 +293,7 @@ export class CrossChainNavigator extends BaseAgent {
   }
   
   private async getSecurityData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/security/bridges', {
+    const response = await this.hiveService.request('/security/bridges', {
       includeAudits: true,
       includeIncidents: true,
     });
@@ -302,7 +302,7 @@ export class CrossChainNavigator extends BaseAgent {
   }
   
   private async getOpportunityData(context: AgentContext): Promise<any> {
-    const response = await this.hiveClient.request('/opportunities/cross-chain', {
+    const response = await this.hiveService.request('/opportunities/cross-chain', {
       asset: context.asset,
       minReturn: 5, // 5% minimum return
     });

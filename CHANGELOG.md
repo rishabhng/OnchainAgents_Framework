@@ -5,6 +5,36 @@ All notable changes to OnChainAgents will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2024-01-08
+
+### 🚀 Enhanced Persona System - 12 Specialized Agents
+
+This release completes the full implementation of all personas and adds a new CryptoQuant persona with 20 years of financial engineering experience.
+
+### Added
+- **CryptoQuant Persona** - Financial engineer with quantitative analysis expertise
+  - GARCH models for volatility prediction
+  - Statistical arbitrage detection
+  - Machine learning predictions
+  - Cointegration analysis for pairs trading
+  - Hidden Markov Models for regime detection
+  - Black-Litterman portfolio optimization
+  
+### Implemented (Previously Stubs)
+- **SentimentAnalyzer** - Social sentiment and market psychology analysis
+- **NFTValuator** - NFT valuation and rarity analysis
+- **MarketMaker** - Market microstructure and liquidity provision
+- **GovernanceAdvisor** - DAO governance and proposal analysis  
+- **YieldOptimizer** - DeFi yield optimization across protocols
+- **RiskAnalyzer** - Portfolio risk assessment and hedging
+- **ChainAnalyst** - On-chain forensics and transaction tracing
+
+### Updated
+- Command routing system now supports all 12 personas
+- Added new commands: `/sentiment`, `/nft`, `/governance`, `/risk`, `/trace`, `/quant`, `/mm`
+- Enhanced TypeScript types for all agent implementations
+- Fixed compilation errors and improved type safety
+
 ## [1.0.0] - 2024-01-07
 
 ### 🎉 Initial Release - SuperClaude Parity Achieved

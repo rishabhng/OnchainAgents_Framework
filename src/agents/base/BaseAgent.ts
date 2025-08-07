@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import winston from 'winston';
 import NodeCache from 'node-cache';
-import { HiveBridge } from '../../bridges/hive-bridge';
+import { IHiveService } from '../../interfaces/IHiveService';
 
 export interface AgentConfig {
   name: string;
@@ -36,9 +36,9 @@ export abstract class BaseAgent {
   protected readonly config: AgentConfig;
   protected readonly logger: winston.Logger;
   protected readonly cache: NodeCache;
-  protected readonly hiveBridge: HiveBridge;
+  protected readonly hiveService: IHiveService;
   
-  constructor(config: AgentConfig, hiveBridge: HiveBridge) {
+  constructor(config: AgentConfig, hiveService: IHiveService) {
     this.config = {
       cacheTTL: 3600,
       maxRetries: 3,
@@ -46,7 +46,7 @@ export abstract class BaseAgent {
       ...config,
     };
     
-    this.hiveBridge = hiveBridge;
+    this.hiveService = hiveService;
     
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || 'info',

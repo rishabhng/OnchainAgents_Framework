@@ -5,6 +5,7 @@
 
 import { HiveMCPClient, HiveMCPConfig } from './mcp/HiveMCPClient';
 import { BaseAgent, AgentConfig, AgentContext, AnalysisResult } from './agents/base/BaseAgent';
+import { HiveServiceAdapter, IHiveService } from './interfaces/IHiveService';
 
 // Import all agents
 import { RugDetector } from './agents/security/RugDetector';
@@ -40,6 +41,7 @@ export interface CommandResult {
  */
 export class OnChainAgents {
   private readonly hiveMCP: HiveMCPClient;
+  private readonly hiveService: IHiveService;
   private readonly agents: Map<string, BaseAgent>;
   private readonly config: OnChainAgentsConfig;
   
@@ -61,6 +63,9 @@ export class OnChainAgents {
       logLevel: this.config.logLevel,
     });
     
+    // Create adapter for unified interface
+    this.hiveService = new HiveServiceAdapter(this.hiveMCP);
+    
     // Initialize agents
     this.agents = new Map();
     this.initializeAgents();
@@ -71,22 +76,22 @@ export class OnChainAgents {
    */
   private initializeAgents(): void {
     // Security agents
-    this.agents.set('rugDetector', new RugDetector(this.hiveMCP));
-    this.agents.set('riskAnalyzer', new RiskAnalyzer(this.hiveMCP));
+    this.agents.set('rugDetector', new RugDetector(this.hiveService));
+    this.agents.set('riskAnalyzer', new RiskAnalyzer(this.hiveService));
     
     // Market intelligence agents
-    this.agents.set('alphaHunter', new AlphaHunter(this.hiveMCP));
-    this.agents.set('whaleTracker', new WhaleTracker(this.hiveMCP));
-    this.agents.set('sentimentAnalyzer', new SentimentAnalyzer(this.hiveMCP));
+    this.agents.set('alphaHunter', new AlphaHunter(this.hiveService));
+    this.agents.set('whaleTracker', new WhaleTracker(this.hiveService));
+    this.agents.set('sentimentAnalyzer', new SentimentAnalyzer(this.hiveService));
     
     // Research agents
-    this.agents.set('tokenResearcher', new TokenResearcher(this.hiveMCP));
-    this.agents.set('defiAnalyzer', new DeFiAnalyzer(this.hiveMCP));
-    this.agents.set('portfolioTracker', new PortfolioTracker(this.hiveMCP));
+    this.agents.set('tokenResearcher', new TokenResearcher(this.hiveService));
+    this.agents.set('defiAnalyzer', new DeFiAnalyzer(this.hiveService));
+    this.agents.set('portfolioTracker', new PortfolioTracker(this.hiveService));
     
     // Specialized agents
-    this.agents.set('crossChainNavigator', new CrossChainNavigator(this.hiveMCP));
-    this.agents.set('marketStructureAnalyst', new MarketStructureAnalyst(this.hiveMCP));
+    this.agents.set('crossChainNavigator', new CrossChainNavigator(this.hiveService));
+    this.agents.set('marketStructureAnalyst', new MarketStructureAnalyst(this.hiveService));
   }
   
   /**
@@ -255,7 +260,7 @@ export class OnChainAgents {
       ]);
       
       const data = {
-        opportunities: huntResults?.data?.opportunities || [],
+        opportunities: (huntResults?.data as any)?.opportunities || [],
         marketStructure: marketResults?.data,
         filters: options,
         recommendations: this.generateHuntRecommendations(huntResults, marketResults),
@@ -358,8 +363,8 @@ export class OnChainAgents {
       
       const data = {
         token,
-        sentiment: sentimentResults?.data?.overallSentiment || 'neutral',
-        score: sentimentResults?.data?.sentimentScore || 0,
+        sentiment: (sentimentResults?.data as any)?.overallSentiment || 'neutral',
+        score: (sentimentResults?.data as any)?.sentimentScore || 0,
         sources: options?.sources || 'all',
         analysis: sentimentResults?.data,
       };

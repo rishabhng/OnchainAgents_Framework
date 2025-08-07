@@ -26,6 +26,8 @@ export enum CryptoDomain {
   YIELD = 'yield',
   ALPHA = 'alpha',
   RISK = 'risk',
+  ONCHAIN = 'onchain',
+  QUANT = 'quant',
 }
 
 // Operation types for crypto
