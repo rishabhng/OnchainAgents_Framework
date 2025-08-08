@@ -83,16 +83,16 @@ export class HiveMCPClient {
 
   /**
    * Connect to Hive Intelligence MCP server
-   * For remote HTTP MCP servers, we use the HiveMCPRemoteClient instead
+   * For remote HTTP MCP servers, we use the HiveMCPDirectClient instead
    */
   public async connect(): Promise<void> {
     try {
       this.logger.info('Connecting to Hive Intelligence MCP server');
 
-      // For HTTP-based MCP servers, we should use HiveMCPRemoteClient
+      // For HTTP-based MCP servers, we should use HiveMCPDirectClient
       // This class is for stdio-based MCP servers
       this.logger.warn(
-        'HiveMCPClient is for stdio-based MCP servers. For Hive Intelligence HTTP endpoint, use HiveMCPRemoteClient instead.',
+        'HiveMCPClient is for stdio-based MCP servers. For Hive Intelligence HTTP endpoint, use HiveMCPDirectClient instead.',
       );
 
       // Mark as connected for compatibility

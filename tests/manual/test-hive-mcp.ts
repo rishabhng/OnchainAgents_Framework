@@ -10,7 +10,7 @@
  * and provides instructions for Claude Desktop setup
  */
 
-import { HiveMCPRemoteClient } from '../../src/mcp/HiveMCPRemoteClient';
+import { HiveMCPDirectClient } from '../../src/mcp/HiveMCPDirectClient';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 
@@ -37,7 +37,7 @@ async function printHeader() {
   console.log();
 }
 
-async function testConnection(client: HiveMCPRemoteClient): Promise<boolean> {
+async function testConnection(client: HiveMCPDirectClient): Promise<boolean> {
   console.log(chalk.blue(`\n▶ ${TESTS.CONNECTION}`));
   
   try {
@@ -59,7 +59,7 @@ async function testConnection(client: HiveMCPRemoteClient): Promise<boolean> {
   }
 }
 
-async function listTools(client: HiveMCPRemoteClient): Promise<void> {
+async function listTools(client: HiveMCPDirectClient): Promise<void> {
   console.log(chalk.blue(`\n▶ ${TESTS.LIST_TOOLS}`));
   
   try {
@@ -70,15 +70,11 @@ async function listTools(client: HiveMCPRemoteClient): Promise<void> {
       console.log(chalk.gray(`    • ${tool.name || tool}`));
     });
   } catch (error) {
-    console.log(chalk.yellow(`  ⚠ Using fallback tool list`));
-    const fallbackTools = client.getAvailableTools();
-    fallbackTools.forEach((tool: any) => {
-      console.log(chalk.gray(`    • ${tool.name || tool}`));
-    });
+    console.log(chalk.yellow(`  ⚠ Failed to list tools: ${error}`));
   }
 }
 
-async function testTokenInfo(client: HiveMCPRemoteClient): Promise<void> {
+async function testTokenInfo(client: HiveMCPDirectClient): Promise<void> {
   console.log(chalk.blue(`\n▶ ${TESTS.TOKEN_INFO}`));
   
   try {
@@ -103,7 +99,7 @@ async function testTokenInfo(client: HiveMCPRemoteClient): Promise<void> {
   }
 }
 
-async function testSecurityScan(client: HiveMCPRemoteClient): Promise<void> {
+async function testSecurityScan(client: HiveMCPDirectClient): Promise<void> {
   console.log(chalk.blue(`\n▶ ${TESTS.SECURITY_SCAN}`));
   
   try {
@@ -136,7 +132,7 @@ async function testFallbackMode(): Promise<void> {
   const originalMode = process.env.HIVE_FALLBACK_MODE;
   process.env.HIVE_FALLBACK_MODE = 'true';
   
-  const fallbackClient = new HiveMCPRemoteClient({
+  const fallbackClient = new HiveMCPDirectClient({
     mcpServerUrl: 'https://invalid.url.test', // Intentionally invalid
   });
   
@@ -181,9 +177,8 @@ async function main() {
   await printHeader();
   
   // Create client
-  const client = new HiveMCPRemoteClient({
-    mcpServerUrl: process.env.HIVE_MCP_URL,
-    apiKey: process.env.HIVE_API_KEY,
+  const client = new HiveMCPDirectClient({
+    mcpServerUrl: process.env.HIVE_MCP_URL || 'https://hiveintelligence.xyz/mcp',
   });
   
   // Run tests

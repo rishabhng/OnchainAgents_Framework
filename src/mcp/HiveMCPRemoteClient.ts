@@ -531,4 +531,6 @@ export class HiveMCPRemoteClient {
 }
 
 // Export a singleton instance for convenience
-export const hiveMCPClient = new HiveMCPRemoteClient();
+// Note: This client is deprecated - use HiveMCPDirectClient instead
+// Commented out to prevent auto-initialization with wrong endpoint
+// export const hiveMCPClient = new HiveMCPRemoteClient();
